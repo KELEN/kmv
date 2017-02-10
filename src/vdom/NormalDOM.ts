@@ -8,7 +8,7 @@ export class NormalDOM {
     tagName;
     attributes;
     template;
-    children = [];
+    childrenVdom = [];
     constructor (node) {
         // h3
         this.tagName = node.tagName, this.attributes = node.attributes,
@@ -24,12 +24,12 @@ export class NormalDOM {
         if (node.childNodes) {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
-                this.children.push(new NormalDOM(child))
+                this.childrenVdom.push(new NormalDOM(child))
             }
         }
     }
     transDOM (Kmv) {
-        let data = Kmv.$data;
+        let data = Kmv.$$data;
         let newEle;
         switch (this.nodeType) {
             case NodeType.TEXT:
@@ -39,9 +39,13 @@ export class NormalDOM {
             case NodeType.ELEMENT:
                 newEle = document.createElement(this.tagName);
                 newEle.template = this.template;
-                let text = compileTpl(this.template, data);
-                newEle.innerText = text;
+                newEle.childrenVdom = this.childrenVdom;
                 DomUtil.copyAttr(newEle, this.attributes, Kmv);
+                if (this.childrenVdom) {
+                    this.childrenVdom.forEach((child) => {
+                        newEle.appendChild(child.transDOM(Kmv));
+                    })
+                }
                 break;
         }
         return newEle;
@@ -54,7 +58,7 @@ export class NormalDOM {
                 DomUtil.changeTextContent(parentNode, text)
                 break;
             case NodeType.ELEMENT:
-                // DomUtil.changeNodeValue(this.dom, text)
+                // DomUtil.changeNodeValue(parentNode, text)
                 break;
         }
     }

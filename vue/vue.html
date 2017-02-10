@@ -11,11 +11,15 @@
 </div>
 <script src="vue.js"></script>
 <script>
+    var a = [];
+    for (var i = 0; i < 1000; i++) {
+        a.push(Math.random());
+    }
     var vue = new Vue({
         el: "#div1",
         data: {
             name: "kelen",
-            list: [ 1, 2 ]
+            list: a
         },
         methods: {
             reverseMessage: function () {

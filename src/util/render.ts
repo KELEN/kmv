@@ -23,7 +23,9 @@ export let renderInit = (Kmv) => {
             case RenderType.INPUT:
                 let kModel = node.getAttribute("k-model");
                 node.value = getDotVal(data, kModel);
+                console.log("before on input");
                 node.oninput = function() {
+                    console.log(11);
                     setObserveDotVal(observeData, kModel, this.value);
                 }
                 DomUtil.removeAttribute(node, "k-model");
@@ -108,13 +110,12 @@ export let reRenderFor = (kmv, forKey) => {
     let renderQueue = kmv.watchers.getQueue();
     let data = kmv.$data;
     for (let i = 0; i < renderQueue.length; i++) {
-        let node = renderQueue[i];
-        if (node.renderType == RenderType.FOR) {
-            let vdom = node.vdom;
-            let arrKey = vdom.forObjectKey;
+        let vnode = renderQueue[i];
+        if (vnode.renderType == RenderType.FOR) {
+            let arrKey = vnode.forObjectKey;
             let newArray = getDotVal(data, arrKey);
-            let change = diff(vdom.arrayData, newArray);
-            node.reRender(change, kmv);
+            let change = diff(vnode.arrayData, newArray);
+            vnode.reRender(change, kmv);
         }
     }
 }
