@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div">
+    <button k-on:click="add()">add</button>
+    <button onclick="splice()">splice</button>
+    <button onclick="pop()">pop</button>
+    <button onclick="shift()">shift</button>
+    <button onclick="reverse()">reverse</button>
+    <button onclick="sort()">sort</button>
+    <li k-for="i in list">{{ i }}</li>
+    <h3 k-for="obj in list2">{{ obj['a'] }}</h3>
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            list: [ 1, 2, 3, 4, 5 ],
+            list2: [{a: 1}, {a: 3}, {a: 4}]
+        },
+        methods: {
+            add: function() {
+                this.list.push(6);
+            }
+        }
+    });
+    function splice() {
+        kmv.data.list.splice(1, 1, Math.random())
+    }
+    function pop() {
+        kmv.data.list.pop();
+    }
+    function shift() {
+        kmv.data.list.shift();
+    }
+    function reverse() {
+        kmv.data.list.reverse();
+    }
+    function sort() {
+        kmv.data.list.sort(3);
+    }
+</script>
+</body>
+</html>

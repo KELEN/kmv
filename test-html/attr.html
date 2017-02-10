@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div">
+    <a k:href="{{ url }}">百度</a>
+    <button href="{{ url }}">百度</button>
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            url: "www.baidu.com"
+        }
+    });
+</script>
+</body>
+</html>

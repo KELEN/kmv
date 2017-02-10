@@ -2,21 +2,26 @@
 import { RegexpStr } from '../constants/constant';
 
 export let getDotVal = (obj, key) => {
+    let val, k;
 
-    key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+    if (key) {
 
-    let val = obj, k;
-    // 获取对应的dot值
-    let arr = key.split(".") || [key];
-    while (k = arr.shift()) {
-        if (!val) {
-            val = undefined;
-            break;
+        key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+
+        val = obj;
+        // 获取对应的dot值
+        let arr = key.split(".") || [key];
+        while (k = arr.shift()) {
+            if (!val) {
+                val = undefined;
+                break;
+            }
+            val = val[k];
         }
-        val = val[k];
-    }
-    return val;
 
+    }
+
+    return val;
 }
 
 export let depCopy = (obj) => {
@@ -33,4 +38,17 @@ export let depCopy = (obj) => {
         }
     }
     return newObj;
+}
+
+
+export let setObserveDotVal = (observeData, key, val) => {
+    key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+    let tmp = observeData;
+    let arr = key.split(".");
+    let len = arr.length;
+    for (let i = 0; i < len - 1; i++) {
+        tmp = tmp[arr[i]];
+    }
+
+    tmp[arr[len - 1]] = val;
 }

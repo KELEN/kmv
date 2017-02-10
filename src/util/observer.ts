@@ -1,7 +1,7 @@
 import * as ObjectUtil from '../util/object'
-import {reRender, reRenderFor} from "./render";
+import { reRender, reRenderFor } from "./render";
 import { ArrayMethod } from '../constants/constant'
-import * as DomUtil from './domOp'
+import * as DomUtil from '../dom/domOp'
 import {compileTpl} from "./template";
 import {getDotVal} from "./object";
 /**
@@ -13,8 +13,8 @@ import {getDotVal} from "./object";
 export let observer = (obj, kmv, key = '') => {
     let newObj = ObjectUtil.depCopy(obj);
     for (let i in obj) {
+        let bigKey = key ? key + "." + i : i;
         if (typeof obj[i] == 'object') {
-            let bigKey = key ? key + "." + i : i;
             if (Array.isArray(obj[i])) {
                 arrayObserve(obj[i], kmv, bigKey);
             } else {
@@ -23,8 +23,11 @@ export let observer = (obj, kmv, key = '') => {
         } else {
             Object.defineProperty(obj, i, {
                 set: function (newVal) {
-                    newObj[i] = newVal;
+                    ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
                     reRender(kmv, i);
+                },
+                get: function() {
+                    return getDotVal(kmv.$data, bigKey);
                 }
             })
         }
@@ -36,6 +39,7 @@ function arrayObserve(arr, kmv, bigKey) {
 
     let timer;
 
+    // 监听array操作
     ArrayMethod.forEach((method) => {
         Object.defineProperty(arr, method, {
             configurable: false,

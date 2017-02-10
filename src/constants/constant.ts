@@ -16,7 +16,10 @@ export const RegexpStr = {
     isParams: /^[^"|^'\d]+.*/,
     arithmeticOp: /\*|\+|-\//g,          // 逻辑运算符
     inputElement: /INPUT|TEXTAREA/,
-    arrtibuteKey: /k-for|k-model|k-if/
+    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
+    kAttribute: /k:(.*)/,
+    kOnAttribute: /k-on:(.*)/,
+    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/
 }
 
 export const NodeType = {
@@ -27,10 +30,10 @@ export const NodeType = {
     DOCUMENT: 9
 }
 
-export const ArrayMethod = ['push', 'pop', 'slice', 'splice', 'shift', 'unshift', 'soft', 'reverse']
+export const ArrayMethod = ['push', 'pop', 'splice', 'shift', 'unshift', 'sort', 'reverse']
 
 export enum RenderType {
-    TEXT, INPUT, TEXTAREA, FOR, IF,
+    TEXT, INPUT, TEXTAREA, FOR, IF, ATTRIBUTE
 }
 
 export enum ArrayOp {

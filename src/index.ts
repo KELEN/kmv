@@ -10,18 +10,17 @@ function Kmv(opts) {
 
     this.data = opts.data;
 
-    this.virtualDom = [];
-
     this.flush = false;
 
     this.watchers = new Watcher(elem);
 
     this.$data = observer(opts.data, this);
 
-    console.log(this.watchers.getQueue());
+    this.methods = opts.methods;
 
+    // console.log(this.watchers);
     setTimeout(function() {
-        renderInit(that.watchers, that.$data, opts.data);
+        renderInit(that);
     }, 0);
 
     return this;

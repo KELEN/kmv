@@ -1,34 +1,18 @@
-import * as DomUtil from "../util/domOp"
+import * as DomUtil from "../dom/domOp"
 import { getDotVal, depCopy } from '../util/object'
 import { compileTpl } from '../util/template'
 import { RegexpStr } from '../constants/constant'
 import { ArrayOp } from "../constants/constant"
-
-class VDOM {
-    vdom;
-    constructor (node) {
-        // h3
-        this.vdom = {
-            tagName: node.tagName,
-            template: node.firstChild.nodeValue,
-        }
-    }
-    transDOM(data) {
-        let newEle = document.createElement(this.vdom.tagName);
-        newEle.template = this.vdom.template;
-        let text = compileTpl(this.vdom.template, data);
-        newEle.innerText = text;
-        return newEle;
-    }
-}
+import { NormalDOM } from './NormalDOM'
 
 export class ForDOM {
     renderType;
     vdom;
+    methods;
     constructor (node) {
         let forString = node.getAttribute("k-for");
         let match = RegexpStr.forStatement.exec(forString);
-        let template = node.firstChild.nodeValue;
+        let template = node.firstChild && node.firstChild.nodeValue;
         this.vdom = {
             tagName: node.tagName,
             forString: forString,
@@ -39,20 +23,23 @@ export class ForDOM {
             nextSibling: node.nextSibling,
             documentFragment: null,
             children: [],
-            arrayData: []
+            arrayData: [],
+            attributes: node.attributes
         }
+        this.vdom.attributes.removeNamedItem("k-for");
         if (node.children) {
             for (let i = 0; i < node.children.length; i++) {
-                let virtualDOM = new VDOM(node.children[i]);
+                let virtualDOM = new NormalDOM(node.children[i]);
                 this.vdom.children.push(virtualDOM)
             }
         }
-        console.log(this.vdom);
+        this.connect(node.previousElementSibling, node.nextElementSibling)
     }
     getVdom () {
         return this.vdom;
     }
-    renderInit(data) {
+    renderInit(Kmv) {
+        let data = Kmv.$data
         var tagName = this.vdom.tagName;
         var template = this.vdom.template;
         let arrKey = this.vdom.forObjectKey;
@@ -65,12 +52,16 @@ export class ForDOM {
             obj[this.vdom.forKey] = text;
             newDom.innerText = compileTpl(template, obj);
             for (let n = 0; n < this.vdom.children.length; n++) {
-                newDom.appendChild(this.vdom.children[n].transDOM(data));
+                newDom.appendChild(this.vdom.children[n].transDOM(Kmv));
             }
+            DomUtil.copyAttr(newDom, this.vdom.attributes, Kmv);
             docFrag.appendChild(newDom);
         }
         DomUtil.insertAfter(this.vdom.previousSibling, docFrag);
         this.vdom.arrayData = arrayData.slice(0);
+    }
+    resolveKAttribute() {
+
     }
     removeFor(vdom) {
         var prev = vdom.previousSibling;
@@ -81,7 +72,7 @@ export class ForDOM {
         }
     }
     connect (realPrevDom, realNextDom) {
-        realPrevDom.$nextSibling = this.vdom;
+        realPrevDom && (realPrevDom.$nextSibling = this.vdom);
         this.vdom.$nextSibling = realNextDom;
     }
     reRender (change, data) {
@@ -95,7 +86,7 @@ export class ForDOM {
                     this.popDOM();
                     break;
                 case ArrayOp.CHANGE:
-                    let obj = depCopy(data);
+                    let obj = depCopy(data);        // 拷贝一份对象
                     this.changeText(obj, change[i].index)
                     break
                 case ArrayOp.SHIFT:
@@ -128,7 +119,6 @@ export class ForDOM {
     }
     reRenderChild (node, data) {
         let template = node.template;
-        console.log(node);
         node.firstChild.nodeValue = compileTpl(template, data);
     }
     pushDOM(data, i) {
@@ -141,6 +131,7 @@ export class ForDOM {
         for (let n = 0; n < this.vdom.children.length; n++) {
             elem.appendChild(this.vdom.children[n].transDOM(data));
         }
+        // DomUtil.copyAttr(elem, this.vdom.attributes);
         DomUtil.inserBefore(this.vdom.nextSibling, elem);
     }
     popDOM() {
@@ -161,9 +152,3 @@ export class ForDOM {
         DomUtil.changeNodeValue(start, text);
     }
 }
-
-let VirtualDOM = {
-    ForDOM: ForDOM
-}
-
-export default VirtualDOM;

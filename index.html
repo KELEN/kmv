@@ -7,49 +7,23 @@
 <body>
 <div id="div1" class="div">
     {{ name }}
-    <input type="text" k-model="name">
-    <li k-for="i in a.arr">222<h3>{{ name }}<h2>sss{{ name }} 33</h2>444444444444</h3></li>
-    <button onclick="change()">slice</button>
-    <button onclick="add()">add</button>
-    <button onclick="pop()">pop</button>
-    <button onclick="shift()">shift</button>
-    <button onclick="sort()">sort</button>
+    <button k:onclick="say({{ }})">click</button>
 </div>
 <script src="./dist/bundle.js"></script>
 <script>
-    function say() {alert(this.event.target.innerHTML)}
+    function say() { alert(this.event.target.innerHTML) }
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "hello",
-            a: {
-                b: 1,
-                arr: [7,8,9]
+            name: "kelen",
+            arr: [1, 3, 4]
+        },
+        methods: {
+            reverseMessage: function() {
+                this.name = this.name.split('').reverse().join('');
             }
         }
     });
-
-    function change() {
-        kmv.data.a.arr.splice(1, 1, Math.random(), 1111111)
-    }
-
-    function add() {
-        for (var i = 0; i < 10; i++) {
-            kmv.data.a.arr.push(Math.random())
-        }
-    }
-
-    function pop() {
-        kmv.data.a.arr.pop();
-    }
-
-    function shift() {
-        kmv.data.a.arr.shift();
-    }
-
-    function sort() {
-        kmv.data.a.arr.sort();
-    }
 </script>
 </body>
 </html>
