@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div">
+    <li k-for="i in list">{{ name + i }}<h1>{{ name }} 3433 <span>{{ name }} <div>{{ name }}</div></span></h1><h2>222</h2>{{ name  }} 555</li>
+    <button class="button">btn</button>
+    <input type="text" k-model="name">
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            name: "kelen",
+            list: [ 1, 2 ]
+        }
+    });
+
+    /*for (var i = 0; i < 1000; i++) {
+        kmv.data.list.push(Math.random());
+    }*/
+</script>
+</body>
+</html>

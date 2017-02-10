@@ -2,7 +2,7 @@ import * as DomUtil from "../dom/domOp"
 import { getDotVal, depCopy } from '../util/object'
 import { compileTpl } from '../util/template'
 import { RegexpStr } from '../constants/constant'
-import { ArrayOp } from "../constants/constant"
+import { ArrayOp, NodeType } from "../constants/constant"
 import { NormalDOM } from './NormalDOM'
 
 export class ForDOM {
@@ -12,7 +12,11 @@ export class ForDOM {
     constructor (node) {
         let forString = node.getAttribute("k-for");
         let match = RegexpStr.forStatement.exec(forString);
-        let template = node.firstChild && node.firstChild.nodeValue;
+        let template = [];      // 模板可能是一个或者文本节点，元素
+        for (let i = 0; i < node.childNodes.length; i++) {
+            let childNode = node.childNodes[i];
+            template.push(new NormalDOM(childNode));
+        }
         this.vdom = {
             tagName: node.tagName,
             forString: forString,
@@ -21,18 +25,17 @@ export class ForDOM {
             template: template,
             previousSibling: node.previousSibling,
             nextSibling: node.nextSibling,
-            documentFragment: null,
+            nextElementSibling: node.nextElementSibling,
+            previousElementSibling: node.previousElementSibling,
+            parentNode: node.parentNode,
             children: [],
             arrayData: [],
+            previousVdom: null,     // 上一个虚拟dom
+            nextVdom: null,         // 下一个虚拟dom
             attributes: node.attributes
         }
         this.vdom.attributes.removeNamedItem("k-for");
-        if (node.children) {
-            for (let i = 0; i < node.children.length; i++) {
-                let virtualDOM = new NormalDOM(node.children[i]);
-                this.vdom.children.push(virtualDOM)
-            }
-        }
+        DomUtil.removeNode(node);       // 需要移除自身元素
         this.connect(node.previousElementSibling, node.nextElementSibling)
     }
     getVdom () {
@@ -45,14 +48,33 @@ export class ForDOM {
         let arrKey = this.vdom.forObjectKey;
         let arrayData = getDotVal(data, arrKey);
         var docFrag = document.createDocumentFragment();
-        let obj = depCopy(data);
+        let obj = depCopy(data);        // 新的对象, 遍历元素需要
         for (let i = 0; i < arrayData.length; i++) {
             let newDom = document.createElement(tagName);
             let text = getDotVal(data, this.vdom.forObjectKey + "." + i);
             obj[this.vdom.forKey] = text;
-            newDom.innerText = compileTpl(template, obj);
-            for (let n = 0; n < this.vdom.children.length; n++) {
-                newDom.appendChild(this.vdom.children[n].transDOM(Kmv));
+            for (let n = 0; n < template.length; n++) {
+                let newEle;
+                let normalDOM = template[n];
+                switch (normalDOM.nodeType) {
+                    case NodeType.TEXT:
+                        newEle = DomUtil.createTextNode(compileTpl(normalDOM.template, obj));
+                        break;
+                    case NodeType.ELEMENT:
+                        newEle = document.createElement(normalDOM.tagName);
+                        newEle.template = normalDOM.template;
+                        let text = compileTpl(normalDOM.template, obj);
+                        if (normalDOM.children) {
+                            normalDOM.children.forEach((child) => {
+                                newEle.appendChild(child.transDOM(Kmv));
+                            })
+                        } else {
+                            newEle.innerText = text;
+                        }
+                        DomUtil.copyAttr(newEle, normalDOM.attributes, Kmv);
+                        break;
+                }
+                newEle && newDom.appendChild(newEle);
             }
             DomUtil.copyAttr(newDom, this.vdom.attributes, Kmv);
             docFrag.appendChild(newDom);
@@ -90,20 +112,28 @@ export class ForDOM {
     }
     reRenderList (Kmv) {
         let data = Kmv.$data;
-        let start = this.vdom.previousSibling;
-        let end = this.vdom.nextSibling;
+        let startElem = this.vdom.previousSibling;  // 虚拟dom的前一个元素
+        let endElem = this.vdom.nextSibling;
         let index = 0;
         let obj = depCopy(data);
         var template = this.vdom.template;
-        while (start !== end) {
-            start = start.nextSibling
+        while (startElem !== endElem.previousSibling) {
+            startElem = startElem.nextSibling;
             let text = getDotVal(data, this.vdom.forObjectKey + "." + index);
             obj[this.vdom.forKey] = text;
-            text = compileTpl(template, obj);
-            DomUtil.changeNodeValue(start, text);
-            let childrens = start.children || [];
-            for (let i = 0; i < childrens.length; i++) {
-                this.reRenderChild(childrens[i], data);
+            for (let n = 0; n < template.length; n++) {
+                let normalDOM = template[n];
+                let childEle = startElem.childNodes[n];    // 真实dom和虚拟dom是一样个数
+                switch (normalDOM.nodeType) {
+                    case NodeType.TEXT:
+                        DomUtil.changeTextContent(childEle, compileTpl(normalDOM.template, obj));
+                        break;
+                    case NodeType.ELEMENT:
+                        normalDOM.children.forEach((child) => {
+                            child.reRender(Kmv, childEle);
+                        })
+                        break;
+                }
             }
             index ++;
         }
@@ -119,11 +149,33 @@ export class ForDOM {
         let template = this.vdom.template;
         let obj = depCopy(data);
         obj[this.vdom.forKey] = text;
-        elem.innerText = compileTpl(template, obj);
+        for (let n = 0; n < template.length; n++) {
+            let newEle;
+            let normalDOM = template[n];
+            switch (normalDOM.nodeType) {
+                case NodeType.TEXT:
+                    newEle = DomUtil.createTextNode(compileTpl(normalDOM.template, obj));
+                    break;
+                case NodeType.ELEMENT:
+                    newEle = document.createElement(normalDOM.tagName);
+                    newEle.template = normalDOM.template;
+                    let text = compileTpl(normalDOM.template, obj);
+                    if (normalDOM.children) {
+                        normalDOM.children.forEach((child) => {
+                            newEle.appendChild(child.transDOM(Kmv));
+                        })
+                    } else {
+                        newEle.innerText = text;
+                    }
+                    DomUtil.copyAttr(newEle, normalDOM.attributes, Kmv);
+                    break;
+            }
+            newEle && elem.appendChild(newEle);
+        }
         for (let n = 0; n < this.vdom.children.length; n++) {
             elem.appendChild(this.vdom.children[n].transDOM(data));
         }
-        DomUtil.copyAttr(elem, this.vdom.attributes, Kmv);
+        // DomUtil.copyAttr(elem, this.vdom.attributes, Kmv);
         DomUtil.inserBefore(this.vdom.nextSibling, elem);
     }
     popDOM() {

@@ -29,20 +29,13 @@ export class Watcher {
                         let vdom = new VirtualDOM.ForDOM(child);
                         vdom.renderType = RenderType.FOR;
                         this.queue.push(vdom);
-                        child.parentNode.removeChild(child);    // 移除自身元素
+                        continue;       // 转为虚拟dom, 子元素不需要进队
                     } else if (child.getAttribute("k-if")) {
                         child.renderType = RenderType.IF;
                         this.queue.push(child);
-                    } else if (child.getAttribute("k-model")) {
-                        let attrs = child.attributes;
-                        for (let n = 0; n < attrs.length; n++) {
-                            let attr = attrs[n];
-                            if (isKvmAttribute(attr.nodeName, attr.nodeValue)) {
-                                child.renderType = RenderType.INPUT;
-                                this.queue.push(child);
-                                break;
-                            }
-                        }
+                    } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                        child.renderType = RenderType.INPUT;
+                        this.queue.push(child);
                     } else {
                         let attrs = child.attributes;
                         child.nAttr = [];           // 常规属性

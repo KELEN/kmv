@@ -1,2 +1,1124 @@
-!function(e){function t(n){if(r[n])return r[n].exports;var i=r[n]={exports:{},id:n,loaded:!1};return e[n].call(i.exports,i,i.exports,t),i.loaded=!0,i.exports}var r={};return t.m=e,t.c=r,t.p="",t(0)}([function(e,t,r){"use strict";function n(e){var t=e.el,r=document.querySelector(t),n=this;return this.data=e.data,this.flush=!1,this.watchers=new a.Watcher(r),this.$data=o.observer(e.data,this),this.methods=e.methods,setTimeout(function(){i.renderInit(n)},0),this}var i=r(6),o=r(10),a=r(11);window.Kmv=n,Object.defineProperty(t,"__esModule",{value:!0}),t.default=n},function(e,t){"use strict";t.Attr={K_MODEL:"k-model"},t.RegexpStr={brace:/\{\{((?:.|\n)+?)\}\}/,forStatement:/([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+)/,bracket:/\[['|"]?(\w+)['|"]?\]/,isString:/'([^']*)'|"([^\"]*)"/,isParams:/^[^"|^'\d]+.*/,arithmeticOp:/\*|\+|-\//g,inputElement:/INPUT|TEXTAREA/,arrtibuteKey:/k-for|k-model|k-if|k:.*|k-on:(.*)/,kAttribute:/k:(.*)/,kOnAttribute:/k-on:(.*)/,methodAndParam:/([a-zA-Z\d_]+)\((.*)\)/},t.NodeType={ELEMENT:1,ATTRIBUTE:2,TEXT:3,COMMENT:8,DOCUMENT:9},t.ArrayMethod=["push","pop","splice","shift","unshift","sort","reverse"];var r;!function(e){e[e.TEXT=0]="TEXT",e[e.INPUT=1]="INPUT",e[e.TEXTAREA=2]="TEXTAREA",e[e.FOR=3]="FOR",e[e.IF=4]="IF",e[e.ATTRIBUTE=5]="ATTRIBUTE"}(r=t.RenderType||(t.RenderType={}));var n;!function(e){e[e.PUSH=0]="PUSH",e[e.POP=1]="POP",e[e.SORT=2]="SORT",e[e.CHANGE=3]="CHANGE",e[e.SHIFT=4]="SHIFT"}(n=t.ArrayOp||(t.ArrayOp={}))},function(e,t,r){"use strict";var n=r(1);t.getDotVal=function(e,t){var r,i;if(t){t=t.replace(n.RegexpStr.bracket,".$1"),r=e;for(var o=t.split(".")||[t];i=o.shift();){if(!r){r=void 0;break}r=r[i]}}return r},t.depCopy=function(e){var r={};for(var n in e)"object"==typeof e[n]?Array.isArray(e[n])?r[n]=e[n].slice(0):r[n]=t.depCopy(e[n]):r[n]=e[n];return r},t.setObserveDotVal=function(e,t,r){t=t.replace(n.RegexpStr.bracket,".$1");for(var i=e,o=t.split("."),a=o.length,s=0;s<a-1;s++)i=i[o[s]];i[o[a-1]]=r}},function(module,exports,__webpack_require__){"use strict";var constant_1=__webpack_require__(1),object_1=__webpack_require__(2);exports.transArithmeticOp=function(tpl,obj){for(var opReg=constant_1.RegexpStr.arithmeticOp,arr=tpl.split(opReg),opRegArr=tpl.match(opReg),isParamReg=constant_1.RegexpStr.isParams,tmp,newStr="",i=0;i<arr.length;i++){if(tmp=arr[i].trim(),isParamReg.test(tmp)){var val=object_1.getDotVal(obj,tmp);isNaN(val)?newStr+='"'+val+'"':(val||(val=0),newStr+=val)}else newStr+=tmp;i<arr.length-1&&(newStr+=opRegArr[i])}return eval(newStr)},exports.compileTpl=function(e,t){for(var r,n=constant_1.RegexpStr.brace;r=n.exec(e);){var i=r?r[1].trim():"",o=constant_1.RegexpStr.arithmeticOp,a="";a=o.test(i)?exports.transArithmeticOp(i,t):object_1.getDotVal(t,i),e=e.replace(n,a)}return e}},function(e,t,r){"use strict";var n=r(1),i=r(3),o=r(7),a=r(5);t.insertAfter=function(e,t){e&&e.parentNode&&e.parentNode.insertBefore(t,e.nextSibling)},t.inserBefore=function(e,t){e&&e.parentNode&&e.parentNode.insertBefore(t,e)},t.deleteNode=function(e,t){e&&t&&e.removeChild(t)},t.changeNodeValue=function(e,t){e&&e.firstChild&&(e.firstChild.nodeValue=t)},t.removeAttribute=function(e,t){e.removeAttribute(t)},t.findIteratorNode=function(e,r){for(var n=e.childNodes,i=[],o=0;o<n.length;o++){var a=n[o];a.forString&&a.forKey&&a.forKey==r&&i.push(a),a.childNodes.length&&i.concat(t.findIteratorNode(a,r))}return i},t.hideNode=function(e){e.style.display="none"},t.showNode=function(e){e.style.display="block"},t.copyAttr=function(e,t,r){for(var s=r.$data,d=0;d<t.length;d++){var u=t[d],p=u.nodeName,l=u.nodeValue;if(o.isKvmAttribute(p,l)){if(n.RegexpStr.kAttribute.test(p)){var c=u.nodeName.replace(n.RegexpStr.kAttribute,"$1"),v=i.compileTpl(l,s);e.setAttribute(c,v),e.removeAttribute(p)}else if(n.RegexpStr.kOnAttribute.test(p)){var f=p.replace(n.RegexpStr.kOnAttribute,"$1"),h=i.compileTpl(l,s),m=h.match(n.RegexpStr.methodAndParam),g=m[1],b=m[2];a.bindEvent(e,f,g,b,r.methods,r.data),e.removeAttribute(p)}}else e.setAttribute(p,l)}},t.insertNodeByIndex=function(e,r,n){var i=e.tagName,o=0,a=e.groupId,s=e.attributes,d=e.template;if(0==r)e.innerText=n,e.style.display="";else{for(;o<r-1&&e;)e.nextSibling&&e.nextSibling.groupId==a&&o++,e=e.nextSibling;var u=document.createElement(i);u.groupId=a,u.template=d,u.innerText=n;for(var p=0;p<s.length;p++){var l=s[p];switch(l.name){default:u.setAttribute(l.name,l.nodeValue)}}t.insertAfter(e,u)}},t.removeNodeByIndex=function(e,t){var r=(e.tagName,0),n=e.groupId;if(0==t)e.nextSibling.groupId==n?(e.nextSibling.forKey=e.forKey,e.nextSibling.forString=e.forString,e.parentNode.removeChild(e)):(e.style.display="none",e.innerText="");else{for(;r<t&&e;)e.nextSibling&&e.groupId==n&&r++,e=e.nextSibling;e&&e.parentNode.removeChild(e)}},t.replaceNodeByIndex=function(e,t,r){for(var n=0,i=e.groupId;n<t&&e;)e.nextSibling&&e.nextSibling.groupId==i&&n++,e=e.nextSibling;e&&(e.innerText=r)},t.removeNode=function(e){e&&e.parentNode.removeChild(e)}},function(e,t){"use strict";t.bindEvent=function(e,t,r,n,i,o){void 0===n&&(n=""),e.addEventListener?e.addEventListener(t,function(){var e=n.split(",");i[r].apply(o,e)}):e.attachEvent("on"+t,function(){var e=n.split(",");i[r].apply(o,e)})}},function(e,t,r){"use strict";var n=r(3),i=r(1),o=r(2),a=r(9),s=r(4),d=r(5);t.renderInit=function(e){for(var t=e.watchers,r=e.$data,a=e.data,u=t.getQueue(),p=function(t){var p=u[t];switch(p.renderType){case i.RenderType.TEXT:var l=p.template,c=n.compileTpl(l,r);p.nodeValue=c;break;case i.RenderType.INPUT:var v=p.getAttribute("k-model");p.value=o.getDotVal(r,v),p.oninput=function(){o.setObserveDotVal(a,v,this.value)};break;case i.RenderType.FOR:p.renderInit(e);break;case i.RenderType.IF:var f=p.getAttribute("k-if"),h=o.getDotVal(r,f);h?s.showNode(p):s.hideNode(p),p.kIf=f;break;case i.RenderType.ATTRIBUTE:for(var m=p.nAttr,g=p.kAttr,b=p.kOn,y=0;y<g.length;y++){var T=g[y].kAttr.replace(i.RegexpStr.kAttribute,"$1"),A=n.compileTpl(g[y].kAttrVal,r);p.setAttribute(T,A)}for(var S=0;S<b.length;S++){var x=b[S].kEvent.replace(i.RegexpStr.kOnAttribute,"$1"),R=n.compileTpl(b[S].kFunc,r),N=R.match(i.RegexpStr.methodAndParam);if(N){var O=N[1],k=N[2];d.bindEvent(p,x,O,k,e.methods,e.data)}else d.bindEvent(p,x,R,"",e.methods,e.data);s.removeAttribute(p,b[S].kEvent)}for(var E=0;E<m.length;E++){var T=m[E].nAttr.replace(i.RegexpStr.kAttribute,"$1"),I=n.compileTpl(m[E].nAttrVal,r);p.setAttribute(T,I)}}},l=0;l<u.length;l++)p(l)},t.reRender=function(e,t){for(var r=e.watchers.getQueue(),a=e.$data,d=0;d<r.length;d++){var u=r[d];switch(u.renderType){case i.RenderType.TEXT:var p=u.template;u.nodeValue=n.compileTpl(p,a);break;case i.RenderType.FOR:u.reRenderList(e);break;case i.RenderType.IF:var l=u.kIf,c=o.getDotVal(a,l);c?s.showNode(u):s.hideNode(u)}}},t.reRenderFor=function(e,t){for(var r=e.watchers.getQueue(),n=e.$data,s=0;s<r.length;s++){var d=r[s];if(d.renderType==i.RenderType.FOR){var u=d.vdom,p=u.forObjectKey,l=o.getDotVal(n,p),c=a.diff(u.arrayData,l);d.reRender(c,e)}}}},function(e,t,r){"use strict";var n=r(1),i=function(e){return n.RegexpStr.brace.test(e)},o=function(e){return n.RegexpStr.forStatement.test(e)},a={isBraceReg:i,isForStatement:o};t.isKvmAttribute=function(e,t){return n.RegexpStr.arrtibuteKey.test(e)||n.RegexpStr.brace.test(t)},Object.defineProperty(t,"__esModule",{value:!0}),t.default=a},function(e,t,r){"use strict";var n=r(3),i=r(4),o=function(){function e(e){this.vdom={tagName:e.tagName,template:e.firstChild.nodeValue,attributes:e.attributes}}return e.prototype.transDOM=function(e){var t=e.$data,r=document.createElement(this.vdom.tagName);r.template=this.vdom.template;var o=n.compileTpl(this.vdom.template,t);return r.innerText=o,i.copyAttr(r,this.vdom.attributes,e),r},e}();t.NormalDOM=o},function(e,t,r){"use strict";var n=r(1);t.diff=function(e,t){for(var r=[],i=e.length,o=t.length,a=Math.min(i,o),s=0;s<a;s++)e[s]!==t[s]&&r.push({op:n.ArrayOp.CHANGE,index:s,text:t[s]});if(i>o)for(var d=e.slice(o),s=0;s<d.length;s++)r.push({op:n.ArrayOp.POP,index:s+o,text:d[s]});else for(var u=t.slice(i),s=0;s<u.length;s++)r.push({op:n.ArrayOp.PUSH,index:s+a,text:u[s]});return r}},function(e,t,r){"use strict";function n(e,t,r){var n;a.ArrayMethod.forEach(function(i){Object.defineProperty(e,i,{configurable:!1,enumerable:!1,writable:!1,value:function(){Array.prototype[i].apply(s.getDotVal(t.$data,r),arguments),n&&clearTimeout(n),n=setTimeout(function(){o.reRenderFor(t,r)},10)}})})}var i=r(2),o=r(6),a=r(1),s=r(2);t.observer=function(e,r,a){void 0===a&&(a="");var d=i.depCopy(e),u=function(d){var u=a?a+"."+d:d;"object"==typeof e[d]?Array.isArray(e[d])?n(e[d],r,u):t.observer(e[d],r,u):Object.defineProperty(e,d,{set:function(e){i.setObserveDotVal(r.$data,u,e),o.reRender(r,d)},get:function(){return s.getDotVal(r.$data,u)}})};for(var p in e)u(p);return d}},function(e,t,r){"use strict";var n=r(1),i=r(7),o=r(13),a=function(){function e(e){this.queue=[],this.queue=this.queueInit(e)}return e.prototype.getQueue=function(){return this.queue},e.prototype.queueInit=function(e){for(var t=e.childNodes,r=0;r<t.length;r++){var a=t[r];switch(a.nodeType){case n.NodeType.TEXT:var s=a.nodeValue;n.RegexpStr.brace.test(s)&&(a.renderType=n.RenderType.TEXT,a.template=s,this.queue.push(a));break;case n.NodeType.ELEMENT:if(a.getAttribute("k-for")){var d=new o.ForDOM(a);d.renderType=n.RenderType.FOR,this.queue.push(d),a.parentNode.removeChild(a)}else if(a.getAttribute("k-if"))a.renderType=n.RenderType.IF,this.queue.push(a);else if(a.getAttribute("k-model"))for(var u=a.attributes,p=0;p<u.length;p++){var l=u[p];if(i.isKvmAttribute(l.nodeName,l.nodeValue)){a.renderType=n.RenderType.INPUT,this.queue.push(a);break}}else{var u=a.attributes;a.nAttr=[],a.kAttr=[],a.kOn=[];for(var p=0;p<u.length;p++){var l=u[p];i.isKvmAttribute(l.nodeName,l.nodeValue)&&(a.renderType=n.RenderType.ATTRIBUTE,n.RegexpStr.kAttribute.test(l.nodeName)?(a.kAttr.push({kAttr:l.nodeName,kAttrVal:l.nodeValue}),a.removeAttribute(l.nodeName)):n.RegexpStr.kOnAttribute.test(l.nodeName)?a.kOn.push({kEvent:l.nodeName,kFunc:l.nodeValue}):a.nAttr.push({nAttr:l.nodeName,nAttrVal:l.nodeValue}))}a.renderType===n.RenderType.ATTRIBUTE&&this.queue.push(a)}}a.childNodes.length&&this.queue.concat(this.queueInit(a))}return this.queue},e}();t.Watcher=a},function(e,t,r){"use strict";var n=r(4),i=r(2),o=r(3),a=r(1),s=r(1),d=r(8),u=function(){function e(e){var t=e.getAttribute("k-for"),r=a.RegexpStr.forStatement.exec(t),n=e.firstChild&&e.firstChild.nodeValue;if(this.vdom={tagName:e.tagName,forString:t,forObjectKey:r[2].trim(),forKey:r[1].trim(),template:n,previousSibling:e.previousSibling,nextSibling:e.nextSibling,documentFragment:null,children:[],arrayData:[],attributes:e.attributes},this.vdom.attributes.removeNamedItem("k-for"),e.children)for(var i=0;i<e.children.length;i++){var o=new d.NormalDOM(e.children[i]);this.vdom.children.push(o)}this.connect(e.previousElementSibling,e.nextElementSibling)}return e.prototype.getVdom=function(){return this.vdom},e.prototype.renderInit=function(e){for(var t=e.$data,r=this.vdom.tagName,a=this.vdom.template,s=this.vdom.forObjectKey,d=i.getDotVal(t,s),u=document.createDocumentFragment(),p=i.depCopy(t),l=0;l<d.length;l++){var c=document.createElement(r),v=i.getDotVal(t,this.vdom.forObjectKey+"."+l);p[this.vdom.forKey]=v,c.innerText=o.compileTpl(a,p);for(var f=0;f<this.vdom.children.length;f++)c.appendChild(this.vdom.children[f].transDOM(e));n.copyAttr(c,this.vdom.attributes,e),u.appendChild(c)}n.insertAfter(this.vdom.previousSibling,u),this.vdom.arrayData=d.slice(0)},e.prototype.connect=function(e,t){e&&(e.$nextSibling=this.vdom),this.vdom.$nextSibling=t},e.prototype.reRender=function(e,t){for(var r=t.$data,n=0;n<e.length;n++){var o=e[n].op;switch(o){case s.ArrayOp.PUSH:this.pushDOM(t,e[n].index);break;case s.ArrayOp.POP:this.popDOM();break;case s.ArrayOp.CHANGE:var a=i.depCopy(r);this.changeText(a,e[n].index);break;case s.ArrayOp.SHIFT:this.shiftDOM()}}var d=this.vdom.forObjectKey,u=i.getDotVal(r,d);this.vdom.arrayData=u.slice(0)},e.prototype.reRenderList=function(e){for(var t=e.$data,r=this.vdom.previousSibling,a=this.vdom.nextSibling,s=0,d=i.depCopy(t),u=this.vdom.template;r!==a;){r=r.nextSibling;var p=i.getDotVal(t,this.vdom.forObjectKey+"."+s);d[this.vdom.forKey]=p,p=o.compileTpl(u,d),n.changeNodeValue(r,p);for(var l=r.children||[],c=0;c<l.length;c++)this.reRenderChild(l[c],t);s++}},e.prototype.reRenderChild=function(e,t){var r=e.template;e.firstChild.nodeValue=o.compileTpl(r,t)},e.prototype.pushDOM=function(e,t){var r=e.$data,a=document.createElement(this.vdom.tagName),s=i.getDotVal(r,this.vdom.forObjectKey+"."+t),d=this.vdom.template,u=i.depCopy(r);u[this.vdom.forKey]=s,a.innerText=o.compileTpl(d,u);for(var p=0;p<this.vdom.children.length;p++)a.appendChild(this.vdom.children[p].transDOM(r));n.copyAttr(a,this.vdom.attributes,e),n.inserBefore(this.vdom.nextSibling,a)},e.prototype.popDOM=function(){n.deleteNode(this.vdom.nextSibling.parentNode,this.vdom.nextSibling.previousSibling)},e.prototype.shiftDOM=function(){n.deleteNode(this.vdom.previousSibling.parentNode,this.vdom.previousSibling.nextSibling)},e.prototype.changeText=function(e,t){for(var r=this.vdom.previousSibling,o=this.vdom.nextSibling,a=-1;r!=o&&a<t;)r=r.nextSibling,a++;var s=i.getDotVal(e,this.vdom.forObjectKey+"."+a);n.changeNodeValue(r,s)},e}();t.ForDOM=u},function(e,t,r){"use strict";function n(e){for(var r in e)t.hasOwnProperty(r)||(t[r]=e[r])}n(r(12)),n(r(8))}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var render_1 = __webpack_require__(1);
+	var observer_1 = __webpack_require__(9);
+	var watcher_1 = __webpack_require__(10);
+	function Kmv(opts) {
+	    var elSelector = opts['el'];
+	    var elem = document.querySelector(elSelector);
+	    var that = this;
+	    this.data = opts.data;
+	    // 获取需要渲染的dom列表
+	    this.watchers = new watcher_1.Watcher(elem);
+	    // 原始数据
+	    this.$data = observer_1.observer(opts.data, this);
+	    this.methods = opts.methods;
+	    console.log(this.watchers);
+	    render_1.renderInit(that);
+	    return this;
+	}
+	window.Kmv = Kmv;
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = Kmv;
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var template_1 = __webpack_require__(2);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
+	var array_1 = __webpack_require__(5);
+	var DomUtil = __webpack_require__(6);
+	var event_1 = __webpack_require__(8);
+	exports.renderInit = function (Kmv) {
+	    var watcher = Kmv.watchers;
+	    var data = Kmv.$data;
+	    var observeData = Kmv.data;
+	    var renderQueue = watcher.getQueue();
+	    var _loop_1 = function (i) {
+	        var node = renderQueue[i];
+	        switch (node.renderType) {
+	            case constant_1.RenderType.TEXT:
+	                var template = node.template;
+	                var text = template_1.compileTpl(template, data);
+	                node.nodeValue = text;
+	                break;
+	            case constant_1.RenderType.INPUT:
+	                var kModel_1 = node.getAttribute("k-model");
+	                node.value = object_1.getDotVal(data, kModel_1);
+	                node.oninput = function () {
+	                    object_1.setObserveDotVal(observeData, kModel_1, this.value);
+	                };
+	                DomUtil.removeAttribute(node, "k-model");
+	                break;
+	            case constant_1.RenderType.FOR:
+	                node.renderInit(Kmv);
+	                break;
+	            case constant_1.RenderType.IF:
+	                var kIf = node.getAttribute("k-if");
+	                var val = object_1.getDotVal(data, kIf);
+	                if (val) {
+	                    DomUtil.showNode(node);
+	                }
+	                else {
+	                    DomUtil.hideNode(node);
+	                }
+	                node.kIf = kIf;
+	                break;
+	            case constant_1.RenderType.ATTRIBUTE:
+	                var nAttr = node.nAttr;
+	                var kAttr = node.kAttr;
+	                var kOn = node.kOn;
+	                for (var i_1 = 0; i_1 < kAttr.length; i_1++) {
+	                    // k属性
+	                    var attr = kAttr[i_1].kAttr.replace(constant_1.RegexpStr.kAttribute, '$1');
+	                    var val_1 = template_1.compileTpl(kAttr[i_1].kAttrVal, data);
+	                    node.setAttribute(attr, val_1);
+	                }
+	                for (var i_2 = 0; i_2 < kOn.length; i_2++) {
+	                    // k-on事件
+	                    var event_2 = kOn[i_2].kEvent.replace(constant_1.RegexpStr.kOnAttribute, '$1');
+	                    var func = template_1.compileTpl(kOn[i_2].kFunc, data);
+	                    var match = func.match(constant_1.RegexpStr.methodAndParam);
+	                    if (match) {
+	                        // 有参数 k-on:click = say() 或者 k-on:click = say('hello')
+	                        var method = match[1];
+	                        var params = match[2];
+	                        event_1.bindEvent(node, event_2, method, params, Kmv.methods, Kmv.data);
+	                    }
+	                    else {
+	                        event_1.bindEvent(node, event_2, func, '', Kmv.methods, Kmv.data);
+	                    }
+	                    DomUtil.removeAttribute(node, kOn[i_2].kEvent);
+	                }
+	                for (var i_3 = 0; i_3 < nAttr.length; i_3++) {
+	                    // k属性
+	                    var attr = nAttr[i_3].nAttr.replace(constant_1.RegexpStr.kAttribute, '$1');
+	                    var val_2 = template_1.compileTpl(nAttr[i_3].nAttrVal, data);
+	                    node.setAttribute(attr, val_2);
+	                }
+	                break;
+	        }
+	    };
+	    for (var i = 0; i < renderQueue.length; i++) {
+	        _loop_1(i);
+	    }
+	};
+	exports.reRender = function (kmv, key) {
+	    var renderQueue = kmv.watchers.getQueue();
+	    var data = kmv.$data;
+	    for (var i = 0; i < renderQueue.length; i++) {
+	        var node = renderQueue[i];
+	        switch (node.renderType) {
+	            case constant_1.RenderType.TEXT:
+	                var template = node.template;
+	                node.nodeValue = template_1.compileTpl(template, data);
+	                break;
+	            case constant_1.RenderType.FOR:
+	                node.reRenderList(kmv);
+	                break;
+	            case constant_1.RenderType.IF:
+	                var kIf = node.kIf;
+	                var val = object_1.getDotVal(data, kIf);
+	                if (val) {
+	                    DomUtil.showNode(node);
+	                }
+	                else {
+	                    DomUtil.hideNode(node);
+	                }
+	                break;
+	        }
+	    }
+	};
+	exports.reRenderFor = function (kmv, forKey) {
+	    var renderQueue = kmv.watchers.getQueue();
+	    var data = kmv.$data;
+	    for (var i = 0; i < renderQueue.length; i++) {
+	        var node = renderQueue[i];
+	        if (node.renderType == constant_1.RenderType.FOR) {
+	            var vdom = node.vdom;
+	            var arrKey = vdom.forObjectKey;
+	            var newArray = object_1.getDotVal(data, arrKey);
+	            var change = array_1.diff(vdom.arrayData, newArray);
+	            node.reRender(change, kmv);
+	        }
+	    }
+	};
+
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
+	/**
+	 *  转换逻辑操作运算结果
+	 *
+	 */
+	exports.transArithmeticOp = function (tpl, obj) {
+	    var opReg = constant_1.RegexpStr.arithmeticOp;
+	    var arr = tpl.split(opReg); // 符号切分
+	    var opRegArr = tpl.match(opReg);
+	    var isParamReg = constant_1.RegexpStr.isParams;
+	    var tmp;
+	    var newStr = '';
+	    for (var i = 0; i < arr.length; i++) {
+	        tmp = arr[i].trim();
+	        if (isParamReg.test(tmp)) {
+	            // 如果是变量
+	            var val = object_1.getDotVal(obj, tmp);
+	            if (isNaN(val)) {
+	                newStr += '"' + val + '"';
+	            }
+	            else {
+	                if (!val)
+	                    val = 0;
+	                newStr += val;
+	            }
+	        }
+	        else {
+	            newStr += tmp;
+	        }
+	        if (i < arr.length - 1) {
+	            newStr += opRegArr[i];
+	        }
+	    }
+	    return eval(newStr);
+	};
+	exports.compileTpl = function (tpl, obj) {
+	    var braceReg = constant_1.RegexpStr.brace;
+	    var regRes;
+	    while (regRes = braceReg.exec(tpl)) {
+	        var key = regRes ? regRes[1].trim() : ''; // 获取括号的键
+	        var opReg = constant_1.RegexpStr.arithmeticOp; // 是否有操作符
+	        var text = '';
+	        if (opReg.test(key)) {
+	            text = exports.transArithmeticOp(key, obj);
+	        }
+	        else {
+	            text = object_1.getDotVal(obj, key);
+	        }
+	        tpl = tpl.replace(braceReg, text);
+	    }
+	    return tpl;
+	};
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 *   URL:
+	 *   说明:
+	 *   负责人: kelen
+	 *   日期:  1/24 0024.
+	 */
+	exports.Attr = {
+	    K_MODEL: 'k-model'
+	};
+	exports.RegexpStr = {
+	    brace: /\{\{((?:.|\n)+?)\}\}/,
+	    forStatement: /([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+)/,
+	    bracket: /\[['|"]?(\w+)['|"]?\]/,
+	    isString: /'([^']*)'|"([^\"]*)"/,
+	    isParams: /^[^"|^'\d]+.*/,
+	    arithmeticOp: /\*|\+|-\//g,
+	    inputElement: /INPUT|TEXTAREA/,
+	    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
+	    kAttribute: /k:(.*)/,
+	    kOnAttribute: /k-on:(.*)/,
+	    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/
+	};
+	exports.NodeType = {
+	    ELEMENT: 1,
+	    ATTRIBUTE: 2,
+	    TEXT: 3,
+	    COMMENT: 8,
+	    DOCUMENT: 9
+	};
+	exports.ArrayMethod = ['push', 'pop', 'splice', 'shift', 'unshift', 'sort', 'reverse'];
+	var RenderType;
+	(function (RenderType) {
+	    RenderType[RenderType["TEXT"] = 0] = "TEXT";
+	    RenderType[RenderType["INPUT"] = 1] = "INPUT";
+	    RenderType[RenderType["TEXTAREA"] = 2] = "TEXTAREA";
+	    RenderType[RenderType["FOR"] = 3] = "FOR";
+	    RenderType[RenderType["IF"] = 4] = "IF";
+	    RenderType[RenderType["ATTRIBUTE"] = 5] = "ATTRIBUTE";
+	})(RenderType = exports.RenderType || (exports.RenderType = {}));
+	var ArrayOp;
+	(function (ArrayOp) {
+	    ArrayOp[ArrayOp["PUSH"] = 0] = "PUSH";
+	    ArrayOp[ArrayOp["POP"] = 1] = "POP";
+	    ArrayOp[ArrayOp["SORT"] = 2] = "SORT";
+	    ArrayOp[ArrayOp["CHANGE"] = 3] = "CHANGE";
+	    ArrayOp[ArrayOp["SHIFT"] = 4] = "SHIFT";
+	})(ArrayOp = exports.ArrayOp || (exports.ArrayOp = {}));
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(3);
+	exports.getDotVal = function (obj, key) {
+	    var val, k;
+	    if (key) {
+	        key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+	        val = obj;
+	        // 获取对应的dot值
+	        var arr = key.split(".") || [key];
+	        while (k = arr.shift()) {
+	            if (!val) {
+	                val = undefined;
+	                break;
+	            }
+	            val = val[k];
+	        }
+	    }
+	    return val;
+	};
+	exports.depCopy = function (obj) {
+	    var newObj = {};
+	    for (var i in obj) {
+	        if (typeof obj[i] === 'object') {
+	            if (Array.isArray(obj[i])) {
+	                newObj[i] = obj[i].slice(0);
+	            }
+	            else {
+	                newObj[i] = exports.depCopy(obj[i]);
+	            }
+	        }
+	        else {
+	            newObj[i] = obj[i];
+	        }
+	    }
+	    return newObj;
+	};
+	exports.setObserveDotVal = function (observeData, key, val) {
+	    key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+	    var tmp = observeData;
+	    var arr = key.split(".");
+	    var len = arr.length;
+	    for (var i = 0; i < len - 1; i++) {
+	        tmp = tmp[arr[i]];
+	    }
+	    tmp[arr[len - 1]] = val;
+	};
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(3);
+	exports.diff = function (arr1, arr2) {
+	    var change = [];
+	    var len1 = arr1.length, len2 = arr2.length;
+	    var len = Math.min(len1, len2);
+	    for (var i = 0; i < len; i++) {
+	        if (arr1[i] !== arr2[i]) {
+	            change.push({
+	                op: constant_1.ArrayOp.CHANGE,
+	                index: i,
+	                text: arr2[i]
+	            });
+	        }
+	    }
+	    if (len1 > len2) {
+	        var deleteArr = arr1.slice(len2);
+	        for (var i = 0; i < deleteArr.length; i++) {
+	            change.push({
+	                op: constant_1.ArrayOp.POP,
+	                index: i + len2,
+	                text: deleteArr[i]
+	            });
+	        }
+	    }
+	    else {
+	        var addArr = arr2.slice(len1);
+	        for (var i = 0; i < addArr.length; i++) {
+	            change.push({
+	                op: constant_1.ArrayOp.PUSH,
+	                index: i + len,
+	                text: addArr[i]
+	            });
+	        }
+	    }
+	    return change;
+	};
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Created by kelen on 2017/2/6.
+	 */
+	var constant_1 = __webpack_require__(3);
+	var template_1 = __webpack_require__(2);
+	var validator_1 = __webpack_require__(7);
+	var event_1 = __webpack_require__(8);
+	exports.insertAfter = function (node, newNode) {
+	    node && node.parentNode && node.parentNode.insertBefore(newNode, node.nextSibling);
+	};
+	exports.createTextNode = function (text) {
+	    return document.createTextNode(text);
+	};
+	exports.inserBefore = function (node, newNode) {
+	    node && node.parentNode && node.parentNode.insertBefore(newNode, node);
+	};
+	exports.deleteNode = function (parent, node) {
+	    parent && node && parent.removeChild(node);
+	};
+	exports.changeNodeValue = function (node, text) {
+	    node && node.firstChild && (node.firstChild.nodeValue = text);
+	};
+	exports.changeTextContent = function (textNode, text) {
+	    textNode && (textNode.textContent = text);
+	};
+	exports.removeAttribute = function (node, attr) {
+	    node && node.removeAttribute(attr);
+	};
+	exports.findIteratorNode = function (parentNode, key) {
+	    var childrens = parentNode.childNodes;
+	    var iteratorNodes = [];
+	    for (var i = 0; i < childrens.length; i++) {
+	        var node = childrens[i];
+	        if (node.forString && node.forKey && node.forKey == key) {
+	            iteratorNodes.push(node);
+	        }
+	        if (node.childNodes.length) {
+	            iteratorNodes.concat(exports.findIteratorNode(node, key));
+	        }
+	    }
+	    return iteratorNodes;
+	};
+	exports.hideNode = function (node) {
+	    node.style.display = "none";
+	};
+	exports.showNode = function (node) {
+	    node.style.display = "block";
+	};
+	exports.copyAttr = function (node, attribute, Kmv) {
+	    var data = Kmv.$data;
+	    for (var i = 0; i < attribute.length; i++) {
+	        var attr = attribute[i];
+	        var attrName = attr.nodeName, attrVal = attr.nodeValue;
+	        if (validator_1.isKvmAttribute(attrName, attrVal)) {
+	            if (constant_1.RegexpStr.kAttribute.test(attrName)) {
+	                var key = attr.nodeName.replace(constant_1.RegexpStr.kAttribute, '$1');
+	                var val = template_1.compileTpl(attrVal, data);
+	                node.setAttribute(key, val);
+	                node.removeAttribute(attrName);
+	            }
+	            else if (constant_1.RegexpStr.kOnAttribute.test(attrName)) {
+	                var event_2 = attrName.replace(constant_1.RegexpStr.kOnAttribute, '$1');
+	                var func = template_1.compileTpl(attrVal, data);
+	                var match = func.match(constant_1.RegexpStr.methodAndParam);
+	                var method = match[1];
+	                var params = match[2];
+	                event_1.bindEvent(node, event_2, method, params, Kmv.methods, Kmv.data);
+	                node.removeAttribute(attrName);
+	            }
+	        }
+	        else {
+	            node.setAttribute(attrName, attrVal);
+	        }
+	    }
+	};
+	// 新增元素, last最后添加
+	exports.insertNodeByIndex = function (node, index, text) {
+	    var tagName = node.tagName;
+	    var idx = 0; // 第一个下标开始
+	    var groupId = node.groupId;
+	    var attrs = node.attributes;
+	    var template = node.template;
+	    if (index == 0) {
+	        node.innerText = text;
+	        node.style.display = "";
+	    }
+	    else {
+	        while (idx < index - 1 && node) {
+	            if (node.nextSibling && node.nextSibling.groupId == groupId) {
+	                idx++;
+	            }
+	            node = node.nextSibling;
+	        }
+	        var newNode = document.createElement(tagName);
+	        newNode.groupId = groupId;
+	        newNode.template = template;
+	        newNode.innerText = text;
+	        // 父属性
+	        for (var i = 0; i < attrs.length; i++) {
+	            var kv = attrs[i];
+	            switch (kv.name) {
+	                default:
+	                    newNode.setAttribute(kv.name, kv.nodeValue);
+	            }
+	        }
+	        exports.insertAfter(node, newNode);
+	    }
+	};
+	exports.removeNodeByIndex = function (node, index) {
+	    var tagName = node.tagName;
+	    var idx = 0;
+	    var groupId = node.groupId;
+	    // 当下标为1时，重新选举标准
+	    if (index == 0) {
+	        if (node.nextSibling.groupId == groupId) {
+	            node.nextSibling['forKey'] = node.forKey;
+	            node.nextSibling['forString'] = node.forString;
+	            node.parentNode.removeChild(node);
+	        }
+	        else {
+	            node.style.display = 'none';
+	            node.innerText = '';
+	        }
+	    }
+	    else {
+	        while (idx < index && node) {
+	            if (node.nextSibling && node.groupId == groupId) {
+	                idx++;
+	            }
+	            node = node.nextSibling;
+	        }
+	        node && node.parentNode.removeChild(node);
+	    }
+	};
+	exports.replaceNodeByIndex = function (node, index, text) {
+	    var idx = 0;
+	    var groupId = node.groupId;
+	    while (idx < index && node) {
+	        if (node.nextSibling && node.nextSibling.groupId == groupId) {
+	            idx++;
+	        }
+	        node = node.nextSibling;
+	    }
+	    if (node) {
+	        node.innerText = text;
+	    }
+	    else {
+	    }
+	};
+	exports.removeNode = function (node) {
+	    node && node.parentNode.removeChild(node);
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(3);
+	var isBraceReg = function (str) {
+	    return constant_1.RegexpStr.brace.test(str);
+	};
+	/**
+	 *  是否有包含语法
+	 * @param str
+	 */
+	var isForStatement = function (str) {
+	    return constant_1.RegexpStr.forStatement.test(str);
+	};
+	var validator = {
+	    isBraceReg: isBraceReg,
+	    isForStatement: isForStatement
+	};
+	exports.isKvmAttribute = function (key, val) {
+	    return constant_1.RegexpStr.arrtibuteKey.test(key) || constant_1.RegexpStr.brace.test(val);
+	};
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = validator;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	"use strict";
+	exports.bindEvent = function (node, event, method, param, methodsObj, observeData) {
+	    if (param === void 0) { param = ''; }
+	    if (node.addEventListener) {
+	        node.addEventListener(event, function () {
+	            var params = param.split(',');
+	            methodsObj[method].apply(observeData, params);
+	        });
+	    }
+	    else {
+	        node.attachEvent("on" + event, function () {
+	            var params = param.split(',');
+	            methodsObj[method].apply(observeData, params);
+	        });
+	    }
+	};
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var ObjectUtil = __webpack_require__(4);
+	var render_1 = __webpack_require__(1);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
+	/**
+	 *   URL:
+	 *   说明:
+	 *   负责人: kelen
+	 *   日期:  1/24 0024.
+	 */
+	exports.observer = function (obj, kmv, key) {
+	    if (key === void 0) { key = ''; }
+	    var newObj = ObjectUtil.depCopy(obj);
+	    var _loop_1 = function (i) {
+	        var bigKey = key ? key + "." + i : i;
+	        if (typeof obj[i] == 'object') {
+	            if (Array.isArray(obj[i])) {
+	                arrayObserve(obj[i], kmv, bigKey);
+	            }
+	            else {
+	                exports.observer(obj[i], kmv, bigKey);
+	            }
+	        }
+	        else {
+	            Object.defineProperty(obj, i, {
+	                set: function (newVal) {
+	                    ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+	                    render_1.reRender(kmv, i);
+	                },
+	                get: function () {
+	                    return object_1.getDotVal(kmv.$data, bigKey);
+	                }
+	            });
+	        }
+	    };
+	    for (var i in obj) {
+	        _loop_1(i);
+	    }
+	    return newObj;
+	};
+	function arrayObserve(arr, kmv, bigKey) {
+	    var timer;
+	    // 监听array操作
+	    constant_1.ArrayMethod.forEach(function (method) {
+	        Object.defineProperty(arr, method, {
+	            configurable: false,
+	            enumerable: false,
+	            writable: false,
+	            value: function () {
+	                Array.prototype[method].apply(object_1.getDotVal(kmv.$data, bigKey), arguments);
+	                if (timer) {
+	                    clearTimeout(timer);
+	                }
+	                timer = setTimeout(function () {
+	                    render_1.reRenderFor(kmv, bigKey);
+	                }, 10);
+	            }
+	        });
+	    });
+	    /*arr.push = function() {
+	        Array.prototype.push.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey)
+	        }, 10)
+	    }
+	
+	    arr.pop = function () {
+	        Array.prototype.pop.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey)
+	        }, 10)
+	    }
+	
+	    arr.shift = function () {
+	        Array.prototype.shift.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey);
+	        }, 10)
+	    }
+	
+	    arr.unshift = function () {
+	        Array.prototype.unshift.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey)
+	        }, 10)
+	    }
+	
+	    arr.splice = function () {
+	        Array.prototype.splice.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey)
+	        }, 10)
+	    }
+	
+	    arr.sort =function () {
+	        Array.prototype.sort.apply(getDotVal(kmv.$data, bigKey), arguments);
+	        if (timer) {
+	            clearTimeout(timer);
+	        }
+	        timer = setTimeout(function () {
+	            reRenderFor(kmv, bigKey)
+	        }, 10)
+	    };*/
+	}
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(3);
+	var validator_1 = __webpack_require__(7);
+	var VirtualDOM = __webpack_require__(11);
+	var Watcher = (function () {
+	    function Watcher(node) {
+	        this.queue = [];
+	        this.queue = this.queueInit(node);
+	    }
+	    Watcher.prototype.getQueue = function () {
+	        return this.queue;
+	    };
+	    Watcher.prototype.queueInit = function (node) {
+	        var childNodes = node.childNodes;
+	        for (var i = 0; i < childNodes.length; i++) {
+	            var child = childNodes[i];
+	            switch (child.nodeType) {
+	                case constant_1.NodeType.TEXT:
+	                    var nodeValue = child.nodeValue;
+	                    if (constant_1.RegexpStr.brace.test(nodeValue)) {
+	                        child.renderType = constant_1.RenderType.TEXT;
+	                        child.template = nodeValue;
+	                        this.queue.push(child);
+	                    }
+	                    break;
+	                case constant_1.NodeType.ELEMENT:
+	                    if (child.getAttribute("k-for")) {
+	                        // 转为虚拟dom
+	                        var vdom = new VirtualDOM.ForDOM(child);
+	                        vdom.renderType = constant_1.RenderType.FOR;
+	                        this.queue.push(vdom);
+	                        continue; // 转为虚拟dom, 子元素不需要进队
+	                    }
+	                    else if (child.getAttribute("k-if")) {
+	                        child.renderType = constant_1.RenderType.IF;
+	                        this.queue.push(child);
+	                    }
+	                    else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                        child.renderType = constant_1.RenderType.INPUT;
+	                        this.queue.push(child);
+	                    }
+	                    else {
+	                        var attrs = child.attributes;
+	                        child.nAttr = []; // 常规属性
+	                        child.kAttr = []; // k属性
+	                        child.kOn = []; // k-on属性
+	                        for (var n = 0; n < attrs.length; n++) {
+	                            var attr = attrs[n];
+	                            if (validator_1.isKvmAttribute(attr.nodeName, attr.nodeValue)) {
+	                                child.renderType = constant_1.RenderType.ATTRIBUTE;
+	                                if (constant_1.RegexpStr.kAttribute.test(attr.nodeName)) {
+	                                    child.kAttr.push({
+	                                        kAttr: attr.nodeName,
+	                                        kAttrVal: attr.nodeValue
+	                                    });
+	                                    child.removeAttribute(attr.nodeName);
+	                                }
+	                                else if (constant_1.RegexpStr.kOnAttribute.test(attr.nodeName)) {
+	                                    child.kOn.push({
+	                                        kEvent: attr.nodeName,
+	                                        kFunc: attr.nodeValue
+	                                    });
+	                                }
+	                                else {
+	                                    //
+	                                    child.nAttr.push({
+	                                        nAttr: attr.nodeName,
+	                                        nAttrVal: attr.nodeValue
+	                                    });
+	                                }
+	                            }
+	                        }
+	                        if (child.renderType === constant_1.RenderType.ATTRIBUTE)
+	                            this.queue.push(child);
+	                    }
+	                    break;
+	            }
+	            if (child.childNodes.length) {
+	                this.queue.concat(this.queueInit(child));
+	            }
+	        }
+	        return this.queue;
+	    };
+	    return Watcher;
+	}());
+	exports.Watcher = Watcher;
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	function __export(m) {
+	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+	}
+	__export(__webpack_require__(12));
+	__export(__webpack_require__(13));
+
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var DomUtil = __webpack_require__(6);
+	var object_1 = __webpack_require__(4);
+	var template_1 = __webpack_require__(2);
+	var constant_1 = __webpack_require__(3);
+	var constant_2 = __webpack_require__(3);
+	var NormalDOM_1 = __webpack_require__(13);
+	var ForDOM = (function () {
+	    function ForDOM(node) {
+	        var forString = node.getAttribute("k-for");
+	        var match = constant_1.RegexpStr.forStatement.exec(forString);
+	        var template = []; // 模板可能是一个或者文本节点，元素
+	        for (var i = 0; i < node.childNodes.length; i++) {
+	            var childNode = node.childNodes[i];
+	            template.push(new NormalDOM_1.NormalDOM(childNode));
+	        }
+	        this.vdom = {
+	            tagName: node.tagName,
+	            forString: forString,
+	            forObjectKey: match[2].trim(),
+	            forKey: match[1].trim(),
+	            template: template,
+	            previousSibling: node.previousSibling,
+	            nextSibling: node.nextSibling,
+	            nextElementSibling: node.nextElementSibling,
+	            previousElementSibling: node.previousElementSibling,
+	            parentNode: node.parentNode,
+	            children: [],
+	            arrayData: [],
+	            previousVdom: null,
+	            nextVdom: null,
+	            attributes: node.attributes
+	        };
+	        this.vdom.attributes.removeNamedItem("k-for");
+	        DomUtil.removeNode(node); // 需要移除自身元素
+	        this.connect(node.previousElementSibling, node.nextElementSibling);
+	    }
+	    ForDOM.prototype.getVdom = function () {
+	        return this.vdom;
+	    };
+	    ForDOM.prototype.renderInit = function (Kmv) {
+	        var data = Kmv.$data;
+	        var tagName = this.vdom.tagName;
+	        var template = this.vdom.template;
+	        var arrKey = this.vdom.forObjectKey;
+	        var arrayData = object_1.getDotVal(data, arrKey);
+	        var docFrag = document.createDocumentFragment();
+	        var obj = object_1.depCopy(data); // 新的对象, 遍历元素需要
+	        for (var i = 0; i < arrayData.length; i++) {
+	            var newDom = document.createElement(tagName);
+	            var text = object_1.getDotVal(data, this.vdom.forObjectKey + "." + i);
+	            obj[this.vdom.forKey] = text;
+	            var _loop_1 = function (n) {
+	                var newEle;
+	                var normalDOM = template[n];
+	                switch (normalDOM.nodeType) {
+	                    case constant_2.NodeType.TEXT:
+	                        newEle = DomUtil.createTextNode(template_1.compileTpl(normalDOM.template, obj));
+	                        break;
+	                    case constant_2.NodeType.ELEMENT:
+	                        newEle = document.createElement(normalDOM.tagName);
+	                        newEle.template = normalDOM.template;
+	                        var text_1 = template_1.compileTpl(normalDOM.template, obj);
+	                        if (normalDOM.children) {
+	                            normalDOM.children.forEach(function (child) {
+	                                newEle.appendChild(child.transDOM(Kmv));
+	                            });
+	                        }
+	                        else {
+	                            newEle.innerText = text_1;
+	                        }
+	                        DomUtil.copyAttr(newEle, normalDOM.attributes, Kmv);
+	                        break;
+	                }
+	                newEle && newDom.appendChild(newEle);
+	            };
+	            for (var n = 0; n < template.length; n++) {
+	                _loop_1(n);
+	            }
+	            DomUtil.copyAttr(newDom, this.vdom.attributes, Kmv);
+	            docFrag.appendChild(newDom);
+	        }
+	        DomUtil.insertAfter(this.vdom.previousSibling, docFrag);
+	        this.vdom.arrayData = arrayData.slice(0);
+	    };
+	    ForDOM.prototype.connect = function (realPrevDom, realNextDom) {
+	        realPrevDom && (realPrevDom.$nextSibling = this.vdom);
+	        this.vdom.$nextSibling = realNextDom;
+	    };
+	    ForDOM.prototype.reRender = function (change, Kmv) {
+	        var data = Kmv.$data;
+	        for (var i = 0; i < change.length; i++) {
+	            var op = change[i].op;
+	            switch (op) {
+	                case constant_2.ArrayOp.PUSH:
+	                    this.pushDOM(Kmv, change[i].index);
+	                    break;
+	                case constant_2.ArrayOp.POP:
+	                    this.popDOM();
+	                    break;
+	                case constant_2.ArrayOp.CHANGE:
+	                    var obj = object_1.depCopy(data); // 拷贝一份对象
+	                    this.changeText(obj, change[i].index);
+	                    break;
+	                case constant_2.ArrayOp.SHIFT:
+	                    this.shiftDOM();
+	                    break;
+	            }
+	        }
+	        var arrKey = this.vdom.forObjectKey;
+	        var arrayData = object_1.getDotVal(data, arrKey);
+	        this.vdom.arrayData = arrayData.slice(0);
+	    };
+	    ForDOM.prototype.reRenderList = function (Kmv) {
+	        var data = Kmv.$data;
+	        var startElem = this.vdom.previousSibling; // 虚拟dom的前一个元素
+	        var endElem = this.vdom.nextSibling;
+	        var index = 0;
+	        var obj = object_1.depCopy(data);
+	        var template = this.vdom.template;
+	        while (startElem !== endElem.previousSibling) {
+	            startElem = startElem.nextSibling;
+	            var text = object_1.getDotVal(data, this.vdom.forObjectKey + "." + index);
+	            obj[this.vdom.forKey] = text;
+	            var _loop_2 = function (n) {
+	                var normalDOM = template[n];
+	                var childEle = startElem.childNodes[n]; // 真实dom和虚拟dom是一样个数
+	                switch (normalDOM.nodeType) {
+	                    case constant_2.NodeType.TEXT:
+	                        DomUtil.changeTextContent(childEle, template_1.compileTpl(normalDOM.template, obj));
+	                        break;
+	                    case constant_2.NodeType.ELEMENT:
+	                        normalDOM.children.forEach(function (child) {
+	                            child.reRender(Kmv, childEle);
+	                        });
+	                        break;
+	                }
+	            };
+	            for (var n = 0; n < template.length; n++) {
+	                _loop_2(n);
+	            }
+	            index++;
+	        }
+	    };
+	    ForDOM.prototype.reRenderChild = function (node, data) {
+	        var template = node.template;
+	        node.firstChild.nodeValue = template_1.compileTpl(template, data);
+	    };
+	    ForDOM.prototype.pushDOM = function (Kmv, i) {
+	        var data = Kmv.$data;
+	        var elem = document.createElement(this.vdom.tagName);
+	        var text = object_1.getDotVal(data, this.vdom.forObjectKey + "." + i);
+	        var template = this.vdom.template;
+	        var obj = object_1.depCopy(data);
+	        obj[this.vdom.forKey] = text;
+	        var _loop_3 = function (n) {
+	            var newEle;
+	            var normalDOM = template[n];
+	            switch (normalDOM.nodeType) {
+	                case constant_2.NodeType.TEXT:
+	                    newEle = DomUtil.createTextNode(template_1.compileTpl(normalDOM.template, obj));
+	                    break;
+	                case constant_2.NodeType.ELEMENT:
+	                    newEle = document.createElement(normalDOM.tagName);
+	                    newEle.template = normalDOM.template;
+	                    var text_2 = template_1.compileTpl(normalDOM.template, obj);
+	                    if (normalDOM.children) {
+	                        normalDOM.children.forEach(function (child) {
+	                            newEle.appendChild(child.transDOM(Kmv));
+	                        });
+	                    }
+	                    else {
+	                        newEle.innerText = text_2;
+	                    }
+	                    DomUtil.copyAttr(newEle, normalDOM.attributes, Kmv);
+	                    break;
+	            }
+	            newEle && elem.appendChild(newEle);
+	        };
+	        for (var n = 0; n < template.length; n++) {
+	            _loop_3(n);
+	        }
+	        for (var n = 0; n < this.vdom.children.length; n++) {
+	            elem.appendChild(this.vdom.children[n].transDOM(data));
+	        }
+	        // DomUtil.copyAttr(elem, this.vdom.attributes, Kmv);
+	        DomUtil.inserBefore(this.vdom.nextSibling, elem);
+	    };
+	    ForDOM.prototype.popDOM = function () {
+	        DomUtil.deleteNode(this.vdom.nextSibling.parentNode, this.vdom.nextSibling.previousSibling);
+	    };
+	    ForDOM.prototype.shiftDOM = function () {
+	        DomUtil.deleteNode(this.vdom.previousSibling.parentNode, this.vdom.previousSibling.nextSibling);
+	    };
+	    ForDOM.prototype.changeText = function (data, i) {
+	        var start = this.vdom.previousSibling;
+	        var end = this.vdom.nextSibling;
+	        var index = -1;
+	        while (start != end && index < i) {
+	            start = start.nextSibling;
+	            index++;
+	        }
+	        var text = object_1.getDotVal(data, this.vdom.forObjectKey + "." + index);
+	        DomUtil.changeNodeValue(start, text);
+	    };
+	    return ForDOM;
+	}());
+	exports.ForDOM = ForDOM;
+
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var template_1 = __webpack_require__(2);
+	var DomUtil = __webpack_require__(6);
+	var constant_1 = __webpack_require__(3);
+	var NormalDOM = (function () {
+	    function NormalDOM(node) {
+	        this.children = [];
+	        // h3
+	        this.tagName = node.tagName, this.attributes = node.attributes,
+	            this.nodeType = node.nodeType;
+	        switch (node.nodeType) {
+	            case constant_1.NodeType.TEXT:
+	                this.template = node.textContent;
+	                break;
+	            case constant_1.NodeType.ELEMENT:
+	                this.template = node.firstChild.nodeValue;
+	                break;
+	        }
+	        if (node.childNodes) {
+	            for (var i = 0; i < node.childNodes.length; i++) {
+	                var child = node.childNodes[i];
+	                this.children.push(new NormalDOM(child));
+	            }
+	        }
+	    }
+	    NormalDOM.prototype.transDOM = function (Kmv) {
+	        var data = Kmv.$data;
+	        var newEle;
+	        switch (this.nodeType) {
+	            case constant_1.NodeType.TEXT:
+	                newEle = DomUtil.createTextNode(this.tagName);
+	                newEle.textContent = template_1.compileTpl(this.template, data);
+	                break;
+	            case constant_1.NodeType.ELEMENT:
+	                newEle = document.createElement(this.tagName);
+	                newEle.template = this.template;
+	                var text = template_1.compileTpl(this.template, data);
+	                newEle.innerText = text;
+	                DomUtil.copyAttr(newEle, this.attributes, Kmv);
+	                break;
+	        }
+	        return newEle;
+	    };
+	    NormalDOM.prototype.reRender = function (Kmv, parentNode) {
+	        var data = Kmv.$data;
+	        var text = template_1.compileTpl(this.template, data);
+	        switch (this.nodeType) {
+	            case constant_1.NodeType.TEXT:
+	                DomUtil.changeTextContent(parentNode, text);
+	                break;
+	            case constant_1.NodeType.ELEMENT:
+	                // DomUtil.changeNodeValue(this.dom, text)
+	                break;
+	        }
+	    };
+	    return NormalDOM;
+	}());
+	exports.NormalDOM = NormalDOM;
+
+
+/***/ }
+/******/ ]);
 //# sourceMappingURL=bundle.js.map

@@ -10,6 +10,10 @@ export let insertAfter = (node, newNode) => {
     node && node.parentNode && node.parentNode.insertBefore(newNode, node.nextSibling);
 }
 
+export let createTextNode = (text) => {
+    return document.createTextNode(text);
+}
+
 export let inserBefore = (node, newNode) => {
     node && node.parentNode && node.parentNode.insertBefore(newNode, node);
 }
@@ -22,8 +26,12 @@ export let changeNodeValue = (node, text) => {
     node && node.firstChild && (node.firstChild.nodeValue = text);
 }
 
+export let changeTextContent = (textNode, text) => {
+    textNode && (textNode.textContent = text);
+}
+
 export let removeAttribute = (node, attr) => {
-    node.removeAttribute(attr);
+    node && node.removeAttribute(attr);
 }
 
 export let findIteratorNode = (parentNode, key) => {

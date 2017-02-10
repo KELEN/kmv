@@ -8,7 +8,7 @@
 <div id="div1" class="div">
     {{ name }} <h3>{{ name }}</h3>
     <input type="text" k-model="name">
-    <li k-for="i in arr">{{ i + name }}</li>
+    <li k-for="i in arr">{{ i + name }}<h3>555</h3>333</li>
     <button k-on:click="say({{ name }})">click</button>
     <button k-on:click="reverseMessage()">reverse</button>
 </div>

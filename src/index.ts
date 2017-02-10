@@ -9,20 +9,16 @@ function Kmv(opts) {
     let that = this;
 
     this.data = opts.data;
-
-    this.flush = false;
-
+    // 获取需要渲染的dom列表
     this.watchers = new Watcher(elem);
-
+    // 原始数据
     this.$data = observer(opts.data, this);
 
     this.methods = opts.methods;
 
-    // console.log(this.watchers);
-    setTimeout(function() {
-        renderInit(that);
-    }, 0);
+    console.log(this.watchers);
 
+    renderInit(that);
     return this;
 }
 

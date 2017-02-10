@@ -26,6 +26,7 @@ export let renderInit = (Kmv) => {
                 node.oninput = function() {
                     setObserveDotVal(observeData, kModel, this.value);
                 }
+                DomUtil.removeAttribute(node, "k-model");
                 break;
             case RenderType.FOR:
                 node.renderInit(Kmv);

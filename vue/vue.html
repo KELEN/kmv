@@ -6,15 +6,16 @@
 </head>
 <body>
 <div id="div1">
-    {{ message }}
+    <li v-for="i in list">{{ name + i }}<h1> 3433 <span>{{ name }}</span></h1><h2>222</h2>{{ name  }} 555</li>
+    <input v-model="name">
 </div>
 <script src="vue.js"></script>
 <script>
     var vue = new Vue({
         el: "#div1",
         data: {
-            message: "kelen",
-            arr: [1, 3, 4]
+            name: "kelen",
+            list: [ 1, 2 ]
         },
         methods: {
             reverseMessage: function () {
@@ -24,12 +25,9 @@
 
     })
 
-    function add() {
-        for (var i = 0; i < 10; i++) {
-            vue.$data.arr.splice(1, 1, 4);
-        }
-        
-    }
+    /*for (var i = 0; i < 1000; i++) {
+        vue.$data.list.push(Math.random());
+    }*/
 </script>
 </body>
 </html>
