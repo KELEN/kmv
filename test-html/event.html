@@ -6,6 +6,7 @@
 </head>
 <body>
 <div id="div1" class="div">
+    <h3 k-if="show">show</h3>
     <button k-on:click="say({{ name }})">click</button>
 </div>
 <script src="../dist/bundle.js"></script>
@@ -13,11 +14,12 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "kelen"
+            name: "kelen",
+            show: true
         },
         methods: {
             say: function(name) {
-                alert(name);
+                this.show = !this.show;
             }
         }
     });
