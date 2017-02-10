@@ -88,7 +88,7 @@ export let reRender = (kmv, key) => {
                 node.nodeValue = compileTpl(template, data);
                 break;
             case RenderType.FOR:
-                node.reRenderList(data);
+                node.reRenderList(kmv);
                 break;
             case RenderType.IF:
                 let kIf = node.kIf;
@@ -113,7 +113,7 @@ export let reRenderFor = (kmv, forKey) => {
             let arrKey = vdom.forObjectKey;
             let newArray = getDotVal(data, arrKey);
             let change = diff(vdom.arrayData, newArray);
-            node.reRender(change, data);
+            node.reRender(change, kmv);
         }
     }
 }

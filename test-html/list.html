@@ -12,7 +12,7 @@
     <button onclick="shift()">shift</button>
     <button onclick="reverse()">reverse</button>
     <button onclick="sort()">sort</button>
-    <li k-for="i in list">{{ i }}</li>
+    <li k-on:click="add()" k-for="i in list">{{ i }}</li>
     <h3 k-for="obj in list2">{{ obj['a'] }}</h3>
 </div>
 <script src="../dist/bundle.js"></script>

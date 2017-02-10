@@ -60,27 +60,17 @@ export class ForDOM {
         DomUtil.insertAfter(this.vdom.previousSibling, docFrag);
         this.vdom.arrayData = arrayData.slice(0);
     }
-    resolveKAttribute() {
-
-    }
-    removeFor(vdom) {
-        var prev = vdom.previousSibling;
-        var next = vdom.nextSibling;
-        var tmp = prev;
-        while (tmp.nextSibling !== next) {
-            DomUtil.removeNode(tmp.nextSibling);
-        }
-    }
     connect (realPrevDom, realNextDom) {
         realPrevDom && (realPrevDom.$nextSibling = this.vdom);
         this.vdom.$nextSibling = realNextDom;
     }
-    reRender (change, data) {
+    reRender (change, Kmv) {
+        let data = Kmv.$data;
         for (let i = 0; i < change.length; i++) {
             var op = change[i].op;
             switch (op) {
                 case ArrayOp.PUSH:
-                    this.pushDOM(data, change[i].index);
+                    this.pushDOM(Kmv, change[i].index);
                     break;
                 case ArrayOp.POP:
                     this.popDOM();
@@ -98,7 +88,8 @@ export class ForDOM {
         let arrayData = getDotVal(data, arrKey);
         this.vdom.arrayData = arrayData.slice(0);
     }
-    reRenderList (data) {
+    reRenderList (Kmv) {
+        let data = Kmv.$data;
         let start = this.vdom.previousSibling;
         let end = this.vdom.nextSibling;
         let index = 0;
@@ -109,7 +100,7 @@ export class ForDOM {
             let text = getDotVal(data, this.vdom.forObjectKey + "." + index);
             obj[this.vdom.forKey] = text;
             text = compileTpl(template, obj);
-            DomUtil.changeNodeValue(start.firstChild, text);
+            DomUtil.changeNodeValue(start, text);
             let childrens = start.children || [];
             for (let i = 0; i < childrens.length; i++) {
                 this.reRenderChild(childrens[i], data);
@@ -121,7 +112,8 @@ export class ForDOM {
         let template = node.template;
         node.firstChild.nodeValue = compileTpl(template, data);
     }
-    pushDOM(data, i) {
+    pushDOM(Kmv, i) {
+        let data = Kmv.$data;
         let elem = document.createElement(this.vdom.tagName);
         let text = getDotVal(data, this.vdom.forObjectKey + "." + i);
         let template = this.vdom.template;
@@ -131,7 +123,7 @@ export class ForDOM {
         for (let n = 0; n < this.vdom.children.length; n++) {
             elem.appendChild(this.vdom.children[n].transDOM(data));
         }
-        // DomUtil.copyAttr(elem, this.vdom.attributes);
+        DomUtil.copyAttr(elem, this.vdom.attributes, Kmv);
         DomUtil.inserBefore(this.vdom.nextSibling, elem);
     }
     popDOM() {
