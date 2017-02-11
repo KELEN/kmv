@@ -1,6 +1,6 @@
 import { NodeType, RegexpStr, RenderType } from '../constants/constant'
 import { isKvmAttribute } from './validator'
-import * as VirtualDOM from "../vdom/vdom"
+import { ForDOM } from "../vdom/ForDOM"
 
 export class Watcher {
     queue = [];
@@ -26,7 +26,7 @@ export class Watcher {
                 case NodeType.ELEMENT:
                     if (child.getAttribute("k-for")) {
                         // 转为虚拟dom
-                        let vdom = new VirtualDOM.ForDOM(child);
+                        let vdom = new ForDOM(child);
                         vdom.renderType = RenderType.FOR;
                         this.queue.push(vdom);
                         continue;       // 转为虚拟dom, 子元素不需要进队

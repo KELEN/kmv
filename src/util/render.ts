@@ -115,7 +115,7 @@ export let reRenderFor = (kmv, forKey) => {
             let arrKey = vnode.forObjectKey;
             let newArray = getDotVal(data, arrKey);
             let change = diff(vnode.arrayData, newArray);
-            vnode.reRender(change, kmv);
+            vnode.notifyDataChange(change, kmv);
         }
     }
 }

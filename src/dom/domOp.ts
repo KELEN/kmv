@@ -14,6 +14,10 @@ export let createTextNode = (text) => {
     return document.createTextNode(text);
 }
 
+export let createElement = (tagName) => {
+    return document.createElement(tagName);
+}
+
 export let inserBefore = (node, newNode) => {
     node && node.parentNode && node.parentNode.insertBefore(newNode, node);
 }

@@ -189,7 +189,7 @@
 	            var arrKey = vnode.forObjectKey;
 	            var newArray = object_1.getDotVal(data, arrKey);
 	            var change = array_1.diff(vnode.arrayData, newArray);
-	            vnode.reRender(change, kmv);
+	            vnode.notifyDataChange(change, kmv);
 	        }
 	    }
 	};
@@ -421,6 +421,9 @@
 	};
 	exports.createTextNode = function (text) {
 	    return document.createTextNode(text);
+	};
+	exports.createElement = function (tagName) {
+	    return document.createElement(tagName);
 	};
 	exports.inserBefore = function (node, newNode) {
 	    node && node.parentNode && node.parentNode.insertBefore(newNode, node);
@@ -745,7 +748,7 @@
 	"use strict";
 	var constant_1 = __webpack_require__(3);
 	var validator_1 = __webpack_require__(7);
-	var VirtualDOM = __webpack_require__(11);
+	var ForDOM_1 = __webpack_require__(11);
 	var Watcher = (function () {
 	    function Watcher(node) {
 	        this.queue = [];
@@ -770,7 +773,7 @@
 	                case constant_1.NodeType.ELEMENT:
 	                    if (child.getAttribute("k-for")) {
 	                        // 转为虚拟dom
-	                        var vdom = new VirtualDOM.ForDOM(child);
+	                        var vdom = new ForDOM_1.ForDOM(child);
 	                        vdom.renderType = constant_1.RenderType.FOR;
 	                        this.queue.push(vdom);
 	                        continue; // 转为虚拟dom, 子元素不需要进队
@@ -835,11 +838,93 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	function __export(m) {
-	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-	}
-	__export(__webpack_require__(12));
-	__export(__webpack_require__(13));
+	var ForItemDOM_1 = __webpack_require__(12);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
+	var DomOp = __webpack_require__(6);
+	var ForDOM = (function () {
+	    function ForDOM(node) {
+	        this.arrayData = []; // 渲染数据列表
+	        this.childrenVdom = [];
+	        this.previousSibling = node.previousSibling;
+	        this.nextSibling = node.nextSibling;
+	        this.templateNode = node;
+	        this.connect(node.previousElementSibling, node.nextElementSibling);
+	        var forString = node.getAttribute("k-for");
+	        var match = constant_1.RegexpStr.forStatement.exec(forString);
+	        this.tagName = node.tagName;
+	        this.forString = forString;
+	        this.forObjectKey = match[2].trim();
+	        this.forKey = match[1].trim();
+	        DomOp.removeNode(node);
+	    }
+	    ForDOM.prototype.renderInit = function (kmv) {
+	        this.arrayData = object_1.getDotVal(kmv.$data, this.forObjectKey);
+	        var docFrag = document.createDocumentFragment();
+	        for (var i = 0; i < this.arrayData.length; i++) {
+	            var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	            this.childrenVdom.push(forItem);
+	            var forItemDom = forItem.transDOM(this.arrayData[i], this.forKey, kmv);
+	            docFrag.appendChild(forItemDom);
+	        }
+	        this.$dom = docFrag;
+	        DomOp.insertAfter(this.previousSibling, docFrag);
+	        this.connect(this.previousSibling, this.nextSibling);
+	    };
+	    ForDOM.prototype.connect = function (realPrevDom, realNextDom) {
+	        realPrevDom && (realPrevDom.$nextSibling = this);
+	        this.$nextSibling = realNextDom;
+	    };
+	    ForDOM.prototype.reRenderList = function (kmv) {
+	        for (var i = 0; i < this.arrayData.length; i++) {
+	            this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+	        }
+	    };
+	    ForDOM.prototype.notifyDataChange = function (change, kmv) {
+	        var data = kmv.$data;
+	        var arrKey = this.forObjectKey;
+	        var arrayData = object_1.getDotVal(data, arrKey);
+	        this.arrayData = arrayData.slice(0);
+	        for (var i = 0; i < change.length; i++) {
+	            var op = change[i].op;
+	            switch (op) {
+	                case constant_1.ArrayOp.PUSH:
+	                    this.addNewItem(change[i].text, kmv);
+	                    break;
+	                case constant_1.ArrayOp.POP:
+	                    this.popItem();
+	                    break;
+	                case constant_1.ArrayOp.CHANGE:
+	                    var obj = object_1.depCopy(data); // 拷贝一份对象
+	                    this.changeItem(change[i].index, kmv);
+	                    break;
+	                case constant_1.ArrayOp.SHIFT:
+	                    this.shiftItem();
+	                    break;
+	            }
+	        }
+	    };
+	    ForDOM.prototype.addNewItem = function (val, kmv) {
+	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	        var newDom = newItem.transDOM(val, this.forKey, kmv);
+	        this.childrenVdom.push(newItem);
+	        DomOp.inserBefore(this.nextSibling, newDom);
+	    };
+	    ForDOM.prototype.popItem = function () {
+	        var popVdom = this.childrenVdom.pop();
+	        popVdom.$dom && DomOp.removeNode(popVdom.$dom);
+	    };
+	    ForDOM.prototype.changeItem = function (i, kmv) {
+	        this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+	    };
+	    ForDOM.prototype.shiftItem = function () {
+	        var shiftVdom = this.childrenVdom.shift();
+	        this.childrenVdom.shift();
+	        DomOp.removeNode(shiftVdom.$dom);
+	    };
+	    return ForDOM;
+	}());
+	exports.ForDOM = ForDOM;
 
 
 /***/ },
@@ -849,228 +934,40 @@
 	"use strict";
 	var DomUtil = __webpack_require__(6);
 	var object_1 = __webpack_require__(4);
-	var template_1 = __webpack_require__(2);
-	var constant_1 = __webpack_require__(3);
-	var constant_2 = __webpack_require__(3);
 	var NormalDOM_1 = __webpack_require__(13);
-	var ForDOM = (function () {
-	    function ForDOM(node) {
-	        var forString = node.getAttribute("k-for");
-	        var match = constant_1.RegexpStr.forStatement.exec(forString);
-	        var template = ""; // 模板可能是一个或者文本节点，元素
-	        this.tagName = node.tagName;
-	        this.forString = forString;
-	        this.forObjectKey = match[2].trim();
-	        this.forKey = match[1].trim();
-	        this.template = template;
-	        this.previousSibling = node.previousSibling;
-	        this.nextSibling = node.nextSibling;
-	        this.nextElementSibling = node.nextElementSibling;
-	        this.previousElementSibling = node.previousElementSibling;
-	        this.parentNode = node.parentNode;
+	var ForItemDOM = (function () {
+	    function ForItemDOM(node) {
 	        this.childrenVdom = [];
-	        this.arrayData = [];
-	        this.attributes = node.attributes;
 	        for (var i = 0; i < node.childNodes.length; i++) {
 	            var childNode = node.childNodes[i];
 	            this.childrenVdom.push(new NormalDOM_1.NormalDOM(childNode));
 	        }
-	        this.attributes.removeNamedItem("k-for");
-	        DomUtil.removeNode(node); // 需要移除自身元素
-	        this.connect(node.previousElementSibling, node.nextElementSibling);
+	        this.tagName = node.tagName;
+	        this.templateNode = node;
 	    }
-	    ForDOM.prototype.getVdom = function () {
-	        return this;
+	    ForItemDOM.prototype.transDOM = function (iteratorVal, iteratorKey, kmv) {
+	        var data = object_1.depCopy(kmv.$data);
+	        data[iteratorKey] = iteratorVal; // 构建迭代对象 eg: obj.i = 100;
+	        var newElem = DomUtil.createElement(this.tagName);
+	        for (var i = 0; i < this.childrenVdom.length; i++) {
+	            kmv.$$data = data;
+	            newElem.appendChild(this.childrenVdom[i].transDOM(kmv));
+	        }
+	        this.$dom = newElem;
+	        return newElem;
 	    };
-	    ForDOM.prototype.transDOM = function (kmv) {
-	        var _this = this;
-	        var docFrag = document.createDocumentFragment();
+	    // 重新渲染
+	    ForItemDOM.prototype.reRender = function (iteratorVal, iteratorKey, kmv) {
+	        var data = object_1.depCopy(kmv.$data);
+	        data[iteratorKey] = iteratorVal; // 构建迭代对象 eg: obj.i = 100;
+	        kmv.$$data = data;
 	        this.childrenVdom.forEach(function (child) {
-	            switch (child.nodeType) {
-	                case constant_2.NodeType.TEXT:
-	                    var textNode = document.createTextNode(template_1.compileTpl(child.template, kmv.$$data));
-	                    docFrag.appendChild(textNode);
-	                    break;
-	                case constant_2.NodeType.ELEMENT:
-	                    var elemNode_1 = document.createElement(child.tagName);
-	                    elemNode_1.childrenVdom = _this.childrenVdom;
-	                    if (child.childrenVdom) {
-	                        child.childrenVdom.forEach(function (subChild) {
-	                            elemNode_1.appendChild(subChild.transDOM(kmv));
-	                        });
-	                    }
-	                    docFrag.appendChild(elemNode_1);
-	            }
+	            child.reRender(kmv);
 	        });
-	        return docFrag;
 	    };
-	    ForDOM.prototype.renderInit = function (kmv) {
-	        var data = kmv.$data;
-	        var arrKey = this.forObjectKey;
-	        var arrayData = object_1.getDotVal(data, arrKey);
-	        var docFrag = document.createDocumentFragment();
-	        kmv.$$data = object_1.depCopy(data); // 新的对象, 遍历元素需要
-	        for (var i = 0; i < arrayData.length; i++) {
-	            var text = object_1.getDotVal(data, this.forObjectKey + "." + i);
-	            kmv.$$data[this.forKey] = text;
-	            var elem = document.createElement(this.tagName);
-	            elem.childrenVdom = this.childrenVdom;
-	            elem.appendChild(this.transDOM(kmv));
-	            docFrag.appendChild(elem);
-	        }
-	        DomUtil.insertAfter(this.previousSibling, docFrag);
-	        this.arrayData = arrayData.slice(0);
-	    };
-	    ForDOM.prototype.renderChild = function (kmv, normalDOM) {
-	        var _this = this;
-	        var docFrag = document.createDocumentFragment();
-	        if (normalDOM.children) {
-	            normalDOM.children.forEach(function (child) {
-	                console.log(child);
-	                switch (child.nodeType) {
-	                    case constant_2.NodeType.TEXT:
-	                        // 文本节点
-	                        console.log(child.template);
-	                        break;
-	                    case constant_2.NodeType.ELEMENT:
-	                        var newElem = document.createElement(child.tagName);
-	                        console.log(child);
-	                        newElem.appendChild(child.transDOM(kmv));
-	                        if (child.children) {
-	                            newElem.appendChild(_this.renderChild(kmv, child));
-	                        }
-	                        docFrag.appendChild(newElem);
-	                        break;
-	                }
-	            });
-	        }
-	        return docFrag;
-	    };
-	    ForDOM.prototype.connect = function (realPrevDom, realNextDom) {
-	        realPrevDom && (realPrevDom.$nextSibling = this);
-	        this.$nextSibling = realNextDom;
-	    };
-	    ForDOM.prototype.reRender = function (change, kmv) {
-	        var data = kmv.$data;
-	        for (var i = 0; i < change.length; i++) {
-	            var op = change[i].op;
-	            switch (op) {
-	                case constant_2.ArrayOp.PUSH:
-	                    this.pushDOM(kmv, change[i].index);
-	                    break;
-	                case constant_2.ArrayOp.POP:
-	                    this.popDOM();
-	                    break;
-	                case constant_2.ArrayOp.CHANGE:
-	                    var obj = object_1.depCopy(data); // 拷贝一份对象
-	                    this.changeText(obj, change[i].index);
-	                    break;
-	                case constant_2.ArrayOp.SHIFT:
-	                    this.shiftDOM();
-	                    break;
-	            }
-	        }
-	        var arrKey = this.forObjectKey;
-	        var arrayData = object_1.getDotVal(data, arrKey);
-	        this.arrayData = arrayData.slice(0);
-	    };
-	    ForDOM.prototype.reRenderList = function (kmv) {
-	        var data = kmv.$data;
-	        var startElem = this.previousSibling; // 虚拟dom的前一个元素
-	        var endElem = this.nextSibling;
-	        var index = 0;
-	        var obj = object_1.depCopy(data);
-	        var template = this.template;
-	        while (startElem !== endElem.previousSibling) {
-	            // 开始到结束遍历每个节点
-	            startElem = startElem.nextSibling;
-	            var text = object_1.getDotVal(data, this.forObjectKey + "." + index);
-	            obj[this.forKey] = text;
-	            console.dir(startElem);
-	            var _loop_1 = function (n) {
-	                var normalDOM = template[n];
-	                var childEle = startElem.childNodes[n]; // 真实dom和虚拟dom是一样个数
-	                switch (normalDOM.nodeType) {
-	                    case constant_2.NodeType.TEXT:
-	                        DomUtil.changeTextContent(childEle, template_1.compileTpl(normalDOM.template, obj));
-	                        break;
-	                    case constant_2.NodeType.ELEMENT:
-	                        normalDOM.children.forEach(function (child) {
-	                            child.reRender(kmv, childEle);
-	                        });
-	                        break;
-	                }
-	            };
-	            for (var n = 0; n < template.length; n++) {
-	                _loop_1(n);
-	            }
-	            index++;
-	        }
-	    };
-	    ForDOM.prototype.reRenderChild = function (node, data) {
-	        var template = node.template;
-	        node.firstChild.nodeValue = template_1.compileTpl(template, data);
-	    };
-	    ForDOM.prototype.pushDOM = function (kmv, i) {
-	        var data = kmv.$data;
-	        var elem = document.createElement(this.tagName);
-	        var text = object_1.getDotVal(data, this.forObjectKey + "." + i);
-	        var template = this.template;
-	        var obj = object_1.depCopy(data);
-	        obj[this.forKey] = text;
-	        var _loop_2 = function (n) {
-	            var newEle;
-	            var normalDOM = template[n];
-	            switch (normalDOM.nodeType) {
-	                case constant_2.NodeType.TEXT:
-	                    newEle = DomUtil.createTextNode(template_1.compileTpl(normalDOM.template, obj));
-	                    break;
-	                case constant_2.NodeType.ELEMENT:
-	                    newEle = document.createElement(normalDOM.tagName);
-	                    newEle.template = normalDOM.template;
-	                    var text_1 = template_1.compileTpl(normalDOM.template, obj);
-	                    if (normalDOM.children) {
-	                        normalDOM.children.forEach(function (child) {
-	                            newEle.appendChild(child.transDOM(kmv));
-	                        });
-	                    }
-	                    else {
-	                        newEle.innerText = text_1;
-	                    }
-	                    DomUtil.copyAttr(newEle, normalDOM.attributes, kmv);
-	                    break;
-	            }
-	            newEle && elem.appendChild(newEle);
-	        };
-	        for (var n = 0; n < template.length; n++) {
-	            _loop_2(n);
-	        }
-	        /*for (let n = 0; n < this.children.length; n++) {
-	            elem.appendChild(this.children[n].transDOM(data));
-	        }*/
-	        // DomUtil.copyAttr(elem, this.attributes, kmv);
-	        DomUtil.inserBefore(this.nextSibling, elem);
-	    };
-	    ForDOM.prototype.popDOM = function () {
-	        DomUtil.deleteNode(this.nextSibling.parentNode, this.nextSibling.previousSibling);
-	    };
-	    ForDOM.prototype.shiftDOM = function () {
-	        DomUtil.deleteNode(this.previousSibling.parentNode, this.previousSibling.nextSibling);
-	    };
-	    ForDOM.prototype.changeText = function (data, i) {
-	        var start = this.previousSibling;
-	        var end = this.nextSibling;
-	        var index = -1;
-	        while (start != end && index < i) {
-	            start = start.nextSibling;
-	            index++;
-	        }
-	        var text = object_1.getDotVal(data, this.forObjectKey + "." + index);
-	        DomUtil.changeNodeValue(start, text);
-	    };
-	    return ForDOM;
+	    return ForItemDOM;
 	}());
-	exports.ForDOM = ForDOM;
+	exports.ForItemDOM = ForItemDOM;
 
 
 /***/ },
@@ -1109,11 +1006,13 @@
 	            case constant_1.NodeType.TEXT:
 	                newEle = DomUtil.createTextNode(this.tagName);
 	                newEle.textContent = template_1.compileTpl(this.template, data);
+	                this.$dom = newEle;
 	                break;
 	            case constant_1.NodeType.ELEMENT:
 	                newEle = document.createElement(this.tagName);
 	                newEle.template = this.template;
 	                newEle.childrenVdom = this.childrenVdom;
+	                this.$dom = newEle;
 	                DomUtil.copyAttr(newEle, this.attributes, Kmv);
 	                if (this.childrenVdom) {
 	                    this.childrenVdom.forEach(function (child) {
@@ -1124,15 +1023,17 @@
 	        }
 	        return newEle;
 	    };
-	    NormalDOM.prototype.reRender = function (Kmv, parentNode) {
-	        var data = Kmv.$data;
+	    NormalDOM.prototype.reRender = function (kmv) {
+	        var data = kmv.$$data; // $$data迭代的每一个对象
 	        var text = template_1.compileTpl(this.template, data);
 	        switch (this.nodeType) {
 	            case constant_1.NodeType.TEXT:
-	                DomUtil.changeTextContent(parentNode, text);
+	                DomUtil.changeTextContent(this.$dom, text);
 	                break;
 	            case constant_1.NodeType.ELEMENT:
-	                // DomUtil.changeNodeValue(parentNode, text)
+	                this.childrenVdom.forEach(function (child) {
+	                    child.reRender(kmv);
+	                });
 	                break;
 	        }
 	    };

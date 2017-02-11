@@ -6,13 +6,13 @@
 </head>
 <body>
 <div id="div1">
-    <li v-for="i in list">{{ name + i }}<h1> 3433 <span>{{ name }}</span></h1><h2>222</h2>{{ name  }} 555</li>
     <input v-model="name">
+    <li v-for="i in list">{{ name + i }}<h1> 3433 <span>{{ name }}</span></h1><h2>222</h2>{{ name  }} 555</li>
 </div>
 <script src="vue.js"></script>
 <script>
     var a = [];
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 10000; i++) {
         a.push(Math.random());
     }
     var vue = new Vue({

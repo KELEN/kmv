@@ -9,6 +9,7 @@ export class NormalDOM {
     attributes;
     template;
     childrenVdom = [];
+    $dom;       // 联系真实dom
     constructor (node) {
         // h3
         this.tagName = node.tagName, this.attributes = node.attributes,
@@ -35,11 +36,13 @@ export class NormalDOM {
             case NodeType.TEXT:
                 newEle = DomUtil.createTextNode(this.tagName);
                 newEle.textContent = compileTpl(this.template, data);
+                this.$dom = newEle;
                 break;
             case NodeType.ELEMENT:
                 newEle = document.createElement(this.tagName);
                 newEle.template = this.template;
                 newEle.childrenVdom = this.childrenVdom;
+                this.$dom = newEle;
                 DomUtil.copyAttr(newEle, this.attributes, Kmv);
                 if (this.childrenVdom) {
                     this.childrenVdom.forEach((child) => {
@@ -50,15 +53,17 @@ export class NormalDOM {
         }
         return newEle;
     }
-    reRender (Kmv, parentNode) {
-        let data = Kmv.$data;
+    reRender (kmv) {
+        let data = kmv.$$data;  // $$data迭代的每一个对象
         let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
-                DomUtil.changeTextContent(parentNode, text)
+                DomUtil.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
-                // DomUtil.changeNodeValue(parentNode, text)
+                this.childrenVdom.forEach((child) => {
+                    child.reRender(kmv);
+                })
                 break;
         }
     }
