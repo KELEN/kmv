@@ -16,11 +16,6 @@ export let diff = (arr1 = [], arr2 = []) => {
     if (len1 > len2) {
         let deleteArr = arr1.slice(len2);
         // 删除dom
-        /*change.push({
-            batch: true,
-            op: ArrayOp.POP,
-            startIndex: len2,
-        })*/
         for (let i = 0; i < deleteArr.length; i++) {
             change.push({
                 op: ArrayOp.POP,
@@ -35,14 +30,6 @@ export let diff = (arr1 = [], arr2 = []) => {
             op: ArrayOp.PUSH,
             array: addArr
         })
-        /*for (let i = 0; i < addArr.length; i++) {
-            change.push({
-                op: ArrayOp.PUSH,
-                index: i + len,
-                text: addArr[i],
-                batch: true
-            })
-        }*/
     }
     return change;
 }

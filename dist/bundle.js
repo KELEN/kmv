@@ -87,7 +87,6 @@
 	        clearTimeout(kmv.timer);
 	    }
 	    kmv.timer = setTimeout(function () {
-	        console.log("reR");
 	        var renderQueue = kmv.renderQueue.getQueue();
 	        for (var i = 0; i < renderQueue.length; i++) {
 	            var node = renderQueue[i];
@@ -100,7 +99,6 @@
 	        clearTimeout(kmv.forTimer);
 	    }
 	    kmv.forTimer = setTimeout(function () {
-	        console.log("reRenderFor");
 	        var renderQueue = kmv.renderQueue.getQueue();
 	        var data = kmv.$data;
 	        for (var i = 0; i < renderQueue.length; i++) {
@@ -248,11 +246,6 @@
 	    if (len1 > len2) {
 	        var deleteArr = arr1.slice(len2);
 	        // 删除dom
-	        /*change.push({
-	            batch: true,
-	            op: ArrayOp.POP,
-	            startIndex: len2,
-	        })*/
 	        for (var i = 0; i < deleteArr.length; i++) {
 	            change.push({
 	                op: constant_1.ArrayOp.POP,
