@@ -14,12 +14,14 @@ export const RegexpStr = {
     bracket: /\[['|"]?(\w+)['|"]?\]/,   // 中括号
     isString: /'([^']*)'|"([^\"]*)"/,
     isParams: /^[^"|^'\d]+.*/,
-    arithmeticOp: /\*|\+|-\//g,          // 逻辑运算符
+    arithmeticOp: /\*|\+|-\/|\(|\)/g,          // 逻辑运算符
     inputElement: /INPUT|TEXTAREA/,
     arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
     kAttribute: /k:(.*)/,
     kOnAttribute: /k-on:(.*)/,
-    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/
+    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,
+    isTernaryOp: /!.*|!!.*|.+?.+:.+/,
+    ternaryOpSplit: /\?|:|\(|\)|!!/        // 正则切割
 }
 
 export const NodeType = {

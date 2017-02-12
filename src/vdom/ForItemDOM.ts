@@ -1,6 +1,6 @@
 import * as DomUtil from "../dom/domOp"
 import { depCopy } from '../util/object'
-import { NormalDOM } from './NormalDOM'
+import { ForNormalDOM } from './ForNormalDOM'
 
 export class ForItemDOM {
     renderType;
@@ -20,10 +20,11 @@ export class ForItemDOM {
     constructor (node) {
         for (let i = 0; i < node.childNodes.length; i++) {
             let childNode = node.childNodes[i];
-            this.childrenVdom.push(new NormalDOM(childNode));
+            this.childrenVdom.push(new ForNormalDOM(childNode));
         }
         this.tagName = node.tagName;
         this.templateNode = node;
+        this.attributes = node.attributes;
     }
     transDOM(iteratorVal, iteratorKey, kmv) {
         let data = depCopy(kmv.$data);

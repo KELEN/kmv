@@ -6,19 +6,16 @@ function Kmv(opts) {
 
     let elSelector = opts['el'];
     let elem = document.querySelector(elSelector);
-    let that = this;
-
     this.data = opts.data;
     // 获取需要渲染的dom列表
     this.watchers = new Watcher(elem);
     // 原始数据
     this.$data = observer(opts.data, this);
 
-    this.methods = opts.methods;
-
     console.log(this.watchers);
 
-    renderInit(that);
+    this.methods = opts.methods;
+    renderInit(this);
     return this;
 }
 

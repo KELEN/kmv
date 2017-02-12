@@ -1,7 +1,6 @@
 import { ArrayOp } from "../constants/constant"
 
-export let diff = (arr1, arr2) => {
-
+export let diff = (arr1 = [], arr2 = []) => {
     let change = [];
     let len1 = arr1.length, len2 = arr2.length;
     let len = Math.min(len1, len2);
@@ -16,6 +15,12 @@ export let diff = (arr1, arr2) => {
     }
     if (len1 > len2) {
         let deleteArr = arr1.slice(len2);
+        // 删除dom
+        /*change.push({
+            batch: true,
+            op: ArrayOp.POP,
+            startIndex: len2,
+        })*/
         for (let i = 0; i < deleteArr.length; i++) {
             change.push({
                 op: ArrayOp.POP,
@@ -25,13 +30,19 @@ export let diff = (arr1, arr2) => {
         }
     } else {
         let addArr = arr2.slice(len1);
-        for (let i = 0; i < addArr.length; i++) {
+        change.push({
+            batch: true,
+            op: ArrayOp.PUSH,
+            array: addArr
+        })
+        /*for (let i = 0; i < addArr.length; i++) {
             change.push({
                 op: ArrayOp.PUSH,
                 index: i + len,
-                text: addArr[i]
+                text: addArr[i],
+                batch: true
             })
-        }
+        }*/
     }
     return change;
 }

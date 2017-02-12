@@ -7,19 +7,20 @@
 <body>
 <div id="div1" class="div">
     <h3 k-if="show">show</h3>
-    <button k-on:click="say({{ name }})">click</button>
+    {{ name }}
+    <button k-on:click="say()">click</button>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "kelen",
+            name: "Hello Vue.js!",
             show: true
         },
         methods: {
-            say: function(name) {
-                this.show = !this.show;
+            say: function() {
+                this.name = this.name.split('').reverse().join('')
             }
         }
     });

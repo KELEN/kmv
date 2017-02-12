@@ -1,6 +1,6 @@
 import { ForItemDOM } from './ForItemDOM'
 import { RegexpStr, ArrayOp } from '../constants/constant'
-import { getDotVal, depCopy } from "../util/object"
+import { getDotVal } from "../util/object"
 import * as DomOp from "../dom/domOp"
 
 export class ForDOM {
@@ -30,7 +30,7 @@ export class ForDOM {
         DomOp.removeNode(node);
     }
     renderInit(kmv) {
-        this.arrayData = getDotVal(kmv.$data, this.forObjectKey);
+        this.arrayData = getDotVal(kmv.$data, this.forObjectKey).slice(0) || [];
         let docFrag = document.createDocumentFragment();
         for (let i = 0; i < this.arrayData.length; i++) {
             let forItem = new ForItemDOM(this.templateNode);
@@ -54,26 +54,45 @@ export class ForDOM {
     notifyDataChange (change, kmv) {
         let data = kmv.$data;
         let arrKey = this.forObjectKey;
-        let arrayData = getDotVal(data, arrKey);
+        let arrayData = getDotVal(data, arrKey) || [];
         this.arrayData = arrayData.slice(0);
         for (let i = 0; i < change.length; i++) {
             var op = change[i].op;
-            switch (op) {
-                case ArrayOp.PUSH:
-                    this.addNewItem(change[i].text, kmv);
-                    break;
-                case ArrayOp.POP:
-                    this.popItem();
-                    break;
-                case ArrayOp.CHANGE:
-                    let obj = depCopy(data);        // 拷贝一份对象
-                    this.changeItem (change[i].index, kmv)
-                    break
-                case ArrayOp.SHIFT:
-                    this.shiftItem();
-                    break;
+            if (change[i].batch) {
+                switch (op) {
+                    case ArrayOp.PUSH:
+                        this.batchAdd(change[i].array, kmv);
+                        break;
+                }
+            } else {
+                switch (op) {
+                    case ArrayOp.PUSH:
+                        this.addNewItem(change[i].text, kmv);
+                        break;
+                    case ArrayOp.POP:
+                        this.popItem();
+                        break;
+                    case ArrayOp.CHANGE:
+                        this.changeItem (change[i].index, kmv)
+                        break
+                    case ArrayOp.SHIFT:
+                        this.shiftItem();
+                        break;
+                }
             }
         }
+    }
+    batchAdd (arr = [], kmv) {
+        console.time("batchAdd");
+        let docFrag = document.createDocumentFragment();
+        for (var i = 0; i < arr.length; i++) {
+            let newItem = new ForItemDOM(this.templateNode);
+            this.childrenVdom.push(newItem);
+            let newDom = newItem.transDOM(arr[i], this.forKey, kmv);
+            docFrag.appendChild(newDom);
+        }
+        DomOp.inserBefore(this.nextSibling, docFrag);
+        console.timeEnd("batchAdd");
     }
     addNewItem (val, kmv) {
         let newItem = new ForItemDOM(this.templateNode);

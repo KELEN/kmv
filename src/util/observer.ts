@@ -1,8 +1,6 @@
 import * as ObjectUtil from '../util/object'
 import { reRender, reRenderFor } from "./render";
 import { ArrayMethod } from '../constants/constant'
-import * as DomUtil from '../dom/domOp'
-import {compileTpl} from "./template";
 import {getDotVal} from "./object";
 /**
  *   URL:
@@ -56,67 +54,5 @@ function arrayObserve(arr, kmv, bigKey) {
             }
         });
     })
-
-
-
-    /*arr.push = function() {
-        Array.prototype.push.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey)
-        }, 10)
-    }
-
-    arr.pop = function () {
-        Array.prototype.pop.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey)
-        }, 10)
-    }
-
-    arr.shift = function () {
-        Array.prototype.shift.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey);
-        }, 10)
-    }
-
-    arr.unshift = function () {
-        Array.prototype.unshift.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey)
-        }, 10)
-    }
-
-    arr.splice = function () {
-        Array.prototype.splice.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey)
-        }, 10)
-    }
-
-    arr.sort =function () {
-        Array.prototype.sort.apply(getDotVal(kmv.$data, bigKey), arguments);
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            reRenderFor(kmv, bigKey)
-        }, 10)
-    };*/
 }
 

@@ -6,14 +6,13 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <button k-on:click="add()">add</button>
+    <button onclick="add()">add</button>
     <button onclick="splice()">splice</button>
     <button onclick="pop()">pop</button>
     <button onclick="shift()">shift</button>
     <button onclick="reverse()">reverse</button>
     <button onclick="sort()">sort</button>
-    <li k-on:click="add()" k-for="i in list">{{ i }}</li>
-    <h3 k-for="obj in list2">{{ obj['a'] }}</h3>
+    <li click="add()" k-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -21,14 +20,15 @@
         el: '#div1',
         data: {
             list: [ 1, 2, 3, 4, 5 ],
-            list2: [{a: 1}, {a: 3}, {a: 4}]
-        },
-        methods: {
-            add: function() {
-                this.list.push(6);
-            }
         }
     });
+
+    for (var i = 0; i < 1000; i++) {
+        kmv.data.list.push(Math.random());
+    }
+    function add() {
+        kmv.data.list.push(2);
+    }
     function splice() {
         kmv.data.list.splice(1, 1, Math.random())
     }

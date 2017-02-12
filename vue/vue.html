@@ -6,29 +6,25 @@
 </head>
 <body>
 <div id="div1">
-    <input v-model="name">
-    <li v-for="i in list">{{ name + i }}<h1> 3433 <span>{{ name }}</span></h1><h2>222</h2>{{ name  }} 555</li>
+    <li click="add()" v-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
 </div>
 <script src="vue.js"></script>
 <script>
     var a = [];
-    for (var i = 0; i < 10000; i++) {
-        a.push(Math.random());
-    }
     var vue = new Vue({
         el: "#div1",
         data: {
-            name: "kelen",
-            list: a
+            list: [ 1, 2, 3, 4, 5 ],
         },
         methods: {
             reverseMessage: function () {
-                this.message = this.message.split('').reverse().join('')
             }
         }
-
     })
 
+    for (var i = 0; i < 100; i++) {
+        vue.$data.list.push(Math.random());
+    }
     /*for (var i = 0; i < 1000; i++) {
         vue.$data.list.push(Math.random());
     }*/
