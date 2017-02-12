@@ -6,12 +6,10 @@
 </head>
 <body>
 <div id="div1" class="div">
-    {{ "hello world" }} {{　name　}} <h3>{{　name　}} fuck <span> {{ name }} </span></h3>
     <input type="text" k-model="name">
 </div>
 <script src="./dist/bundle.js"></script>
 <script>
-
     var kmv = new Kmv({
         el: '#div1',
         data: {
@@ -20,6 +18,10 @@
             obj: { a:1 }
         }
     });
+
+    for　(var i = 0; i < 1000; i++) {
+        kmv.data.name = Math.random();
+    }
 
     var people = {
         "programmers": [{

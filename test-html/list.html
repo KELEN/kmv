@@ -12,6 +12,7 @@
     <button onclick="shift()">shift</button>
     <button onclick="reverse()">reverse</button>
     <button onclick="sort()">sort</button>
+    {{ name }}
     <li click="add()" k-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
 </div>
 <script src="../dist/bundle.js"></script>
@@ -19,12 +20,14 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
+            name: '',
             list: [ 1, 2, 3, 4, 5 ],
         }
     });
 
-    for (var i = 0; i < 1000; i++) {
+    for (var i = 0; i < 10000; i++) {
         kmv.data.list.push(Math.random());
+        kmv.data.name  = Math.random();
     }
     function add() {
         kmv.data.list.push(2);

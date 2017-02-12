@@ -29,16 +29,7 @@ export class InputDOM {
     }
     reRender (kmv) {
         let data = kmv.$data;
-        let text = compileTpl(this.template, data);
-        switch (this.nodeType) {
-            case NodeType.TEXT:
-                DomUtil.changeTextContent(this.$dom, text)
-                break;
-            case NodeType.ELEMENT:
-                this.childrenVdom.forEach((child) => {
-                    child.reRender(kmv);
-                })
-                break;
-        }
+        let text = getDotVal(data, this.kmodel);
+        this.$dom.value = text;
     }
 }

@@ -6,10 +6,8 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <a k:href="{{ url }}">百度</a>
-    <button href="{{ url }}" title="{{ title }}" >百度</button>
-
-    <h3 k-if="url">show</h3>
+    <input k-model="title"/>
+    <h3 k-if="url">333</h3>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -18,6 +16,13 @@
         data: {
             title: "this is baidu",
             url: true
+        },
+        watch: {
+            title: function(newVal) {
+                var str = newVal + " hello";
+                this.title += str;
+                this.url = !this.url;
+            }
         }
     });
 </script>

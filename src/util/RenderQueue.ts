@@ -1,10 +1,10 @@
 import { NodeType, RegexpStr, RenderType } from '../constants/constant'
-import { isKvmAttribute } from './validator'
 import { ForDOM } from "../vdom/ForDOM"
 import {NormalDOM} from "../vdom/NormalDOM";
 import {InputDOM} from "../vdom/InputDOM";
+import {IfDOM} from "../vdom/IfDOM";
 
-export class Watcher {
+export class RenderQueue {
     queue = [];
     constructor(node) {
         this.queue = this.queueInit(node);
@@ -25,6 +25,8 @@ export class Watcher {
                         this.queue.push(new ForDOM(child));
                     } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                         this.queue.push(new InputDOM(child));
+                    } else if (child.getAttribute("k-if")) {
+                        this.queue.push(new IfDOM(child));
                     } else {
                         this.queue.push(new NormalDOM(child));
                     }

@@ -1,5 +1,5 @@
 import { ForItemDOM } from './ForItemDOM'
-import { RegexpStr, ArrayOp } from '../constants/constant'
+import {RegexpStr, ArrayOp, RenderType} from '../constants/constant'
 import { getDotVal } from "../util/object"
 import * as DomOp from "../dom/domOp"
 
@@ -10,7 +10,7 @@ export class ForDOM {
     templateNode;       // 模板节点
     childrenVdom = [];
     $nextSibling;
-    renderType;
+    renderType = RenderType.FOR;
     forString;      // i in arr
     forObjectKey;   // arr
     forKey;         // i
@@ -46,7 +46,7 @@ export class ForDOM {
         realPrevDom && (realPrevDom.$nextSibling = this);
         this.$nextSibling = realNextDom;
     }
-    reRenderList (kmv) {
+    reRender (kmv) {
         for (let i = 0; i < this.arrayData.length; i++) {
             this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
         }

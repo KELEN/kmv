@@ -1,6 +1,6 @@
 import { renderInit } from './util/render'
 import { observer } from './util/observer'
-import { Watcher } from "./util/watcher"
+import { RenderQueue } from "./util/RenderQueue"
 
 function Kmv(opts) {
 
@@ -8,11 +8,10 @@ function Kmv(opts) {
     let elem = document.querySelector(elSelector);
     this.data = opts.data;
     // 获取需要渲染的dom列表
-    this.watchers = new Watcher(elem);
+    this.renderQueue = new RenderQueue(elem);
     // 原始数据
     this.$data = observer(opts.data, this);
-
-    console.log(this.watchers);
+    this.watch = opts.watch;
 
     this.methods = opts.methods;
     renderInit(this);

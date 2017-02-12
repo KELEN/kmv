@@ -15,12 +15,16 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "Hello Vue.js!",
+            name: "Hello kmv.js!",
             show: true
         },
         methods: {
             say: function() {
                 this.name = this.name.split('').reverse().join('')
+                kmv.methods.log();
+            },
+            log: function () {
+                console.log("fuck");
             }
         }
     });
