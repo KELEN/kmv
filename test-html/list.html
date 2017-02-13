@@ -14,6 +14,7 @@
     <button onclick="sort()">sort</button>
     {{ name }}
     <li click="add()" k-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
+    <li k-for="i in obj">{{ i + "name" }}</li>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -22,10 +23,17 @@
         data: {
             name: '',
             list: [ 1, 2, 3, 4, 5 ],
+            obj: {
+                a: 1,
+                b: 2
+            }
         }
     });
+    /*for (var i = 0; i < 10000; i++) {
+        kmv.data.list.push(Math.random());
+    }*/
     function add() {
-        kmv.data.list.push(2);
+        kmv.data.obj.b = Math.random();
     }
     function splice() {
         kmv.data.list.splice(1, 1, Math.random())
@@ -40,7 +48,7 @@
         kmv.data.list.reverse();
     }
     function sort() {
-        kmv.data.list.sort(3);
+        kmv.data.list.sort();
     }
 </script>
 </body>

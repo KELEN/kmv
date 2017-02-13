@@ -19,9 +19,9 @@
         }
     });
 
-    for　(var i = 0; i < 1000; i++) {
-        kmv.data.name = Math.random();
-    }
+    setTimeout(function() {
+        kmv.data.name = "time out";
+    }, 1000)
 
     var people = {
         "programmers": [{

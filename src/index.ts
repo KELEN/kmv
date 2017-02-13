@@ -11,10 +11,12 @@ function Kmv(opts) {
     this.renderQueue = new RenderQueue(elem);
     // 原始数据
     this.$data = observer(opts.data, this);
-    this.watch = opts.watch;
+    this.watch = opts.watch || {};
 
     this.pendingValue = false;
     this.pendingArray = false;
+
+    this.circle = {};
 
     this.changeQueue = [];
 

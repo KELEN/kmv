@@ -8,6 +8,7 @@
 <div id="div1" class="div">
     <input k-model="title"/>
     <h3 k-if="url">333</h3>
+    <h1>{{ fullName }}</h1>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -15,14 +16,14 @@
         el: '#div1',
         data: {
             title: "this is baidu",
+            name: "kelen",
+            fullName: "hello",
             url: true
         },
         watch: {
             title: function(newVal) {
-                var str = newVal + " hello";
-                this.title += str;
-                this.url = !this.url;
-            }
+                this.fullName = this.name + this.title;
+            },
         }
     });
 </script>

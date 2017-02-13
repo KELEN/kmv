@@ -56,9 +56,10 @@
 	    this.renderQueue = new RenderQueue_1.RenderQueue(elem);
 	    // 原始数据
 	    this.$data = observer_1.observer(opts.data, this);
-	    this.watch = opts.watch;
+	    this.watch = opts.watch || {};
 	    this.pendingValue = false;
 	    this.pendingArray = false;
+	    this.circle = {};
 	    this.changeQueue = [];
 	    this.methods = opts.methods;
 	    render_1.renderInit(this);
@@ -87,7 +88,7 @@
 	    exports.nextTick(kmv);
 	};
 	exports.nextTick = function (kmv) {
-	    var timer = setTimeout(function () {
+	    setTimeout(function () {
 	        if (kmv.pendingValue) {
 	            console.log("reRender");
 	            kmv.pendingValue = false;
@@ -107,16 +108,6 @@
 	    }, 0);
 	};
 	exports.reRender = function (kmv, key) {
-	    /*if (kmv.timer) {
-	        clearTimeout(kmv.timer);
-	    }
-	    kmv.timer = setTimeout(() => {
-	        let renderQueue = kmv.renderQueue.getQueue();
-	        for (let i = 0; i < renderQueue.length; i++) {
-	            let node = renderQueue[i];
-	            node.reRender(kmv);
-	        }
-	    }, 0);*/
 	    var renderQueue = kmv.renderQueue.getQueue();
 	    for (var i = 0; i < renderQueue.length; i++) {
 	        var node = renderQueue[i];
@@ -124,24 +115,6 @@
 	    }
 	};
 	exports.reRenderFor = function (kmv, forKey) {
-	    /*if (kmv.forTimer) {
-	        clearTimeout(kmv.forTimer);
-	    }
-	    kmv.forTimer = setTimeout(function () {
-	        let renderQueue = kmv.renderQueue.getQueue();
-	        let data = kmv.$data;
-	        for (let i = 0; i < renderQueue.length; i++) {
-	            let vnode = renderQueue[i];
-	            if (vnode.renderType == RenderType.FOR) {
-	                console.time("renderFor");
-	                let arrKey = vnode.forObjectKey;
-	                let newArray = getDotVal(data, arrKey);
-	                let change = diff(vnode.arrayData, newArray);
-	                vnode.notifyDataChange(change, kmv);
-	                console.timeEnd("renderFor");
-	            }
-	        }
-	    },0);*/
 	    var renderQueue = kmv.renderQueue.getQueue();
 	    var data = kmv.$data;
 	    for (var i = 0; i < renderQueue.length; i++) {
@@ -149,9 +122,13 @@
 	        if (vnode.renderType == constant_1.RenderType.FOR) {
 	            var arrKey = vnode.forObjectKey;
 	            var newArray = object_1.getDotVal(data, arrKey);
-	            var change = array_1.diff(vnode.arrayData, newArray);
-	            vnode.notifyDataChange(change, kmv);
-	            console.timeEnd("renderFor");
+	            if (Array.isArray(newArray)) {
+	                var change = array_1.diff(vnode.iteratorData, newArray);
+	                vnode.notifyDataChange(change, kmv);
+	            }
+	            else {
+	                vnode.notifyDataChange(null, kmv);
+	            }
 	        }
 	    }
 	};
@@ -345,7 +322,7 @@
 	                        kmv: kmv,
 	                        bigKey: bigKey
 	                    });
-	                    // reRender(kmv, i);
+	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
 	                },
 	                get: function () {
 	                    return object_1.getDotVal(kmv.$data, bigKey);
@@ -439,7 +416,6 @@
 	var DomOp = __webpack_require__(9);
 	var ForDOM = (function () {
 	    function ForDOM(node) {
-	        this.arrayData = []; // 渲染数据列表
 	        this.childrenVdom = [];
 	        this.renderType = constant_1.RenderType.FOR;
 	        this.previousSibling = node.previousSibling;
@@ -455,16 +431,28 @@
 	        DomOp.removeNode(node);
 	    }
 	    ForDOM.prototype.renderInit = function (kmv) {
-	        this.arrayData = object_1.getDotVal(kmv.$data, this.forObjectKey).slice(0) || [];
+	        var iteratorData = object_1.getDotVal(kmv.$data, this.forObjectKey);
 	        var docFrag = document.createDocumentFragment();
-	        for (var i = 0; i < this.arrayData.length; i++) {
-	            var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
-	            this.childrenVdom.push(forItem);
-	            var forItemDom = forItem.transDOM(this.arrayData[i], this.forKey, kmv);
-	            docFrag.appendChild(forItemDom);
+	        if (Array.isArray(iteratorData)) {
+	            this.iteratorData = iteratorData.slice(0);
+	            for (var i = 0; i < this.iteratorData.length; i++) {
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	                this.childrenVdom.push(forItem);
+	                var forItemDom = forItem.transDOM(this.iteratorData[i], this.forKey, kmv);
+	                docFrag.appendChild(forItemDom);
+	            }
+	            DomOp.insertAfter(this.previousSibling, docFrag);
 	        }
-	        this.$dom = docFrag;
-	        DomOp.insertAfter(this.previousSibling, docFrag);
+	        else if (typeof iteratorData === 'object') {
+	            this.iteratorData = iteratorData;
+	            for (var i in iteratorData) {
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	                this.childrenVdom.push(forItem);
+	                var forItemDom = forItem.transDOM(iteratorData[i], this.forKey, kmv);
+	                docFrag.appendChild(forItemDom);
+	            }
+	            DomOp.insertAfter(this.previousSibling, docFrag);
+	        }
 	        this.connect(this.previousSibling, this.nextSibling);
 	    };
 	    ForDOM.prototype.connect = function (realPrevDom, realNextDom) {
@@ -472,38 +460,50 @@
 	        this.$nextSibling = realNextDom;
 	    };
 	    ForDOM.prototype.reRender = function (kmv) {
-	        for (var i = 0; i < this.arrayData.length; i++) {
-	            this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+	        if (Array.isArray(this.iteratorData)) {
+	            for (var i = 0, len = this.iteratorData.length; i < len; i++) {
+	                this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+	            }
+	        }
+	        else {
+	            // 渲染对象
+	            var idx = 0;
+	            for (var key in this.iteratorData) {
+	                this.childrenVdom[idx].reRender(this.iteratorData[key], this.forKey, kmv);
+	                idx++;
+	            }
 	        }
 	    };
 	    ForDOM.prototype.notifyDataChange = function (change, kmv) {
 	        var data = kmv.$data;
 	        var arrKey = this.forObjectKey;
 	        var arrayData = object_1.getDotVal(data, arrKey) || [];
-	        this.arrayData = arrayData.slice(0);
-	        for (var i = 0; i < change.length; i++) {
-	            var op = change[i].op;
-	            if (change[i].batch) {
-	                switch (op) {
-	                    case constant_1.ArrayOp.PUSH:
-	                        this.batchAdd(change[i].array, kmv);
-	                        break;
+	        if (Array.isArray(this.iteratorData)) {
+	            this.iteratorData = arrayData.slice(0);
+	            for (var i = 0; i < change.length; i++) {
+	                var op = change[i].op;
+	                if (change[i].batch) {
+	                    switch (op) {
+	                        case constant_1.ArrayOp.PUSH:
+	                            this.batchAdd(change[i].array, kmv);
+	                            break;
+	                    }
 	                }
-	            }
-	            else {
-	                switch (op) {
-	                    case constant_1.ArrayOp.PUSH:
-	                        this.addNewItem(change[i].text, kmv);
-	                        break;
-	                    case constant_1.ArrayOp.POP:
-	                        this.popItem();
-	                        break;
-	                    case constant_1.ArrayOp.CHANGE:
-	                        this.changeItem(change[i].index, kmv);
-	                        break;
-	                    case constant_1.ArrayOp.SHIFT:
-	                        this.shiftItem();
-	                        break;
+	                else {
+	                    switch (op) {
+	                        case constant_1.ArrayOp.PUSH:
+	                            this.addNewItem(change[i].text, kmv);
+	                            break;
+	                        case constant_1.ArrayOp.POP:
+	                            this.popItem();
+	                            break;
+	                        case constant_1.ArrayOp.CHANGE:
+	                            this.changeItem(change[i].index, kmv);
+	                            break;
+	                        case constant_1.ArrayOp.SHIFT:
+	                            this.shiftItem();
+	                            break;
+	                    }
 	                }
 	            }
 	        }
@@ -511,15 +511,13 @@
 	    ForDOM.prototype.batchAdd = function (arr, kmv) {
 	        if (arr === void 0) { arr = []; }
 	        var docFrag = document.createDocumentFragment();
-	        console.time("batchAdd");
-	        for (var i = 0; i < arr.length; i++) {
+	        for (var i = 0, len = arr.length; i < len; i++) {
 	            var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
 	            this.childrenVdom.push(newItem);
 	            var newDom = newItem.transDOM(arr[i], this.forKey, kmv);
 	            docFrag.appendChild(newDom);
 	        }
 	        DomOp.inserBefore(this.nextSibling, docFrag);
-	        console.timeEnd("batchAdd");
 	    };
 	    ForDOM.prototype.addNewItem = function (val, kmv) {
 	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
@@ -532,7 +530,7 @@
 	        popVdom.$dom && DomOp.removeNode(popVdom.$dom);
 	    };
 	    ForDOM.prototype.changeItem = function (i, kmv) {
-	        this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+	        this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
 	    };
 	    ForDOM.prototype.shiftItem = function () {
 	        var shiftVdom = this.childrenVdom.shift();

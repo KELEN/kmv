@@ -4,7 +4,6 @@ import { getDotVal } from "../util/object"
 import * as DomOp from "../dom/domOp"
 
 export class ForDOM {
-    arrayData = [];          // 渲染数据列表
     previousSibling;    // 前一个元素
     nextSibling;        // 后一个元素
     templateNode;       // 模板节点
@@ -15,6 +14,7 @@ export class ForDOM {
     forObjectKey;   // arr
     forKey;         // i
     tagName;
+    iteratorData;
     $dom;           // 对应的真实dom
     constructor (node) {
         this.previousSibling = node.previousSibling;
@@ -30,16 +30,27 @@ export class ForDOM {
         DomOp.removeNode(node);
     }
     renderInit(kmv) {
-        this.arrayData = getDotVal(kmv.$data, this.forObjectKey).slice(0) || [];
+        let iteratorData = getDotVal(kmv.$data, this.forObjectKey);
         let docFrag = document.createDocumentFragment();
-        for (let i = 0; i < this.arrayData.length; i++) {
-            let forItem = new ForItemDOM(this.templateNode);
-            this.childrenVdom.push(forItem);
-            let forItemDom = forItem.transDOM(this.arrayData[i], this.forKey, kmv);
-            docFrag.appendChild(forItemDom);
+        if (Array.isArray(iteratorData)) {
+            this.iteratorData = iteratorData.slice(0);
+            for (let i = 0; i < this.iteratorData.length; i++) {
+                let forItem = new ForItemDOM(this.templateNode);
+                this.childrenVdom.push(forItem);
+                let forItemDom = forItem.transDOM(this.iteratorData[i], this.forKey, kmv);
+                docFrag.appendChild(forItemDom);
+            }
+            DomOp.insertAfter(this.previousSibling, docFrag);
+        } else if (typeof iteratorData === 'object') {
+            this.iteratorData = iteratorData;
+            for (let i in iteratorData) {
+                let forItem = new ForItemDOM(this.templateNode);
+                this.childrenVdom.push(forItem);
+                let forItemDom = forItem.transDOM(iteratorData[i], this.forKey, kmv);
+                docFrag.appendChild(forItemDom);
+            }
+            DomOp.insertAfter(this.previousSibling, docFrag);
         }
-        this.$dom = docFrag;
-        DomOp.insertAfter(this.previousSibling, docFrag);
         this.connect(this.previousSibling, this.nextSibling);
     }
     connect (realPrevDom, realNextDom) {
@@ -47,52 +58,61 @@ export class ForDOM {
         this.$nextSibling = realNextDom;
     }
     reRender (kmv) {
-        for (let i = 0; i < this.arrayData.length; i++) {
-            this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+        if (Array.isArray(this.iteratorData)) {
+            for (let i = 0, len = this.iteratorData.length; i < len; i++) {
+                this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+            }
+        } else {
+            // 渲染对象
+            let idx = 0;
+            for (let key in this.iteratorData) {
+                this.childrenVdom[idx].reRender(this.iteratorData[key], this.forKey, kmv);
+                idx++;
+            }
         }
     }
     notifyDataChange (change, kmv) {
         let data = kmv.$data;
         let arrKey = this.forObjectKey;
         let arrayData = getDotVal(data, arrKey) || [];
-        this.arrayData = arrayData.slice(0);
-        for (let i = 0; i < change.length; i++) {
-            var op = change[i].op;
-            if (change[i].batch) {
-                switch (op) {
-                    case ArrayOp.PUSH:
-                        this.batchAdd(change[i].array, kmv);
-                        break;
-                }
-            } else {
-                switch (op) {
-                    case ArrayOp.PUSH:
-                        this.addNewItem(change[i].text, kmv);
-                        break;
-                    case ArrayOp.POP:
-                        this.popItem();
-                        break;
-                    case ArrayOp.CHANGE:
-                        this.changeItem (change[i].index, kmv)
-                        break
-                    case ArrayOp.SHIFT:
-                        this.shiftItem();
-                        break;
+        if (Array.isArray(this.iteratorData)) {
+            this.iteratorData = arrayData.slice(0);
+            for (let i = 0; i < change.length; i++) {
+                var op = change[i].op;
+                if (change[i].batch) {
+                    switch (op) {
+                        case ArrayOp.PUSH:
+                            this.batchAdd(change[i].array, kmv);
+                            break;
+                    }
+                } else {
+                    switch (op) {
+                        case ArrayOp.PUSH:
+                            this.addNewItem(change[i].text, kmv);
+                            break;
+                        case ArrayOp.POP:
+                            this.popItem();
+                            break;
+                        case ArrayOp.CHANGE:
+                            this.changeItem (change[i].index, kmv)
+                            break
+                        case ArrayOp.SHIFT:
+                            this.shiftItem();
+                            break;
+                    }
                 }
             }
         }
     }
     batchAdd (arr = [], kmv) {
         let docFrag = document.createDocumentFragment();
-        console.time("batchAdd");
-        for (var i = 0; i < arr.length; i++) {
+        for (var i = 0, len = arr.length; i < len; i++) {
             let newItem = new ForItemDOM(this.templateNode);
             this.childrenVdom.push(newItem);
             let newDom = newItem.transDOM(arr[i], this.forKey, kmv);
             docFrag.appendChild(newDom);
         }
         DomOp.inserBefore(this.nextSibling, docFrag);
-        console.timeEnd("batchAdd");
     }
     addNewItem (val, kmv) {
         let newItem = new ForItemDOM(this.templateNode);
@@ -105,7 +125,7 @@ export class ForDOM {
         popVdom.$dom && DomOp.removeNode(popVdom.$dom);
     }
     changeItem (i, kmv) {
-        this.childrenVdom[i].reRender(this.arrayData[i], this.forKey, kmv);
+        this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
     }
     shiftItem () {
         let shiftVdom = this.childrenVdom.shift();

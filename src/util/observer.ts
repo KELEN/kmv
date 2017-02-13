@@ -27,7 +27,7 @@ export let observer = (obj, kmv, key = '') => {
                         kmv: kmv,
                         bigKey: bigKey
                     });
-                    // reRender(kmv, i);
+                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
                 },
                 get: function() {
                     return getDotVal(kmv.$data, bigKey);
