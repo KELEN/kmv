@@ -6,8 +6,7 @@
 </head>
 <body>
 <div id="div1">
-    <li click="add()" v-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
-    <input type="text" v-model="name">
+    <li class="test" v-for="i in list">{{ i + name }}</li>
 </div>
 <script src="vue.js"></script>
 <script>
@@ -16,13 +15,13 @@
         el: "#div1",
         data: {
             name: "kelen",
-            list: [ 1, 2, 3, 4, 5 ],
+            list: [],
         }
     })
     for　(var i = 0; i < 10000; i++) {
         vue.$data.list.push(Math.random())
-        vue.$data.name = Math.random();
     }
+
 </script>
 </body>
 </html>

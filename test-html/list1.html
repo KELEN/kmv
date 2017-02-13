@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .sfdsf {
+            color: red;
+       }
+    </style>
 </head>
 <body>
 <div id="div1" class="div">
-    <li k-for="i in list">{{ i + name }} <h3>hello worls</h3></li>
-    <button class="button">btn</button>
-    <input type="text" k-model="name">
+    <li class="{{ name }}" k-for="i in list">{{ i + name }}</li>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var a = [];
-    for (var i = 0; i < 10000; i++) {
-        a.push(Math.random());
-    }
     var kmv = new Kmv({
         el: '#div1',
         data: {
             name: "kelen",
-            list: a
+            list: a,
+            list2: [{
+                a: 1
+            }, {
+                a: 2
+            }],
+            show: true,
+        },
+        methods: {
+            turn: function(newValue) {
+                this.show = !this.show;
+            }
         }
-    });
-
+    })
+    // kmv.data.list2.push({ b: 333 })
+    for (var i = 0; i < 10000; i++) {
+        kmv.data.list.push(Math.random());
+    }
 </script>
 </body>
 </html>

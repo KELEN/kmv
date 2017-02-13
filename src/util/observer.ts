@@ -22,7 +22,12 @@ export let observer = (obj, kmv, key = '') => {
             Object.defineProperty(obj, i, {
                 set: function (newVal) {
                     ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-                    reRender(kmv, i);
+                    kmv.pendingValue = true;
+                    kmv.changeQueue.push({
+                        kmv: kmv,
+                        bigKey: bigKey
+                    });
+                    // reRender(kmv, i);
                 },
                 get: function() {
                     return getDotVal(kmv.$data, bigKey);
@@ -35,8 +40,6 @@ export let observer = (obj, kmv, key = '') => {
 
 function arrayObserve(arr, kmv, bigKey) {
 
-    let timer;
-
     // 监听array操作
     ArrayMethod.forEach((method) => {
         Object.defineProperty(arr, method, {
@@ -45,12 +48,12 @@ function arrayObserve(arr, kmv, bigKey) {
             writable: false,
             value: function () {
                 Array.prototype[method].apply(getDotVal(kmv.$data, bigKey), arguments);
-                if (timer) {
-                    clearTimeout(timer);
-                }
-                timer = setTimeout(function () {
-                    reRenderFor(kmv, bigKey)
-                }, 10)
+                kmv.changeQueue.push({
+                    kmv: kmv,
+                    bigKey: bigKey
+                });
+                kmv.pendingArray = true;
+                // reRenderFor(kmv, bigKey);
             }
         });
     })

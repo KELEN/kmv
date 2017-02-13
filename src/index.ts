@@ -13,6 +13,11 @@ function Kmv(opts) {
     this.$data = observer(opts.data, this);
     this.watch = opts.watch;
 
+    this.pendingValue = false;
+    this.pendingArray = false;
+
+    this.changeQueue = [];
+
     this.methods = opts.methods;
     renderInit(this);
     return this;

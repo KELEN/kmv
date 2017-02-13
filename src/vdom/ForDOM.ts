@@ -83,8 +83,8 @@ export class ForDOM {
         }
     }
     batchAdd (arr = [], kmv) {
-        console.time("batchAdd");
         let docFrag = document.createDocumentFragment();
+        console.time("batchAdd");
         for (var i = 0; i < arr.length; i++) {
             let newItem = new ForItemDOM(this.templateNode);
             this.childrenVdom.push(newItem);

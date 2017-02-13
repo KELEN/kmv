@@ -73,8 +73,6 @@ export class ForNormalDOM {
                 break;
             case NodeType.ELEMENT:
                 newEle = document.createElement(this.tagName);
-                newEle.template = this.template;
-                newEle.childrenVdom = this.childrenVdom;
                 this.$dom = newEle;
                 DomUtil.copyAttr(newEle, this.attributes, kmv);
                 this.childrenVdom
