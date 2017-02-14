@@ -1,39 +1,54 @@
 import { compileTpl } from '../util/template'
-import * as DomUtil from '../dom/domOp'
 import { NodeType } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
 import { RegexpStr } from '../constants/constant'
 import { bindEvent } from "../dom/event"
+import {getDotVal} from "../util/object";
 
 export class VDOM {
     nodeType;
     $dom;
     attributes;
-    constructor (node) {}
+    vdomAttr = {};
+    constructor (node) {
+        node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
+    }
     renderAttr (kmv) {
         if (this.nodeType === NodeType.ELEMENT) {
-            let data = kmv.data;
+            let data = kmv.$data;
             let node = this.$dom;
-            for (let i = 0; i < this.attributes.length; i++) {
-                let attr = this.attributes[i];
+            let attrs = this.attributes;
+            console.log(attrs);
+            for (let i = 0; i < attrs.length; i++) {
+                let attr = attrs[i];
                 let attrName = attr.nodeName, attrVal = attr.nodeValue;
-                if (isKvmAttribute(attrName, attrVal)) {
-                    if (RegexpStr.kAttribute.test(attrName)) {
-                        let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
-                    } else if (RegexpStr.kOnAttribute.test(attrName)) {
-                        let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
-                        let func = compileTpl(attrVal, data);
-                        let match = func.match(RegexpStr.methodAndParam);
-                        let method = match[1];
-                        let params = match[2];
-                        bindEvent(node, event, method, params, kmv.methods, kmv.data);
+                if (RegexpStr.kAttribute.test(attrName)) {
+                    let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
+                    if (key === 'class') {
+                        // 类 a:'class2', b:'class2'
+                        let arr = attrVal.split(",");
+                        let valRes = "";
+                        for (var n = 0; n < arr.length; n++) {
+                            var ak = arr[n].split(":")[0];
+                            if (getDotVal(data, ak.trim())) {
+                                valRes += arr[n].split(":")[1].trim() + " ";
+                            }
+                        }
+                        node.setAttribute(key, valRes.trim());
                         node.removeAttribute(attrName);
                     } else {
-                        node.setAttribute(attrName, compileTpl(attrVal, data));
+                        let val = getDotVal(data, attrVal);
+                        node.setAttribute(key, val);
+                        node.removeAttribute(attrName);
                     }
+                } else if (RegexpStr.kOnAttribute.test(attrName)) {
+                    let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
+                    let func = compileTpl(attrVal, data);
+                    let match = func.match(RegexpStr.methodAndParam);
+                    let method = match[1];
+                    let params = match[2];
+                    bindEvent(node, event, method, params, kmv.methods, kmv.data);
+                    node.removeAttribute(attrName);
                 } else {
                     node.setAttribute(attrName, attrVal);
                 }
@@ -47,12 +62,26 @@ export class VDOM {
             for (let i = 0; i < this.attributes.length; i++) {
                 let attr = this.attributes[i];
                 let attrName = attr.nodeName, attrVal = attr.nodeValue;
-                if (isKvmAttribute(attrName, attrVal)) {
+                if (isKvmAttribute(attrName)) {
                     if (RegexpStr.kAttribute.test(attrName)) {
                         let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
+                        if (key === 'class') {
+                            // 类 a:'class2', b:'class2'
+                            let arr = attrVal.split(",");
+                            let valRes = "";
+                            for (var n = 0; n < arr.length; n++) {
+                                var ak = arr[n].split(":")[0];
+                                if (getDotVal(data, ak.trim())) {
+                                    valRes += arr[n].split(":")[1].trim() + " ";
+                                }
+                            }
+                            node.setAttribute(key, valRes.trim());
+                            node.removeAttribute(attrName);
+                        } else {
+                            let val = getDotVal(data, attrVal);
+                            node.setAttribute(key, val);
+                            node.removeAttribute(attrName);
+                        }
                     } else if (RegexpStr.kOnAttribute.test(attrName)) {
                         let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
                         let func = compileTpl(attrVal, data);

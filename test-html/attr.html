@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .hello1 {
+            font-weight: bolder;
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
 <div id="div1" class="div">
-    <a k:href="{{ url }}">百度</a>
-    <button href="{{ url }}" title="{{ title }}" >百度</button>
+    <a k:href="url" k:title="title" k:class="a: hello1, b: hello2">百度</a>
+    <button k-on:click="change()">change</button>
+    <button>百度</button>
 
     <h3 k-if="url">show</h3>
+    <input type="text" k-model="a">
+
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -17,7 +26,14 @@
         el: '#div1',
         data: {
             title: "this is baidu",
-            url: true
+            url: true,
+            a: false,
+            b: true
+        },
+        methods: {
+            change: function() {
+                this.a = !this.a;
+            }
         }
     });
 </script>

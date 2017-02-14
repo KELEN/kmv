@@ -14,7 +14,8 @@ export class NormalDOM extends VDOM {
     constructor (node) {
         super(node);
         // h3
-        this.tagName = node.tagName, this.attributes = node.attributes,
+        this.tagName = node.tagName,
+        this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
         this.nodeType = node.nodeType;
         this.$dom = node;
         switch (node.nodeType) {
@@ -42,12 +43,12 @@ export class NormalDOM extends VDOM {
                 this.childrenVdom.forEach((child) => {
                     child.renderInit(kmv);
                 });
+                this.renderAttr(kmv);
                 break;
         }
-        this.renderAttr(kmv);
     }
     reRender (kmv) {
-        let data = kmv.$data;  // $$data迭代的每一个对象
+        let data = kmv.$data;
         let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
@@ -56,7 +57,8 @@ export class NormalDOM extends VDOM {
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
                     child.reRender(kmv);
-                })
+                });
+                this.reRenderAttr(kmv);
                 break;
         }
     }

@@ -21,7 +21,6 @@ export class IfDOM extends VDOM {
     renderInit(kmv) {
         let data = kmv.$data;
         let isShow = getDotVal(data, this.kif);
-        console.log(isShow);
         if (!!isShow) {
             this.$dom.style.display = "block";
         } else {

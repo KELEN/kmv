@@ -1,4 +1,4 @@
-# 一个轻量的数据渲染框架, kmv.js
+# 一个轻量的数据渲染框架, kmv.js, 压缩后只有17k~, 速度还行
 
 ### 数据双向绑定
 
@@ -38,13 +38,10 @@ var kmv = new Kmv({
 用法: kmv.data.list.push(100);
 ```
 
-### 属性模板 k:href 或者 href
+### 属性模板 k:href
 ``` html
     <div id="div1" class="div">
-        <!-- 第一种写法 -->
-        <a k:href="{{ url }}">百度</a>
-        <!-- 第二种写法 -->
-        <button href="{{ url }}">百度</button>
+        <a k:href="url">百度</a>
     </div>
     <script src="../dist/bundle.js"></script>
     <script>
@@ -55,6 +52,32 @@ var kmv = new Kmv({
             }
         });
     </script>
+```
+
+### 样式选择 k:class
+
+语法: k:class="a: hello1, b: hello2"
+说明: 当a为真class="hello1", b为真class="hello2", 同时为真class="hello1 hello2"
+
+``` html
+<a k:href="url" k:title="title" k:class="a: hello1, b: hello2">百度</a>
+<button k-on:click="change()">change</button>
+<script>
+var kmv = new Kmv({
+    el: '#div1',
+    data: {
+        title: "this is baidu",
+        url: true,
+        a: false,
+        b: true
+    },
+    methods: {
+        change: function() {
+            this.a = !this.a;
+        }
+    }
+});
+</script>
 ```
 
 ### 事件绑定
@@ -99,4 +122,30 @@ var kmv = new Kmv({
             }
         });
     </script>
+```
+
+### watch监听属性变化
+
+``` html
+<div id="div1" class="div">
+    <input k-model="name"/>
+    <h1>{{ fullName }}</h1>
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            title: "this is baidu",
+            name: "kelen",
+            fullName: "huang kelen",
+            url: true
+        },
+        watch: {
+            name: function(newVal) {
+                this.fullName = "huang " + this.name;
+            },
+        }
+    });
+</script>
 ```

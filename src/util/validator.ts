@@ -17,8 +17,8 @@ let validator =  {
     isForStatement: isForStatement
 }
 
-export let isKvmAttribute = (key, val) => {
-    return RegexpStr.arrtibuteKey.test(key) || RegexpStr.brace.test(val);
+export let isKvmAttribute = (key) => {
+    return RegexpStr.arrtibuteKey.test(key);
 }
 
 export default validator;

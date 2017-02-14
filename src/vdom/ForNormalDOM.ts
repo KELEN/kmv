@@ -4,8 +4,9 @@ import { NodeType } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
 import { RegexpStr } from '../constants/constant'
 import { bindEvent } from "../dom/event"
+import { VDOM } from "./VDOM";
 
-export class ForNormalDOM {
+export class ForNormalDOM extends VDOM {
     methods;
     nodeType;
     tagName;
@@ -14,6 +15,7 @@ export class ForNormalDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     constructor (node) {
+        super(node);
         // h3
         this.tagName = node.tagName, this.attributes = node.attributes,
         this.nodeType = node.nodeType
@@ -32,36 +34,6 @@ export class ForNormalDOM {
             }
         }
     }
-    renderAttr(kmv) {
-        if (this.nodeType === NodeType.ELEMENT) {
-            let data = kmv.data;
-            let node = this.$dom;
-            for (let i = 0; i < this.attributes.length; i++) {
-                let attr = this.attributes[i];
-                let attrName = attr.nodeName, attrVal = attr.nodeValue;
-                if (isKvmAttribute(attrName, attrVal)) {
-                    if (RegexpStr.kAttribute.test(attrName)) {
-                        let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
-                    } else if (RegexpStr.kOnAttribute.test(attrName)) {
-                        let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
-                        let func = compileTpl(attrVal, data);
-                        let match = func.match(RegexpStr.methodAndParam);
-                        let method = match[1];
-                        let params = match[2];
-                        bindEvent(node, event, method, params, kmv.methods, kmv.data);
-                        node.removeAttribute(attrName);
-                    } else {
-                        node.setAttribute(attrName, compileTpl(attrVal, data));
-                    }
-                } else {
-                    node.setAttribute(attrName, attrVal);
-                }
-            }
-        }
-    }
     transDOM (kmv) {
         let data = kmv.$$data;
         let newEle = document.createElement(this.tagName) ;
@@ -74,12 +46,12 @@ export class ForNormalDOM {
             case NodeType.ELEMENT:
                 newEle = document.createElement(this.tagName);
                 this.$dom = newEle;
-                DomUtil.copyAttr(newEle, this.attributes, kmv);
                 this.childrenVdom
                 &&
                 this.childrenVdom.forEach((child) => {
                     newEle.appendChild(child.transDOM(kmv));
-                })
+                });
+                this.renderAttr(kmv);
                 break;
         }
         this.renderAttr(kmv);

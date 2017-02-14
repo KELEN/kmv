@@ -6,8 +6,7 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <input k-model="title"/>
-    <h3 k-if="url">333</h3>
+    <input k-model="name"/>
     <h1>{{ fullName }}</h1>
 </div>
 <script src="../dist/bundle.js"></script>
@@ -17,12 +16,12 @@
         data: {
             title: "this is baidu",
             name: "kelen",
-            fullName: "hello",
+            fullName: "huang kelen",
             url: true
         },
         watch: {
-            title: function(newVal) {
-                this.fullName = this.name + this.title;
+            name: function(newVal) {
+                this.fullName = "huang " + this.name;
             },
         }
     });
