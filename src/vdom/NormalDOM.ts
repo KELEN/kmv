@@ -21,6 +21,7 @@ export class NormalDOM extends VDOM {
         switch (node.nodeType) {
             case NodeType.TEXT:
                 this.template = node.textContent;
+                node.textContent = '';
                 break;
             case NodeType.ELEMENT:
                 this.template = node.firstChild.nodeValue;

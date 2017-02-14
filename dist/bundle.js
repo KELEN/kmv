@@ -48,6 +48,8 @@
 	var render_1 = __webpack_require__(1);
 	var observer_1 = __webpack_require__(5);
 	var RenderQueue_1 = __webpack_require__(6);
+	var event_1 = __webpack_require__(19);
+	var object_1 = __webpack_require__(3);
 	function Kmv(opts) {
 	    var elSelector = opts['el'];
 	    var elem = document.querySelector(elSelector);
@@ -55,15 +57,29 @@
 	    // 获取需要渲染的dom列表
 	    this.renderQueue = new RenderQueue_1.RenderQueue(elem);
 	    // 原始数据
-	    this.$data = observer_1.observer(opts.data, this);
 	    this.watch = opts.watch || {};
 	    this.pendingValue = false;
 	    this.pendingArray = false;
 	    this.changeQueue = []; // 每次循环改变队列
 	    this.methods = opts.methods; // 自定义事件
-	    render_1.renderInit(this);
+	    var that = this;
+	    if (opts.beforeInit) {
+	        var event_2 = new event_1.Event();
+	        event_2.$once("initData", function (data) {
+	            var allData = object_1.extend(opts.data, data);
+	            that.$data = observer_1.observer(allData, that);
+	            render_1.renderInit(that);
+	        });
+	        opts.beforeInit.call(that, event_2);
+	    }
+	    else {
+	        this.$data = observer_1.observer(opts.data, this);
+	        render_1.renderInit(this);
+	    }
 	    return this;
 	}
+	var init = function (kmv) {
+	};
 	window.Kmv = Kmv;
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Kmv;
@@ -241,6 +257,12 @@
 	        tmp = tmp[arr[i]];
 	    }
 	    tmp[arr[len - 1]] = val;
+	};
+	exports.extend = function (srcObj, extObj) {
+	    for (var i in extObj) {
+	        srcObj[i] = extObj[i];
+	    }
+	    return srcObj;
 	};
 
 
@@ -1033,6 +1055,7 @@
 	        switch (node.nodeType) {
 	            case constant_1.NodeType.TEXT:
 	                _this.template = node.textContent;
+	                node.textContent = '';
 	                break;
 	            case constant_1.NodeType.ELEMENT:
 	                _this.template = node.firstChild.nodeValue;
@@ -1162,6 +1185,45 @@
 	    return IfDOM;
 	}(VDOM_1.VDOM));
 	exports.IfDOM = IfDOM;
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
+
+	"use strict";
+	var Event = (function () {
+	    function Event() {
+	        var _this = this;
+	        this.eventObject = {};
+	        this.$on = function (event, fn) {
+	            _this.eventObject[event] = {
+	                fn: fn,
+	                once: false
+	            };
+	        };
+	        this.$once = function (event, fn) {
+	            _this.eventObject[event] = {
+	                fn: fn,
+	                once: true
+	            };
+	        };
+	        this.$emit = function (event, params) {
+	            var thisEvent = _this.eventObject[event];
+	            if (thisEvent) {
+	                if (thisEvent.once) {
+	                    thisEvent['fn'].apply(_this, [].concat(params));
+	                    delete _this.eventObject[event];
+	                }
+	                else {
+	                    thisEvent['fn'].apply(_this, [].concat(params));
+	                }
+	            }
+	        };
+	    }
+	    return Event;
+	}());
+	exports.Event = Event;
 
 
 /***/ }

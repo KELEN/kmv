@@ -44,6 +44,12 @@ export let setObserveDotVal = (observeData, key, val) => {
     for (let i = 0; i < len - 1; i++) {
         tmp = tmp[arr[i]];
     }
-
     tmp[arr[len - 1]] = val;
+}
+
+export let extend = (srcObj, extObj) => {
+    for (let i in extObj) {
+        srcObj[i] = extObj[i];
+    }
+    return srcObj;
 }

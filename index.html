@@ -6,85 +6,31 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <input type="text" k-model="name">
+    <h1>{{ name }}</h1>
+    {{ postsPageData.totalPage }}
+    <input type="text" k-model="postsPageData.totalPage">
 </div>
+<span id="loading">loading</span>
 <script src="./dist/bundle.js"></script>
 <script>
+    var spn = document.getElementById("loading");
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "kelen",
-            arr: [1, 3, 4],
-            obj: { a:1 }
+            name: "kelen"
+        },
+        beforeInit: function (event) {
+            setTimeout(function() {
+                // 模拟ajax获取数据
+                var data = {
+                    postsPageData: {"totalPage":6,"nowPage":1,"pageSize":8 }
+                }
+                spn.style.display = "none";
+                // 触发initData事件
+                event.$emit("initData", data);
+            }, 1000)
         }
     });
-
-    setTimeout(function() {
-        kmv.data.name = "time out";
-    }, 1000)
-
-    var people = {
-        "programmers": [{
-            "firstName": "Brett",
-            "lastName": "McLaughlin",
-            "email": "aaaa"
-        }, {
-            "firstName": "Jason",
-            "lastName": "Hunter",
-            "email": "bbbb"
-        }, {
-            "firstName": "Elliotte",
-            "lastName": "Harold",
-            "email": "cccc"
-        }],
-        "authors": [{
-            "firstName": "Isaac",
-            "lastName": "Asimov",
-            "genre": "sciencefiction"
-        }, {
-            "firstName": "Tad",
-            "lastName": "Williams",
-            "genre": "fantasy"
-        }, {
-            "firstName": "Frank",
-            "lastName": "Peretti",
-            "genre": "christianfiction"
-        }],
-        "musicians": [{
-            "firstName": "Eric",
-            "lastName": "Clapton",
-            "instrument": "guitar"
-        }, {
-            "firstName": "Sergei",
-            "lastName": "Rachmaninoff",
-            "instrument": "piano"
-        }]
-    };
-
-    /*var data = {
-        name: "kelen",
-            arr: [1, 3, 4],
-            obj: { a:1 }
-    }
-
-    function evalJs (content, obj) {
-        return (new Function("console.log(this); with(this){ return " + content + " }")).call(obj);
-    }
-
-    console.time("evalJs");
-    for (var i = 0; i < 10; i++) {
-        var res1 = evalJs("JSON.stringify(obj)", data);
-        console.log(res1);
-    }
-    console.timeEnd("evalJs");
-
-    console.time("eval");
-    for (var i = 0; i < 10; i++) {
-        var res2 = (function() { console.log(this); return eval("JSON.stringify(obj)") }).call(data);
-        console.log(res2);
-    }
-    console.timeEnd("eval");*/
-
 </script>
 </body>
 </html>

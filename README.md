@@ -149,3 +149,32 @@ var kmv = new Kmv({
     });
 </script>
 ```
+
+### beforeInit函数 初始化数据, 例如ajax获取后绑定到kmv实例上
+
+``` html
+<div id="div1" class="div">
+    {{ postsPageData.totalPage }}
+</div>
+<span id="loading">loading</span>
+<script>
+    var spn = document.getElementById("loading");
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            name: "kelen"
+        },
+        beforeInit: function (event) {
+            setTimeout(function() {
+                // 模拟ajax获取数据
+                var data = {
+                    postsPageData: {"totalPage":6,"nowPage":1,"pageSize":8 }
+                }
+                spn.style.display = "none";
+                // 触发initData事件
+                event.$emit("initData", data);
+            }, 1000)
+        }
+    });
+</script>
+```
