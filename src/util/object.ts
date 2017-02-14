@@ -3,11 +3,8 @@ import { RegexpStr } from '../constants/constant';
 
 export let getDotVal = (obj, key) => {
     let val, k;
-
     if (key) {
-
         key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
-
         val = obj;
         // 获取对应的dot值
         let arr = key.split(".") || [key];
@@ -18,9 +15,7 @@ export let getDotVal = (obj, key) => {
             }
             val = val[k];
         }
-
     }
-
     return val;
 }
 

@@ -11,33 +11,21 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <li class="{{ name }}" k-for="i in list">{{ i + name }}</li>
+    <div k-for="post in postsPageData.datas">{{ post['title'] }} / {{ post.click }}</div>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var a = [];
     var kmv = new Kmv({
         el: '#div1',
-        data: {
-            name: "kelen",
-            list: a,
-            list2: [{
-                a: 1
-            }, {
-                a: 2
-            }],
-            show: true,
-        },
+        data: {"postsPageData":{"totalPage":6,"nowPage":1,"pageSize":8,"datas":[{"_id":"587d743c32c866150c6eb1ad","title":"flux-构建mvvm的架构","from":"","typeId":"56e8bd326d7adb3763ec0ab3","content":"Flux是Facebook用来构建客户端Web应用的应用架构。他利用单向数据流的思想来管理react的组件。    flux相关概念  flux包括Dispatcher，Store，Action，View4个部分，现在看下各部分对应的职责  Dispatcher（分配器）  接收action后分配给相应的store做相应的处理，前提是store必须在dispatcher注册过，所有的store可以","__v":0,"original":true,"cover":"/upload/2017/e3c05d90-dc53-11e6-8478-b1ffda3c3a5a.png","labels":["587d72af32c866150c6eb1ab","587d72b532c866150c6eb1ac"],"firstImage":"","click":57,"createTime":"2017-01-17T01:32:44.874Z","typeName":"其他","author":"kelen"},{"_id":"586b18ef5544a1f4167d0c03","title":"如何实现 Virtual DOM","from":"http://huangbingbing.com/2016/06/17/如何实现-Virtual-DOM/","typeId":"56c6dec9ff17da463d6c72f5","content":"实现一个简单的 Virtual DOM, 你不需要去深入 React 的源码，或者去研究其他实现 Virtual DOM 的源码，他们的代码很多且复杂，但实际上实现 Virtual DOM 的核心代码仅仅只要50行，甚至更少。\r \r 首先理解两个概念：\r \r \r \tVirtual DOM 描述的是真实的 DOM。\r \t当 Virtual DOM 树有所变化之后，将会得到一个新的 Virtual D","__v":0,"original":true,"cover":"/upload/2016/2e7a8380-d162-11e6-9b7f-e92f8579a645.png","labels":["5837ad8cd57f02226e71438d"],"firstImage":"","click":74,"createTime":"2017-01-03T03:22:23.222Z","typeName":"前端框架","author":"kelen"},{"_id":"58390a148f29ba8d08edddb6","title":"https时代来临了","from":"","typeId":"57be6894a431b5df2890db9a","content":"http和https区别\r \r http:超文本传输协议是互联网上应用最为广泛的一种网络协议。目前广泛的协议，但是http协议传输的数据都是未加密的，也就是明文的，因此使用http协议传输隐私信息非常不安全。\r \r https：https（全称：Hyper Text Transfer Protocol over Secure Socket Layer），是以安全为目标的http通道，简单讲是htt","__v":0,"original":true,"cover":"/upload/2016/babdc560-c757-11e6-9b7f-e92f8579a645.png","labels":["56e8da146d7adb3763ec0ab4","583905e98f29ba8d08edddb5"],"firstImage":"","click":237,"createTime":"2016-11-26T04:05:40.905Z","typeName":"网络安全","author":"kelen"},{"_id":"5837b5fcd57f02226e71438f","title":"react-redux单元测试","from":"","typeId":"56c6dec9ff17da463d6c72f5","content":"Redux是什么？  Redux是JavaScript应用程序可预测状态的容器。工作流程图如如下     \t状态树通过 props 定义UI和action回调 \t用户在ui界面操作，例如点击事件，通过action creator来接收做相应的处理 \taction 通过 reducer 来处理，实现逻辑代码，更新 state，存储 \t根据存储的新的state树更新 UI   在整个过程中，有三个需要","__v":0,"original":true,"cover":"/upload/2016/3d5c7860-b2d4-11e6-a453-e13b8f4d830a.jpg","labels":["5837ad8cd57f02226e71438d","5837ad96d57f02226e71438e"],"firstImage":"","click":195,"createTime":"2016-11-25T03:54:36.903Z","typeName":"前端框架","author":"kelen"},{"_id":"582ecb23fb7cc29358f2ece4","title":"回调函数转成支持nodejs的generators（yield）写法","from":"","typeId":"56ce5e39a530115f4db3c883","content":"nodejs支持generator函数，使用yield来执行，由于普通函数不能用 yield 写法，所以只需要简单的把回调函数转换一下，就可以支持yield写法了  首先有一个回调方法   function test (num, cb) {     if (num &gt; 10) {         cb(null, \"yes\");     } else {         cb(\"no\"); ","__v":0,"original":true,"cover":"/upload/2016/f24c4b60-c756-11e6-9b7f-e92f8579a645.png","labels":["56d3ab15d0f39633768d6530"],"firstImage":"","click":166,"createTime":"2016-11-18T09:34:27.435Z","typeName":"nodejs","author":"kelen"},{"_id":"582db50031b0f7a4273bfae3","title":"angularjs之interceptor（拦截器）","from":"","typeId":"56c6dec9ff17da463d6c72f5","content":"前言\r \r angularjs作为前端优秀的框架，实现视图模型的交互外，还需要经常跟后台交互数据，这就涉及到http请求，http从请求到响应过程中，由于我们使用异步交互数据，无论是成功或者失败，都需要进行处理，给用户更友好的表现形式。我们可以在每一个service服务中对ajax请求做对应的处理，但随着项目的迭代，将会发现重复的代码太多，幸运的是，angularjs提供一个http拦截器，我们可","__v":0,"original":true,"cover":"/upload/2016/7d5c4150-accd-11e6-b11a-23b1be3ad0d3.png","labels":["56a6dcb9c3792be8381021e5","56a7775def12074b6df7b44a"],"firstImage":"","click":140,"createTime":"2016-11-17T13:47:44.592Z","typeName":"前端框架","author":"kelen"},{"_id":"58258e6291103b0545ebb7b8","title":"Flow-javascript类型检测工具","from":"","typeId":"56a7772cef12074b6df7b449","content":"Flow，一个新的Javascript静态类型检查器。Flow为Javascript添加了静态类型检查，以提高开发效率和代码质量。更明确的说，静态类型检查提供的好处像早期错误检查，帮助你发现一些只有在运行时才能发现的错误，以及代码智能感知，它会帮助代码维护，查找，重构和优化。  我们设计Flow的所有功能构建在现有Javascript规范之上。因为Flow主动地在后台工作，所以额外的编译开销很小。","__v":0,"original":true,"cover":"/upload/2016/b01cb5c0-a7f0-11e6-8734-4752d5a1cbf5.png","labels":["56a7775def12074b6df7b44a"],"firstImage":"","click":178,"createTime":"2016-11-11T09:24:50.105Z","typeName":"javascript","author":"kelen"},{"_id":"582558b991103b0545ebb7b7","title":"node环境下使用babel运行es6","from":"","typeId":"56ce5e39a530115f4db3c883","content":"node现在不是很支持es6语法，但是我们可以使用babel来支持，只需要简单的安装运行环境  1. 安装babel-node   npm install --save-dev babel-core   npm安装如果太慢或者安装不了，可以使用淘宝镜像cnpm，命令行  npm install -g cnpm --registry=https://registry.npm.taobao.org  ","__v":0,"original":true,"cover":"/upload/2016/99c79760-a7c1-11e6-8734-4752d5a1cbf5.png","labels":["56d3ab15d0f39633768d6530"],"firstImage":"","click":159,"createTime":"2016-11-11T05:35:53.890Z","typeName":"nodejs","author":"kelen"}]},"labels":[{"_id":"5690a77756033cb429b93343","name":"css","__v":0},{"_id":"5690a77f56033cb429b93344","name":"jquery","__v":0},{"_id":"5696fc37bda3ad841d090bd6","name":"构建工具","__v":0},{"_id":"56a6dcb9c3792be8381021e5","name":"angularjs","__v":0},{"_id":"56a7775def12074b6df7b44a","name":"javascript","__v":0},{"_id":"56a819bce82378ad6e67576e","name":"html5","__v":0},{"_id":"56c6df1dff17da463d6c72f6","name":"requirejs","__v":0},{"_id":"56cfcbb2c763bc837229672a","name":"javascript库","__v":0},{"_id":"56d3ab15d0f39633768d6530","name":"nodejs","__v":0},{"_id":"56e8da146d7adb3763ec0ab4","name":"web安全","__v":0},{"_id":"56ed096d94efb99d1d56a687","name":"web app","__v":0},{"_id":"574f87b6642e47992de2f6d1","name":"服务器","__v":0},{"_id":"574f87ba642e47992de2f6d2","name":"nginx","__v":0},{"_id":"57ac5188b30a96e01f550fed","name":"android","__v":0},{"_id":"5811beb2a6f7359f32665e8d","name":"webpack","__v":0},{"_id":"5837ad8cd57f02226e71438d","name":"react","__v":0},{"_id":"5837ad96d57f02226e71438e","name":"redux","__v":0},{"_id":"583905e98f29ba8d08edddb5","name":"https","__v":0},{"_id":"587c86114bf550a325bfb4a6","name":"svn","__v":0},{"_id":"587d72af32c866150c6eb1ab","name":"mvvm","__v":0},{"_id":"587d72b532c866150c6eb1ac","name":"flux","__v":0}],"name":"kelen"},
         methods: {
             turn: function(newValue) {
                 this.show = !this.show;
             }
         }
     })
-    // kmv.data.list2.push({ b: 333 })
-    for (var i = 0; i < 10000; i++) {
-        kmv.data.list.push(Math.random());
-    }
+
 </script>
 </body>
 </html>

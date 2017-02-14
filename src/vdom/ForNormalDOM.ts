@@ -1,9 +1,6 @@
 import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
 import { NodeType } from "../constants/constant"
-import { isKvmAttribute } from '../util/validator'
-import { RegexpStr } from '../constants/constant'
-import { bindEvent } from "../dom/event"
 import { VDOM } from "./VDOM";
 
 export class ForNormalDOM extends VDOM {
@@ -17,7 +14,7 @@ export class ForNormalDOM extends VDOM {
     constructor (node) {
         super(node);
         // h3
-        this.tagName = node.tagName, this.attributes = node.attributes,
+        this.tagName = node.tagName, this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
         this.nodeType = node.nodeType
         switch (node.nodeType) {
             case NodeType.TEXT:
