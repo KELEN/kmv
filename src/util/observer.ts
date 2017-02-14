@@ -39,7 +39,6 @@ export let observer = (obj, kmv, key = '') => {
 }
 
 function arrayObserve(arr, kmv, bigKey) {
-
     // 监听array操作
     ArrayMethod.forEach((method) => {
         Object.defineProperty(arr, method, {

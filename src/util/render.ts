@@ -12,24 +12,28 @@ export let renderInit = (kmv) => {
     nextTick(kmv);
 }
 
+let nextTickHandler = (kmv) => {
+    if (kmv.pendingValue) {
+        console.log("reRender");
+        kmv.pendingValue = false;
+        let lastOne = kmv.changeQueue.pop();
+        reRender(lastOne.kmv, lastOne.bigKey);
+        kmv.changeQueue.length = 0;
+    }
+    if (kmv.pendingArray) {
+        console.log("reRenderFor")
+        kmv.pendingArray = false;
+        let lastOne = kmv.changeQueue.pop();
+        reRenderFor(lastOne.kmv, lastOne.bigKey);
+        kmv.changeQueue.length = 0;
+    }
+    nextTick(kmv);
+}
+
 export let nextTick = (kmv) => {
     setTimeout(function() {
-        if (kmv.pendingValue) {
-            console.log("reRender");
-            kmv.pendingValue = false;
-            let lastOne = kmv.changeQueue.pop();
-            reRender(lastOne.kmv, lastOne.bigKey);
-            kmv.changeQueue.length = 0;
-        }
-        if (kmv.pendingArray) {
-            console.log("reRenderFor")
-            kmv.pendingArray = false;
-            let lastOne = kmv.changeQueue.pop();
-            reRenderFor(lastOne.kmv, lastOne.bigKey);
-            kmv.changeQueue.length = 0;
-        }
         // 下一次事件循环
-        nextTick(kmv);
+        nextTickHandler(kmv);
     }, 0);
 }
 

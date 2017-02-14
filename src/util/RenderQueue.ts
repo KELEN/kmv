@@ -1,8 +1,8 @@
 import { NodeType, RegexpStr, RenderType } from '../constants/constant'
 import { ForDOM } from "../vdom/ForDOM"
-import {NormalDOM} from "../vdom/NormalDOM";
-import {InputDOM} from "../vdom/InputDOM";
-import {IfDOM} from "../vdom/IfDOM";
+import { NormalDOM } from "../vdom/NormalDOM";
+import { InputDOM } from "../vdom/InputDOM";
+import { IfDOM } from "../vdom/IfDOM";
 
 export class RenderQueue {
     queue = [];

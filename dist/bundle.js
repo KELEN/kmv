@@ -87,24 +87,27 @@
 	    }
 	    exports.nextTick(kmv);
 	};
+	var nextTickHandler = function (kmv) {
+	    if (kmv.pendingValue) {
+	        console.log("reRender");
+	        kmv.pendingValue = false;
+	        var lastOne = kmv.changeQueue.pop();
+	        exports.reRender(lastOne.kmv, lastOne.bigKey);
+	        kmv.changeQueue.length = 0;
+	    }
+	    if (kmv.pendingArray) {
+	        console.log("reRenderFor");
+	        kmv.pendingArray = false;
+	        var lastOne = kmv.changeQueue.pop();
+	        exports.reRenderFor(lastOne.kmv, lastOne.bigKey);
+	        kmv.changeQueue.length = 0;
+	    }
+	    exports.nextTick(kmv);
+	};
 	exports.nextTick = function (kmv) {
 	    setTimeout(function () {
-	        if (kmv.pendingValue) {
-	            console.log("reRender");
-	            kmv.pendingValue = false;
-	            var lastOne = kmv.changeQueue.pop();
-	            exports.reRender(lastOne.kmv, lastOne.bigKey);
-	            kmv.changeQueue.length = 0;
-	        }
-	        if (kmv.pendingArray) {
-	            console.log("reRenderFor");
-	            kmv.pendingArray = false;
-	            var lastOne = kmv.changeQueue.pop();
-	            exports.reRenderFor(lastOne.kmv, lastOne.bigKey);
-	            kmv.changeQueue.length = 0;
-	        }
 	        // 下一次事件循环
-	        exports.nextTick(kmv);
+	        nextTickHandler(kmv);
 	    }, 0);
 	};
 	exports.reRender = function (kmv, key) {
