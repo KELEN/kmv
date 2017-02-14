@@ -15,12 +15,8 @@ function Kmv(opts) {
 
     this.pendingValue = false;
     this.pendingArray = false;
-
-    this.circle = {};
-
-    this.changeQueue = [];
-
-    this.methods = opts.methods;
+    this.changeQueue = [];      // 每次循环改变队列
+    this.methods = opts.methods;    // 自定义事件
     renderInit(this);
     return this;
 }

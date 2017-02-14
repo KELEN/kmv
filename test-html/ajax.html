@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div" k-ajax="http://localhost:8080/test">
+    {{ JSON.stringify(a) }}
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            a: {a:1},
+            b: "aa"
+        }
+    });
+</script>
+</body>
+</html>
