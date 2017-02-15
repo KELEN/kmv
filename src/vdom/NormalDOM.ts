@@ -2,6 +2,7 @@ import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { VDOM } from './VDOM'
+import { ComponentDOM } from "./ComponentDOM";
 
 export class NormalDOM extends VDOM {
     methods;

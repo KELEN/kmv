@@ -9,8 +9,6 @@ function Kmv(opts) {
     let elSelector = opts['el'];
     let elem = document.querySelector(elSelector);
     this.data = opts.data;
-    // 获取需要渲染的dom列表
-    this.renderQueue = new RenderQueue(elem);
     // 原始数据
     this.watch = opts.watch || {};
     this.pendingValue = false;
@@ -20,9 +18,8 @@ function Kmv(opts) {
 
     this.components = opts.components;
 
-    for (var i in this.components) {
-
-    }
+    // 获取需要渲染的dom列表
+    this.renderQueue = new RenderQueue(elem, this);
 
     let that = this;
     if (opts.beforeInit) {

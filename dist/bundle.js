@@ -48,14 +48,12 @@
 	var render_1 = __webpack_require__(1);
 	var observer_1 = __webpack_require__(5);
 	var RenderQueue_1 = __webpack_require__(6);
-	var event_1 = __webpack_require__(19);
+	var event_1 = __webpack_require__(20);
 	var object_1 = __webpack_require__(3);
 	function Kmv(opts) {
 	    var elSelector = opts['el'];
 	    var elem = document.querySelector(elSelector);
 	    this.data = opts.data;
-	    // 获取需要渲染的dom列表
-	    this.renderQueue = new RenderQueue_1.RenderQueue(elem);
 	    // 原始数据
 	    this.watch = opts.watch || {};
 	    this.pendingValue = false;
@@ -63,8 +61,8 @@
 	    this.changeQueue = []; // 每次循环改变队列
 	    this.methods = opts.methods; // 自定义事件
 	    this.components = opts.components;
-	    for (var i in this.components) {
-	    }
+	    // 获取需要渲染的dom列表
+	    this.renderQueue = new RenderQueue_1.RenderQueue(elem, this);
 	    var that = this;
 	    if (opts.beforeInit) {
 	        var event_2 = new event_1.Event();
@@ -182,7 +180,8 @@
 	    kOnAttribute: /k-on:(.*)/,
 	    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,
 	    isTernaryOp: /!.*|!!.*|.+?.+:.+/,
-	    ternaryOpSplit: /\?|:|\(|\)|!!/ // 正则切割
+	    ternaryOpSplit: /\?|:|\(|\)|!!/,
+	    isNormalHtmlTag: /html|body|base|head|link|meta|style|title|address|article|aside|footer|header|h1|h2|h3|h4|h5|h6|hgroup|nav|section|div|dd|dl|dt|figcaption|figure|hr|img|li|main|ol|p|pre|ul|a|b|abbr|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rp|rt|rtc|ruby|s|samp|small|span|strong|sub|sup|time|u|var|wbr|area|audio|map|track|video|embed|object|param|source|canvas|script|noscript|del|ins|caption|col|colgroup|table|thead|tbody|td|th|tr|button|datalist|fieldset|form|input|label|legend|meter|optgroup|option|output|progress|select|textarea|details|dialog|menu|menuitem|summary|content|element|shadow|template/i
 	};
 	exports.NodeType = {
 	    ELEMENT: 1,
@@ -393,9 +392,12 @@
 	var NormalDOM_1 = __webpack_require__(16);
 	var InputDOM_1 = __webpack_require__(17);
 	var IfDOM_1 = __webpack_require__(18);
+	var validator_1 = __webpack_require__(14);
+	var ComponentDOM_1 = __webpack_require__(19);
 	var RenderQueue = (function () {
-	    function RenderQueue(node) {
+	    function RenderQueue(node, kmv) {
 	        this.queue = [];
+	        this.kmv = kmv;
 	        this.queue = this.queueInit(node);
 	    }
 	    RenderQueue.prototype.getQueue = function () {
@@ -410,17 +412,23 @@
 	                    this.queue.push(new NormalDOM_1.NormalDOM(child));
 	                    break;
 	                case constant_1.NodeType.ELEMENT:
-	                    if (child.getAttribute("k-for")) {
-	                        this.queue.push(new ForDOM_1.ForDOM(child));
-	                    }
-	                    else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
-	                        this.queue.push(new InputDOM_1.InputDOM(child));
-	                    }
-	                    else if (child.getAttribute("k-if")) {
-	                        this.queue.push(new IfDOM_1.IfDOM(child));
+	                    if (validator_1.isUnknowElement(child.tagName)) {
+	                        // 组件
+	                        this.queue.push(new ComponentDOM_1.ComponentDOM(child, this.kmv).transNormalDOM());
 	                    }
 	                    else {
-	                        this.queue.push(new NormalDOM_1.NormalDOM(child));
+	                        if (child.getAttribute("k-for")) {
+	                            this.queue.push(new ForDOM_1.ForDOM(child));
+	                        }
+	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                            this.queue.push(new InputDOM_1.InputDOM(child));
+	                        }
+	                        else if (child.getAttribute("k-if")) {
+	                            this.queue.push(new IfDOM_1.IfDOM(child));
+	                        }
+	                        else {
+	                            this.queue.push(new NormalDOM_1.NormalDOM(child));
+	                        }
 	                    }
 	                    break;
 	            }
@@ -988,25 +996,30 @@
 
 	"use strict";
 	var constant_1 = __webpack_require__(2);
-	var isBraceReg = function (str) {
+	exports.isBraceReg = function (str) {
 	    return constant_1.RegexpStr.brace.test(str);
 	};
 	/**
 	 *  是否有包含语法
 	 * @param str
 	 */
-	var isForStatement = function (str) {
+	exports.isForStatement = function (str) {
 	    return constant_1.RegexpStr.forStatement.test(str);
-	};
-	var validator = {
-	    isBraceReg: isBraceReg,
-	    isForStatement: isForStatement
 	};
 	exports.isKvmAttribute = function (key) {
 	    return constant_1.RegexpStr.arrtibuteKey.test(key);
 	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = validator;
+	exports.isUnknowElement = function (tag) {
+	    var el = document.createElement(tag);
+	    if (tag.indexOf('-') > -1) {
+	        // http://stackoverflow.com/a/28210364/1070244
+	        return (el.constructor === window.HTMLUnknownElement ||
+	            el.constructor === window.HTMLElement);
+	    }
+	    else {
+	        return /HTMLUnknownElement/.test(el.toString());
+	    }
+	};
 
 
 /***/ },
@@ -1061,7 +1074,6 @@
 	                node.textContent = '';
 	                break;
 	            case constant_1.NodeType.ELEMENT:
-	                console.dir(node);
 	                _this.template = node.firstChild ? node.firstChild.nodeValue : '';
 	                break;
 	        }
@@ -1193,6 +1205,48 @@
 
 /***/ },
 /* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var NormalDOM_1 = __webpack_require__(16);
+	var VDOM_1 = __webpack_require__(13);
+	var DomOp = __webpack_require__(9);
+	var ComponentDOM = (function (_super) {
+	    __extends(ComponentDOM, _super);
+	    function ComponentDOM(node, kmv) {
+	        var _this = _super.call(this, node) || this;
+	        _this.childrenVdom = [];
+	        _this.tagName = node.tagName;
+	        var component = kmv.components[_this.tagName.toLowerCase()];
+	        if (component) {
+	            var div = document.createElement("div");
+	            div.innerHTML = component.template;
+	            var firstChild = div.firstChild;
+	            _this.$dom = firstChild;
+	            DomOp.inserBefore(node, _this.$dom);
+	            DomOp.removeNode(node);
+	        }
+	        else {
+	            // 无效标签
+	            console.error("无效标签" + _this.tagName);
+	        }
+	        return _this;
+	    }
+	    ComponentDOM.prototype.transNormalDOM = function () {
+	        return new NormalDOM_1.NormalDOM(this.$dom);
+	    };
+	    return ComponentDOM;
+	}(VDOM_1.VDOM));
+	exports.ComponentDOM = ComponentDOM;
+
+
+/***/ },
+/* 20 */
 /***/ function(module, exports) {
 
 	"use strict";

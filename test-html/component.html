@@ -7,9 +7,11 @@
 <body>
 <div id="div1" class="div">
     <my-menu></my-menu>
+    <hello></hello>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
+    var aa = "<h3 k-on:click='log()'>hello {{　name　}} <span>test child {{　name　}}</span></h3>"
     var kmv = new Kmv({
         el: '#div1',
         data: {
@@ -18,7 +20,15 @@
         },
         components: {
             'my-menu': {
-                template: '<h1>{{ name }}</h1>'
+                template: aa
+            },
+            'hello': {
+                template: '<h1>hello {{ name }}</h1>'
+            }
+        },
+        methods: {
+            log: function() {
+                console.log("log");
             }
         }
     });
