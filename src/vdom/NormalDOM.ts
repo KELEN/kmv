@@ -1,7 +1,7 @@
 import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
-import { NodeType } from "../constants/constant"
-import { VDOM } from './VDOM';
+import { NodeType, RegexpStr } from "../constants/constant"
+import { VDOM } from './VDOM'
 
 export class NormalDOM extends VDOM {
     methods;
@@ -24,7 +24,7 @@ export class NormalDOM extends VDOM {
                 node.textContent = '';
                 break;
             case NodeType.ELEMENT:
-                this.template = node.firstChild.nodeValue;
+                this.template = node.firstChild ? node.firstChild.nodeValue: '';
                 break;
         }
         if (node.childNodes) {

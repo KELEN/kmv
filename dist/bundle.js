@@ -62,6 +62,9 @@
 	    this.pendingArray = false;
 	    this.changeQueue = []; // 每次循环改变队列
 	    this.methods = opts.methods; // 自定义事件
+	    this.components = opts.components;
+	    for (var i in this.components) {
+	    }
 	    var that = this;
 	    if (opts.beforeInit) {
 	        var event_2 = new event_1.Event();
@@ -1058,7 +1061,8 @@
 	                node.textContent = '';
 	                break;
 	            case constant_1.NodeType.ELEMENT:
-	                _this.template = node.firstChild.nodeValue;
+	                console.dir(node);
+	                _this.template = node.firstChild ? node.firstChild.nodeValue : '';
 	                break;
 	        }
 	        if (node.childNodes) {

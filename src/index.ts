@@ -18,6 +18,12 @@ function Kmv(opts) {
     this.changeQueue = [];      // 每次循环改变队列
     this.methods = opts.methods;    // 自定义事件
 
+    this.components = opts.components;
+
+    for (var i in this.components) {
+
+    }
+
     let that = this;
     if (opts.beforeInit) {
         let event = new Event();
