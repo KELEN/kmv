@@ -1,7 +1,7 @@
 import * as ObjectUtil from '../util/object'
-import { reRender, reRenderFor } from "./render";
 import { ArrayMethod } from '../constants/constant'
 import {getDotVal} from "./object";
+
 /**
  *   URL:
  *   说明:
@@ -51,8 +51,7 @@ function arrayObserve(arr, kmv, bigKey) {
                     kmv: kmv,
                     bigKey: bigKey
                 });
-                kmv.pendingArray = true;
-                // reRenderFor(kmv, bigKey);
+                kmv.pendingValue = true;
             }
         });
     })

@@ -23,7 +23,7 @@ export let diff = (arr1 = [], arr2 = []) => {
                 text: deleteArr[i]
             })
         }
-    } else {
+    } else if (len2 > len1) {
         let addArr = arr2.slice(len1);
         change.push({
             batch: true,

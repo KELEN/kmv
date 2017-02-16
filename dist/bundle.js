@@ -46,8 +46,8 @@
 
 	"use strict";
 	var render_1 = __webpack_require__(1);
-	var observer_1 = __webpack_require__(5);
-	var RenderQueue_1 = __webpack_require__(6);
+	var observer_1 = __webpack_require__(2);
+	var RenderQueue_1 = __webpack_require__(5);
 	var event_1 = __webpack_require__(20);
 	var object_1 = __webpack_require__(3);
 	function Kmv(opts) {
@@ -88,12 +88,9 @@
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(2);
-	var object_1 = __webpack_require__(3);
-	var array_1 = __webpack_require__(4);
 	exports.renderInit = function (kmv) {
 	    var watcher = kmv.renderQueue;
 	    var renderQueue = watcher.getQueue();
@@ -111,13 +108,6 @@
 	        exports.reRender(lastOne.kmv, lastOne.bigKey);
 	        kmv.changeQueue.length = 0;
 	    }
-	    if (kmv.pendingArray) {
-	        console.log("reRenderFor");
-	        kmv.pendingArray = false;
-	        var lastOne = kmv.changeQueue.pop();
-	        exports.reRenderFor(lastOne.kmv, lastOne.bigKey);
-	        kmv.changeQueue.length = 0;
-	    }
 	    exports.nextTick(kmv);
 	};
 	exports.nextTick = function (kmv) {
@@ -133,28 +123,137 @@
 	        node.reRender(kmv);
 	    }
 	};
-	exports.reRenderFor = function (kmv, forKey) {
-	    var renderQueue = kmv.renderQueue.getQueue();
-	    var data = kmv.$data;
-	    for (var i = 0; i < renderQueue.length; i++) {
-	        var vnode = renderQueue[i];
-	        if (vnode.renderType == constant_1.RenderType.FOR) {
-	            var arrKey = vnode.forObjectKey;
-	            var newArray = object_1.getDotVal(data, arrKey);
-	            if (Array.isArray(newArray)) {
-	                var change = array_1.diff(vnode.iteratorData, newArray);
-	                vnode.notifyDataChange(change, kmv);
-	            }
-	            else {
-	                vnode.notifyDataChange(null, kmv);
-	            }
-	        }
-	    }
-	};
 
 
 /***/ },
 /* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var ObjectUtil = __webpack_require__(3);
+	var constant_1 = __webpack_require__(4);
+	var object_1 = __webpack_require__(3);
+	/**
+	 *   URL:
+	 *   说明:
+	 *   负责人: kelen
+	 *   日期:  1/24 0024.
+	 */
+	exports.observer = function (obj, kmv, key) {
+	    if (key === void 0) { key = ''; }
+	    var newObj = ObjectUtil.depCopy(obj);
+	    var _loop_1 = function (i) {
+	        var bigKey = key ? key + "." + i : i;
+	        if (typeof obj[i] == 'object') {
+	            if (Array.isArray(obj[i])) {
+	                arrayObserve(obj[i], kmv, bigKey);
+	            }
+	            else {
+	                exports.observer(obj[i], kmv, bigKey);
+	            }
+	        }
+	        else {
+	            Object.defineProperty(obj, i, {
+	                set: function (newVal) {
+	                    ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+	                    kmv.pendingValue = true;
+	                    kmv.changeQueue.push({
+	                        kmv: kmv,
+	                        bigKey: bigKey
+	                    });
+	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+	                },
+	                get: function () {
+	                    return object_1.getDotVal(kmv.$data, bigKey);
+	                }
+	            });
+	        }
+	    };
+	    for (var i in obj) {
+	        _loop_1(i);
+	    }
+	    return newObj;
+	};
+	function arrayObserve(arr, kmv, bigKey) {
+	    // 监听array操作
+	    constant_1.ArrayMethod.forEach(function (method) {
+	        Object.defineProperty(arr, method, {
+	            configurable: false,
+	            enumerable: false,
+	            writable: false,
+	            value: function () {
+	                Array.prototype[method].apply(object_1.getDotVal(kmv.$data, bigKey), arguments);
+	                kmv.changeQueue.push({
+	                    kmv: kmv,
+	                    bigKey: bigKey
+	                });
+	                kmv.pendingValue = true;
+	            }
+	        });
+	    });
+	}
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(4);
+	exports.getDotVal = function (obj, key) {
+	    var val, k;
+	    if (key) {
+	        key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+	        val = obj;
+	        // 获取对应的dot值
+	        var arr = key.split(".") || [key];
+	        while (k = arr.shift()) {
+	            if (!val) {
+	                val = undefined;
+	                break;
+	            }
+	            val = val[k];
+	        }
+	    }
+	    return val;
+	};
+	exports.depCopy = function (obj) {
+	    var newObj = {};
+	    for (var i in obj) {
+	        if (typeof obj[i] === 'object') {
+	            if (Array.isArray(obj[i])) {
+	                newObj[i] = obj[i].slice(0);
+	            }
+	            else {
+	                newObj[i] = exports.depCopy(obj[i]);
+	            }
+	        }
+	        else {
+	            newObj[i] = obj[i];
+	        }
+	    }
+	    return newObj;
+	};
+	exports.setObserveDotVal = function (observeData, key, val) {
+	    key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
+	    var tmp = observeData;
+	    var arr = key.split(".");
+	    var len = arr.length;
+	    for (var i = 0; i < len - 1; i++) {
+	        tmp = tmp[arr[i]];
+	    }
+	    tmp[arr[len - 1]] = val;
+	};
+	exports.extend = function (srcObj, extObj) {
+	    for (var i in extObj) {
+	        srcObj[i] = extObj[i];
+	    }
+	    return srcObj;
+	};
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -211,188 +310,16 @@
 
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var constant_1 = __webpack_require__(2);
-	exports.getDotVal = function (obj, key) {
-	    var val, k;
-	    if (key) {
-	        key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
-	        val = obj;
-	        // 获取对应的dot值
-	        var arr = key.split(".") || [key];
-	        while (k = arr.shift()) {
-	            if (!val) {
-	                val = undefined;
-	                break;
-	            }
-	            val = val[k];
-	        }
-	    }
-	    return val;
-	};
-	exports.depCopy = function (obj) {
-	    var newObj = {};
-	    for (var i in obj) {
-	        if (typeof obj[i] === 'object') {
-	            if (Array.isArray(obj[i])) {
-	                newObj[i] = obj[i].slice(0);
-	            }
-	            else {
-	                newObj[i] = exports.depCopy(obj[i]);
-	            }
-	        }
-	        else {
-	            newObj[i] = obj[i];
-	        }
-	    }
-	    return newObj;
-	};
-	exports.setObserveDotVal = function (observeData, key, val) {
-	    key = key.replace(constant_1.RegexpStr.bracket, ".$1"); // 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
-	    var tmp = observeData;
-	    var arr = key.split(".");
-	    var len = arr.length;
-	    for (var i = 0; i < len - 1; i++) {
-	        tmp = tmp[arr[i]];
-	    }
-	    tmp[arr[len - 1]] = val;
-	};
-	exports.extend = function (srcObj, extObj) {
-	    for (var i in extObj) {
-	        srcObj[i] = extObj[i];
-	    }
-	    return srcObj;
-	};
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var constant_1 = __webpack_require__(2);
-	exports.diff = function (arr1, arr2) {
-	    if (arr1 === void 0) { arr1 = []; }
-	    if (arr2 === void 0) { arr2 = []; }
-	    var change = [];
-	    var len1 = arr1.length, len2 = arr2.length;
-	    var len = Math.min(len1, len2);
-	    for (var i = 0; i < len; i++) {
-	        if (arr1[i] !== arr2[i]) {
-	            change.push({
-	                op: constant_1.ArrayOp.CHANGE,
-	                index: i,
-	                text: arr2[i]
-	            });
-	        }
-	    }
-	    if (len1 > len2) {
-	        var deleteArr = arr1.slice(len2);
-	        // 删除dom
-	        for (var i = 0; i < deleteArr.length; i++) {
-	            change.push({
-	                op: constant_1.ArrayOp.POP,
-	                index: i + len2,
-	                text: deleteArr[i]
-	            });
-	        }
-	    }
-	    else {
-	        var addArr = arr2.slice(len1);
-	        change.push({
-	            batch: true,
-	            op: constant_1.ArrayOp.PUSH,
-	            array: addArr
-	        });
-	    }
-	    return change;
-	};
-
-
-/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ObjectUtil = __webpack_require__(3);
-	var constant_1 = __webpack_require__(2);
-	var object_1 = __webpack_require__(3);
-	/**
-	 *   URL:
-	 *   说明:
-	 *   负责人: kelen
-	 *   日期:  1/24 0024.
-	 */
-	exports.observer = function (obj, kmv, key) {
-	    if (key === void 0) { key = ''; }
-	    var newObj = ObjectUtil.depCopy(obj);
-	    var _loop_1 = function (i) {
-	        var bigKey = key ? key + "." + i : i;
-	        if (typeof obj[i] == 'object') {
-	            if (Array.isArray(obj[i])) {
-	                arrayObserve(obj[i], kmv, bigKey);
-	            }
-	            else {
-	                exports.observer(obj[i], kmv, bigKey);
-	            }
-	        }
-	        else {
-	            Object.defineProperty(obj, i, {
-	                set: function (newVal) {
-	                    ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-	                    kmv.pendingValue = true;
-	                    kmv.changeQueue.push({
-	                        kmv: kmv,
-	                        bigKey: bigKey
-	                    });
-	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-	                },
-	                get: function () {
-	                    return object_1.getDotVal(kmv.$data, bigKey);
-	                }
-	            });
-	        }
-	    };
-	    for (var i in obj) {
-	        _loop_1(i);
-	    }
-	    return newObj;
-	};
-	function arrayObserve(arr, kmv, bigKey) {
-	    // 监听array操作
-	    constant_1.ArrayMethod.forEach(function (method) {
-	        Object.defineProperty(arr, method, {
-	            configurable: false,
-	            enumerable: false,
-	            writable: false,
-	            value: function () {
-	                Array.prototype[method].apply(object_1.getDotVal(kmv.$data, bigKey), arguments);
-	                kmv.changeQueue.push({
-	                    kmv: kmv,
-	                    bigKey: bigKey
-	                });
-	                kmv.pendingArray = true;
-	                // reRenderFor(kmv, bigKey);
-	            }
-	        });
-	    });
-	}
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var constant_1 = __webpack_require__(2);
-	var ForDOM_1 = __webpack_require__(7);
+	var constant_1 = __webpack_require__(4);
+	var ForDOM_1 = __webpack_require__(6);
 	var NormalDOM_1 = __webpack_require__(16);
 	var InputDOM_1 = __webpack_require__(18);
 	var IfDOM_1 = __webpack_require__(17);
-	var validator_1 = __webpack_require__(14);
+	var validator_1 = __webpack_require__(13);
 	var ComponentDOM_1 = __webpack_require__(19);
 	var RenderQueue = (function () {
 	    function RenderQueue(node, kmv) {
@@ -441,14 +368,15 @@
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ForItemDOM_1 = __webpack_require__(8);
-	var constant_1 = __webpack_require__(2);
+	var ForItemDOM_1 = __webpack_require__(7);
+	var constant_1 = __webpack_require__(4);
 	var object_1 = __webpack_require__(3);
-	var DomOp = __webpack_require__(9);
+	var DomOp = __webpack_require__(8);
+	var array_1 = __webpack_require__(15);
 	var ForDOM = (function () {
 	    function ForDOM(node) {
 	        this.childrenVdom = [];
@@ -457,6 +385,7 @@
 	        this.nextSibling = node.nextSibling;
 	        this.parentNode = node.parentNode;
 	        this.templateNode = node;
+	        this.isList = true;
 	        this.connect(node.previousElementSibling, node.nextElementSibling);
 	        var forString = node.getAttribute("k-for");
 	        var match = constant_1.RegexpStr.forStatement.exec(forString);
@@ -470,6 +399,7 @@
 	        var iteratorData = object_1.getDotVal(kmv.$data, this.forObjectKey);
 	        var docFrag = document.createDocumentFragment();
 	        if (Array.isArray(iteratorData)) {
+	            // 数组循环
 	            this.iteratorData = iteratorData.slice(0);
 	            for (var i = 0; i < this.iteratorData.length; i++) {
 	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
@@ -479,6 +409,7 @@
 	            }
 	        }
 	        else if (typeof iteratorData === 'object') {
+	            // 对象循环
 	            this.iteratorData = iteratorData;
 	            for (var i in iteratorData) {
 	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
@@ -490,7 +421,7 @@
 	        if (this.previousSibling) {
 	            DomOp.insertAfter(this.previousSibling, docFrag);
 	        }
-	        if (this.parentNode) {
+	        else if (this.parentNode) {
 	            DomOp.appendChild(this.parentNode, docFrag);
 	        }
 	    };
@@ -499,9 +430,17 @@
 	        this.$nextSibling = realNextDom;
 	    };
 	    ForDOM.prototype.reRender = function (kmv) {
-	        if (Array.isArray(this.iteratorData)) {
-	            for (var i = 0, len = this.iteratorData.length; i < len; i++) {
-	                this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+	        var arrKey = this.forObjectKey;
+	        var newArray = object_1.getDotVal(kmv.$data, arrKey);
+	        if (Array.isArray(newArray)) {
+	            var change = array_1.diff(this.iteratorData, newArray);
+	            if (change.length) {
+	                this.notifyDataChange(change, kmv);
+	            }
+	            else {
+	                for (var i = 0, len = this.iteratorData.length; i < len; i++) {
+	                    this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+	                }
 	            }
 	        }
 	        else {
@@ -556,7 +495,12 @@
 	            var newDom = newItem.transDOM(arr[i], this.forKey, kmv);
 	            docFrag.appendChild(newDom);
 	        }
-	        DomOp.inserBefore(this.nextSibling, docFrag);
+	        if (this.nextSibling) {
+	            DomOp.inserBefore(this.nextSibling, docFrag);
+	        }
+	        else if (this.parentNode) {
+	            DomOp.appendChild(this.parentNode, docFrag);
+	        }
 	    };
 	    ForDOM.prototype.addNewItem = function (val, kmv) {
 	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
@@ -582,7 +526,7 @@
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -591,10 +535,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var DomUtil = __webpack_require__(9);
+	var DomUtil = __webpack_require__(8);
 	var object_1 = __webpack_require__(3);
-	var ForNormalDOM_1 = __webpack_require__(10);
-	var VDOM_1 = __webpack_require__(13);
+	var ForNormalDOM_1 = __webpack_require__(9);
+	var VDOM_1 = __webpack_require__(12);
 	var ForItemDOM = (function (_super) {
 	    __extends(ForItemDOM, _super);
 	    function ForItemDOM(node) {
@@ -612,7 +556,7 @@
 	        return _this;
 	    }
 	    ForItemDOM.prototype.transDOM = function (iteratorVal, iteratorKey, kmv) {
-	        var data = object_1.depCopy(object_1.getDotVal(kmv.$data, iteratorKey));
+	        var data = object_1.depCopy(kmv.$data);
 	        data[iteratorKey] = iteratorVal; // 构建迭代对象 eg: obj.i = 100;
 	        var newElem = DomUtil.createElement(this.tagName);
 	        for (var i = 0; i < this.childrenVdom.length; i++) {
@@ -639,7 +583,7 @@
 
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -696,7 +640,7 @@
 
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -705,10 +649,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var template_1 = __webpack_require__(11);
-	var DomUtil = __webpack_require__(9);
-	var constant_1 = __webpack_require__(2);
-	var VDOM_1 = __webpack_require__(13);
+	var template_1 = __webpack_require__(10);
+	var DomUtil = __webpack_require__(8);
+	var constant_1 = __webpack_require__(4);
+	var VDOM_1 = __webpack_require__(12);
 	var ForNormalDOM = (function (_super) {
 	    __extends(ForNormalDOM, _super);
 	    function ForNormalDOM(node) {
@@ -776,13 +720,13 @@
 
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(2);
+	var constant_1 = __webpack_require__(4);
 	var object_1 = __webpack_require__(3);
-	var function_1 = __webpack_require__(12);
+	var function_1 = __webpack_require__(11);
 	/**
 	 *  转换逻辑操作运算结果
 	 *
@@ -873,7 +817,7 @@
 
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -888,15 +832,15 @@
 
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var template_1 = __webpack_require__(11);
-	var constant_1 = __webpack_require__(2);
-	var validator_1 = __webpack_require__(14);
-	var constant_2 = __webpack_require__(2);
-	var event_1 = __webpack_require__(15);
+	var template_1 = __webpack_require__(10);
+	var constant_1 = __webpack_require__(4);
+	var validator_1 = __webpack_require__(13);
+	var constant_2 = __webpack_require__(4);
+	var event_1 = __webpack_require__(14);
 	var object_1 = __webpack_require__(3);
 	var VDOM = (function () {
 	    function VDOM(node) {
@@ -998,11 +942,11 @@
 
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(2);
+	var constant_1 = __webpack_require__(4);
 	exports.isBraceReg = function (str) {
 	    return constant_1.RegexpStr.brace.test(str);
 	};
@@ -1030,7 +974,7 @@
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1052,6 +996,50 @@
 
 
 /***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var constant_1 = __webpack_require__(4);
+	exports.diff = function (arr1, arr2) {
+	    if (arr1 === void 0) { arr1 = []; }
+	    if (arr2 === void 0) { arr2 = []; }
+	    var change = [];
+	    var len1 = arr1.length, len2 = arr2.length;
+	    var len = Math.min(len1, len2);
+	    for (var i = 0; i < len; i++) {
+	        if (arr1[i] !== arr2[i]) {
+	            change.push({
+	                op: constant_1.ArrayOp.CHANGE,
+	                index: i,
+	                text: arr2[i]
+	            });
+	        }
+	    }
+	    if (len1 > len2) {
+	        var deleteArr = arr1.slice(len2);
+	        // 删除dom
+	        for (var i = 0; i < deleteArr.length; i++) {
+	            change.push({
+	                op: constant_1.ArrayOp.POP,
+	                index: i + len2,
+	                text: deleteArr[i]
+	            });
+	        }
+	    }
+	    else if (len2 > len1) {
+	        var addArr = arr2.slice(len1);
+	        change.push({
+	            batch: true,
+	            op: constant_1.ArrayOp.PUSH,
+	            array: addArr
+	        });
+	    }
+	    return change;
+	};
+
+
+/***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1061,11 +1049,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var template_1 = __webpack_require__(11);
-	var DomUtil = __webpack_require__(9);
-	var constant_1 = __webpack_require__(2);
-	var VDOM_1 = __webpack_require__(13);
-	var ForDOM_1 = __webpack_require__(7);
+	var template_1 = __webpack_require__(10);
+	var DomUtil = __webpack_require__(8);
+	var constant_1 = __webpack_require__(4);
+	var VDOM_1 = __webpack_require__(12);
+	var ForDOM_1 = __webpack_require__(6);
 	var IfDOM_1 = __webpack_require__(17);
 	var InputDOM_1 = __webpack_require__(18);
 	var NormalDOM = (function (_super) {
@@ -1155,7 +1143,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var VDOM_1 = __webpack_require__(13);
+	var VDOM_1 = __webpack_require__(12);
 	var object_1 = __webpack_require__(3);
 	var IfDOM = (function (_super) {
 	    __extends(IfDOM, _super);
@@ -1240,8 +1228,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var NormalDOM_1 = __webpack_require__(16);
-	var VDOM_1 = __webpack_require__(13);
-	var DomOp = __webpack_require__(9);
+	var VDOM_1 = __webpack_require__(12);
+	var DomOp = __webpack_require__(8);
 	var ComponentDOM = (function (_super) {
 	    __extends(ComponentDOM, _super);
 	    function ComponentDOM(node, kmv) {

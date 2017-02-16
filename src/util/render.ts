@@ -20,13 +20,6 @@ let nextTickHandler = (kmv) => {
         reRender(lastOne.kmv, lastOne.bigKey);
         kmv.changeQueue.length = 0;
     }
-    if (kmv.pendingArray) {
-        console.log("reRenderFor")
-        kmv.pendingArray = false;
-        let lastOne = kmv.changeQueue.pop();
-        reRenderFor(lastOne.kmv, lastOne.bigKey);
-        kmv.changeQueue.length = 0;
-    }
     nextTick(kmv);
 }
 
@@ -45,20 +38,3 @@ export let reRender = (kmv, key) => {
     }
 }
 
-export let reRenderFor = (kmv, forKey) => {
-    let renderQueue = kmv.renderQueue.getQueue();
-    let data = kmv.$data;
-    for (let i = 0; i < renderQueue.length; i++) {
-        let vnode = renderQueue[i];
-        if (vnode.renderType == RenderType.FOR) {
-            let arrKey = vnode.forObjectKey;
-            let newArray = getDotVal(data, arrKey);
-            if (Array.isArray(newArray)) {
-                let change = diff(vnode.iteratorData, newArray);
-                vnode.notifyDataChange(change, kmv);
-            } else {
-                vnode.notifyDataChange(null, kmv);
-            }
-        }
-    }
-}

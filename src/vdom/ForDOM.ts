@@ -1,7 +1,8 @@
 import { ForItemDOM } from './ForItemDOM'
 import {RegexpStr, ArrayOp, RenderType} from '../constants/constant'
-import { getDotVal } from "../util/object"
+import {getDotVal, depCopy} from "../util/object"
 import * as DomOp from "../dom/domOp"
+import { diff } from "../util/array";
 
 export class ForDOM {
     previousSibling;    // 前一个元素
@@ -17,11 +18,13 @@ export class ForDOM {
     iteratorData;
     $dom;           // 对应的真实dom
     parentNode;
+    isList;
     constructor (node) {
         this.previousSibling = node.previousSibling;
         this.nextSibling = node.nextSibling;
         this.parentNode = node.parentNode;
         this.templateNode = node;
+        this.isList = true;
         this.connect(node.previousElementSibling, node.nextElementSibling);
         let forString = node.getAttribute("k-for");
         let match = RegexpStr.forStatement.exec(forString);
@@ -35,6 +38,7 @@ export class ForDOM {
         let iteratorData = getDotVal(kmv.$data, this.forObjectKey);
         let docFrag = document.createDocumentFragment();
         if (Array.isArray(iteratorData)) {
+            // 数组循环
             this.iteratorData = iteratorData.slice(0);
             for (let i = 0; i < this.iteratorData.length; i++) {
                 let forItem = new ForItemDOM(this.templateNode);
@@ -43,6 +47,7 @@ export class ForDOM {
                 docFrag.appendChild(forItemDom);
             }
         } else if (typeof iteratorData === 'object') {
+            // 对象循环
             this.iteratorData = iteratorData;
             for (let i in iteratorData) {
                 let forItem = new ForItemDOM(this.templateNode);
@@ -53,8 +58,7 @@ export class ForDOM {
         }
         if (this.previousSibling) {
             DomOp.insertAfter(this.previousSibling, docFrag);
-        }
-        if (this.parentNode) {
+        } else if (this.parentNode) {
             DomOp.appendChild(this.parentNode, docFrag);
         }
     }
@@ -63,9 +67,16 @@ export class ForDOM {
         this.$nextSibling = realNextDom;
     }
     reRender (kmv) {
-        if (Array.isArray(this.iteratorData)) {
-            for (let i = 0, len = this.iteratorData.length; i < len; i++) {
-                this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+        let arrKey = this.forObjectKey;
+        let newArray = getDotVal(kmv.$data, arrKey);
+        if (Array.isArray(newArray)) {
+            let change = diff(this.iteratorData, newArray);
+            if (change.length) {
+                this.notifyDataChange(change, kmv);
+            } else {
+                for (let i = 0, len = this.iteratorData.length; i < len; i++) {
+                    this.childrenVdom[i].reRender(this.iteratorData[i], this.forKey, kmv);
+                }
             }
         } else {
             // 渲染对象
@@ -117,7 +128,11 @@ export class ForDOM {
             let newDom = newItem.transDOM(arr[i], this.forKey, kmv);
             docFrag.appendChild(newDom);
         }
-        DomOp.inserBefore(this.nextSibling, docFrag);
+        if (this.nextSibling) {
+            DomOp.inserBefore(this.nextSibling, docFrag);
+        } else if (this.parentNode) {
+            DomOp.appendChild(this.parentNode, docFrag);
+        }
     }
     addNewItem (val, kmv) {
         let newItem = new ForItemDOM(this.templateNode);

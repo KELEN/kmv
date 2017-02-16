@@ -32,7 +32,7 @@ export class ForItemDOM extends VDOM {
         this.nodeType = node.nodeType;
     }
     transDOM(iteratorVal, iteratorKey, kmv) {
-        let data = depCopy(getDotVal(kmv.$data, iteratorKey));
+        let data = depCopy(kmv.$data);
         data[iteratorKey] = iteratorVal;         // 构建迭代对象 eg: obj.i = 100;
         let newElem = DomUtil.createElement(this.tagName);
         for (let i = 0; i < this.childrenVdom.length; i++) {

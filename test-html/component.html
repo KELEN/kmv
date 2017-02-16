@@ -6,15 +6,15 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <my-menu></my-menu>
+    <h1 k-for="i in comment">{{ i.title }} + {{ name }}</h1>
+    <h1>{{ comment[0].title + "222" }} + {{ name }}</h1>
+    <button k-on:click="addComment()">add comment</button>
+    <input type="text" k-model="name">
 </div>
 <hr>
-<div id="div2" class="div">
-    <my-menu></my-menu>
-</div>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp = "<ul><li k-for='i in comment'><h3>{{ i.title }}</h3><em>{{ i.time }}</em></li></ul>";
+    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
     var kmv = new Kmv({
         el: '#div1',
         data: {
@@ -27,26 +27,16 @@
             ]
         },
         components: {
-            'my-menu': {
+            'my-comment': {
                 template: temp
             }
-        }
-    });
-
-    var kmv = new Kmv({
-        el: '#div2',
-        data: {
-            name: "Hello kmv.js!",
-            comment: [
-                { title: "评论11", time: new Date() },
-                { title: "评论22", time: new Date() },
-                { title: "评论33", time: new Date() },
-                { title: "评论44", time: new Date() },
-            ]
         },
-        components: {
-            'my-menu': {
-                template: temp
+        methods: {
+            addComment: function() {
+                this.comment.push({
+                    title: "评论" + Math.random(),
+                    time: new Date()
+                })
             }
         }
     });

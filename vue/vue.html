@@ -30,6 +30,16 @@
             },
             "my-comp": {
                 template: temp,
+                data: function() {
+                    return {
+                        comment: [
+                            { title: "评论1", time: new Date() },
+                            { title: "评论2", time: new Date() },
+                            { title: "评论3", time: new Date() },
+                            { title: "评论4", time: new Date() },
+                        ]
+                    }
+                }
             },
         }
 
