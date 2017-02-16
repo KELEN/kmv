@@ -1,13 +1,11 @@
-export let bindEvent = (node, event, method, param = '', methodsObj, observeData) => {
+export let bindEvent = (node, event, method, params, methodsObj, observeData) => {
 
     if (node.addEventListener) {
         node.addEventListener(event, function() {
-            let params = param.split(',');
             methodsObj[method].apply(observeData, params);
         });
     } else {
         node.attachEvent("on" + event, function() {
-            let params = param.split(',');
             methodsObj[method].apply(observeData, params);
         })
     }

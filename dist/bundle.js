@@ -882,7 +882,17 @@
 	                    var match = func.match(constant_2.RegexpStr.methodAndParam);
 	                    var method = match[1];
 	                    var params = match[2];
-	                    event_1.bindEvent(node, event_2, method, params, kmv.methods, kmv.data);
+	                    var paramsArr = params.split(",");
+	                    for (var n = 0; n < paramsArr.length; n++) {
+	                        console.log(paramsArr[n]);
+	                        if (paramsArr[n] === 'this') {
+	                            paramsArr[n] = this.$dom;
+	                        }
+	                        else {
+	                            paramsArr[n] = String(paramsArr[n]).trim();
+	                        }
+	                    }
+	                    event_1.bindEvent(node, event_2, method, paramsArr, kmv.methods, kmv.data);
 	                    node.removeAttribute(attrName);
 	                }
 	                else {
@@ -978,17 +988,14 @@
 /***/ function(module, exports) {
 
 	"use strict";
-	exports.bindEvent = function (node, event, method, param, methodsObj, observeData) {
-	    if (param === void 0) { param = ''; }
+	exports.bindEvent = function (node, event, method, params, methodsObj, observeData) {
 	    if (node.addEventListener) {
 	        node.addEventListener(event, function () {
-	            var params = param.split(',');
 	            methodsObj[method].apply(observeData, params);
 	        });
 	    }
 	    else {
 	        node.attachEvent("on" + event, function () {
-	            var params = param.split(',');
 	            methodsObj[method].apply(observeData, params);
 	        });
 	    }

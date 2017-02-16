@@ -46,7 +46,16 @@ export class VDOM {
                     let match = func.match(RegexpStr.methodAndParam);
                     let method = match[1];
                     let params = match[2];
-                    bindEvent(node, event, method, params, kmv.methods, kmv.data);
+                    let paramsArr = params.split(",")
+                    for (var n = 0; n < paramsArr.length; n++) {
+                        console.log(paramsArr[n]);
+                        if (paramsArr[n] === 'this') {
+                            paramsArr[n] = this.$dom;
+                        } else {
+                            paramsArr[n] = String(paramsArr[n]).trim();
+                        }
+                    }
+                    bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     node.removeAttribute(attrName);
                 } else {
                     node.setAttribute(attrName, attrVal);
