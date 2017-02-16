@@ -7,28 +7,46 @@
 <body>
 <div id="div1" class="div">
     <my-menu></my-menu>
-    <hello></hello>
+</div>
+<hr>
+<div id="div2" class="div">
+    <my-menu></my-menu>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
-    var aa = "<h3 k-on:click='log()'>hello {{　name　}} <span>test child {{　name　}}</span></h3>"
+    var temp = "<ul><li k-for='i in comment'><h3>{{ i.title }}</h3><em>{{ i.time }}</em></li></ul>";
     var kmv = new Kmv({
         el: '#div1',
         data: {
             name: "Hello kmv.js!",
-            show: true
+            comment: [
+                { title: "评论1", time: new Date() },
+                { title: "评论2", time: new Date() },
+                { title: "评论3", time: new Date() },
+                { title: "评论4", time: new Date() },
+            ]
         },
         components: {
             'my-menu': {
-                template: aa
-            },
-            'hello': {
-                template: '<h1>hello {{ name }}</h1>'
+                template: temp
             }
+        }
+    });
+
+    var kmv = new Kmv({
+        el: '#div2',
+        data: {
+            name: "Hello kmv.js!",
+            comment: [
+                { title: "评论11", time: new Date() },
+                { title: "评论22", time: new Date() },
+                { title: "评论33", time: new Date() },
+                { title: "评论44", time: new Date() },
+            ]
         },
-        methods: {
-            log: function() {
-                console.log("log");
+        components: {
+            'my-menu': {
+                template: temp
             }
         }
     });

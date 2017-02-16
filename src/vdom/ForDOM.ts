@@ -16,9 +16,11 @@ export class ForDOM {
     tagName;
     iteratorData;
     $dom;           // 对应的真实dom
+    parentNode;
     constructor (node) {
         this.previousSibling = node.previousSibling;
         this.nextSibling = node.nextSibling;
+        this.parentNode = node.parentNode;
         this.templateNode = node;
         this.connect(node.previousElementSibling, node.nextElementSibling);
         let forString = node.getAttribute("k-for");
@@ -40,7 +42,6 @@ export class ForDOM {
                 let forItemDom = forItem.transDOM(this.iteratorData[i], this.forKey, kmv);
                 docFrag.appendChild(forItemDom);
             }
-            DomOp.insertAfter(this.previousSibling, docFrag);
         } else if (typeof iteratorData === 'object') {
             this.iteratorData = iteratorData;
             for (let i in iteratorData) {
@@ -49,9 +50,13 @@ export class ForDOM {
                 let forItemDom = forItem.transDOM(iteratorData[i], this.forKey, kmv);
                 docFrag.appendChild(forItemDom);
             }
+        }
+        if (this.previousSibling) {
             DomOp.insertAfter(this.previousSibling, docFrag);
         }
-        this.connect(this.previousSibling, this.nextSibling);
+        if (this.parentNode) {
+            DomOp.appendChild(this.parentNode, docFrag);
+        }
     }
     connect (realPrevDom, realNextDom) {
         realPrevDom && (realPrevDom.$nextSibling = this);

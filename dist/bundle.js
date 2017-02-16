@@ -390,8 +390,8 @@
 	var constant_1 = __webpack_require__(2);
 	var ForDOM_1 = __webpack_require__(7);
 	var NormalDOM_1 = __webpack_require__(16);
-	var InputDOM_1 = __webpack_require__(17);
-	var IfDOM_1 = __webpack_require__(18);
+	var InputDOM_1 = __webpack_require__(18);
+	var IfDOM_1 = __webpack_require__(17);
 	var validator_1 = __webpack_require__(14);
 	var ComponentDOM_1 = __webpack_require__(19);
 	var RenderQueue = (function () {
@@ -455,6 +455,7 @@
 	        this.renderType = constant_1.RenderType.FOR;
 	        this.previousSibling = node.previousSibling;
 	        this.nextSibling = node.nextSibling;
+	        this.parentNode = node.parentNode;
 	        this.templateNode = node;
 	        this.connect(node.previousElementSibling, node.nextElementSibling);
 	        var forString = node.getAttribute("k-for");
@@ -476,7 +477,6 @@
 	                var forItemDom = forItem.transDOM(this.iteratorData[i], this.forKey, kmv);
 	                docFrag.appendChild(forItemDom);
 	            }
-	            DomOp.insertAfter(this.previousSibling, docFrag);
 	        }
 	        else if (typeof iteratorData === 'object') {
 	            this.iteratorData = iteratorData;
@@ -486,9 +486,13 @@
 	                var forItemDom = forItem.transDOM(iteratorData[i], this.forKey, kmv);
 	                docFrag.appendChild(forItemDom);
 	            }
+	        }
+	        if (this.previousSibling) {
 	            DomOp.insertAfter(this.previousSibling, docFrag);
 	        }
-	        this.connect(this.previousSibling, this.nextSibling);
+	        if (this.parentNode) {
+	            DomOp.appendChild(this.parentNode, docFrag);
+	        }
 	    };
 	    ForDOM.prototype.connect = function (realPrevDom, realNextDom) {
 	        realPrevDom && (realPrevDom.$nextSibling = this);
@@ -641,6 +645,9 @@
 	"use strict";
 	exports.insertAfter = function (node, newNode) {
 	    node && node.parentNode && node.parentNode.insertBefore(newNode, node.nextSibling);
+	};
+	exports.appendChild = function (parent, child) {
+	    parent && child && (parent.appendChild(child));
 	};
 	exports.createTextNode = function (text) {
 	    return document.createTextNode(text);
@@ -1058,6 +1065,9 @@
 	var DomUtil = __webpack_require__(9);
 	var constant_1 = __webpack_require__(2);
 	var VDOM_1 = __webpack_require__(13);
+	var ForDOM_1 = __webpack_require__(7);
+	var IfDOM_1 = __webpack_require__(17);
+	var InputDOM_1 = __webpack_require__(18);
 	var NormalDOM = (function (_super) {
 	    __extends(NormalDOM, _super);
 	    function NormalDOM(node) {
@@ -1080,7 +1090,23 @@
 	        if (node.childNodes) {
 	            for (var i = 0; i < node.childNodes.length; i++) {
 	                var child = node.childNodes[i];
-	                _this.childrenVdom.push(new NormalDOM(child));
+	                if (child.nodeType === constant_1.NodeType.ELEMENT) {
+	                    if (child.getAttribute("k-for")) {
+	                        _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
+	                    }
+	                    else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                        _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
+	                    }
+	                    else if (child.getAttribute("k-if")) {
+	                        _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                    }
+	                    else {
+	                        _this.childrenVdom.push(new NormalDOM(child));
+	                    }
+	                }
+	                else {
+	                    _this.childrenVdom.push(new NormalDOM(child));
+	                }
 	            }
 	        }
 	        return _this;
@@ -1121,40 +1147,6 @@
 
 /***/ },
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var object_1 = __webpack_require__(3);
-	var InputDOM = (function () {
-	    function InputDOM(node) {
-	        this.childrenVdom = [];
-	        // h3
-	        this.tagName = node.tagName, this.attributes = node.attributes,
-	            this.nodeType = node.nodeType;
-	        this.kmodel = node.getAttribute("k-model");
-	        this.$dom = node;
-	        node.removeAttribute("k-model");
-	    }
-	    InputDOM.prototype.renderInit = function (kmv) {
-	        var _this = this;
-	        var data = kmv.$data;
-	        this.$dom.value = object_1.getDotVal(data, this.kmodel);
-	        this.$dom.oninput = function (ev) {
-	            object_1.setObserveDotVal(kmv.data, _this.kmodel, _this.$dom.value);
-	        };
-	    };
-	    InputDOM.prototype.reRender = function (kmv) {
-	        var data = kmv.$data;
-	        var text = object_1.getDotVal(data, this.kmodel);
-	        this.$dom.value = text;
-	    };
-	    return InputDOM;
-	}());
-	exports.InputDOM = InputDOM;
-
-
-/***/ },
-/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1201,6 +1193,40 @@
 	    return IfDOM;
 	}(VDOM_1.VDOM));
 	exports.IfDOM = IfDOM;
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var object_1 = __webpack_require__(3);
+	var InputDOM = (function () {
+	    function InputDOM(node) {
+	        this.childrenVdom = [];
+	        // h3
+	        this.tagName = node.tagName, this.attributes = node.attributes,
+	            this.nodeType = node.nodeType;
+	        this.kmodel = node.getAttribute("k-model");
+	        this.$dom = node;
+	        node.removeAttribute("k-model");
+	    }
+	    InputDOM.prototype.renderInit = function (kmv) {
+	        var _this = this;
+	        var data = kmv.$data;
+	        this.$dom.value = object_1.getDotVal(data, this.kmodel);
+	        this.$dom.oninput = function (ev) {
+	            object_1.setObserveDotVal(kmv.data, _this.kmodel, _this.$dom.value);
+	        };
+	    };
+	    InputDOM.prototype.reRender = function (kmv) {
+	        var data = kmv.$data;
+	        var text = object_1.getDotVal(data, this.kmodel);
+	        this.$dom.value = text;
+	    };
+	    return InputDOM;
+	}());
+	exports.InputDOM = InputDOM;
 
 
 /***/ },

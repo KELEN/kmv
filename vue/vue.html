@@ -7,20 +7,30 @@
 <body>
 <div id="div1">
     <my-comp></my-comp>
+    <child-comp></child-comp>
 </div>
 <script src="vue.js"></script>
 <script>
+    var temp = "<ul><li v-for='i in comment'><h3>{{ i.title }}</h3><em>{{ i.time }}</em></li></ul>"
     var a = [];
     var vue = new Vue({
         el: "#div1",
         data: {
             name: "kelen",
-            postsPageData: {}
+            comment: [
+                { title: "评论1", time: new Date() },
+                { title: "评论2", time: new Date() },
+                { title: "评论3", time: new Date() },
+                { title: "评论4", time: new Date() },
+            ]
         },
         components: {
+            "child-comp": {
+                template: "<span>1111</span>"
+            },
             "my-comp": {
-                template: "<h1>hello world</h1>",
-            }
+                template: temp,
+            },
         }
 
     })

@@ -10,6 +10,10 @@ export let insertAfter = (node, newNode) => {
     node && node.parentNode && node.parentNode.insertBefore(newNode, node.nextSibling);
 }
 
+export let appendChild = (parent, child) => {
+    parent && child && (parent.appendChild(child));
+}
+
 export let createTextNode = (text) => {
     return document.createTextNode(text);
 }

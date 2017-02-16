@@ -2,7 +2,10 @@ import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { VDOM } from './VDOM'
-import { ComponentDOM } from "./ComponentDOM";
+import { ComponentDOM } from "./ComponentDOM"
+import { ForDOM } from './ForDOM'
+import { IfDOM } from './IfDOM'
+import { InputDOM } from './InputDOM'
 
 export class NormalDOM extends VDOM {
     methods;
@@ -31,7 +34,19 @@ export class NormalDOM extends VDOM {
         if (node.childNodes) {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
-                this.childrenVdom.push(new NormalDOM(child))
+                if (child.nodeType === NodeType.ELEMENT) {
+                    if (child.getAttribute("k-for")) {
+                        this.childrenVdom.push(new ForDOM(child));
+                    } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                        this.childrenVdom.push(new InputDOM(child));
+                    } else if (child.getAttribute("k-if")) {
+                        this.childrenVdom.push(new IfDOM(child));
+                    } else {
+                        this.childrenVdom.push(new NormalDOM(child));
+                    }
+                } else {
+                    this.childrenVdom.push(new NormalDOM(child));
+                }
             }
         }
     }
