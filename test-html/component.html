@@ -6,10 +6,10 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <h1 k-for="i in comment">{{ i.title }} + {{ name }}</h1>
-    <h1>{{ comment[0].title + "222" }} + {{ name }}</h1>
+    <my-comment></my-comment>
     <button k-on:click="addComment()">add comment</button>
     <input type="text" k-model="name">
+    <input type="text" k-model="a">
 </div>
 <hr>
 <script src="../dist/bundle.js"></script>
@@ -24,7 +24,8 @@
                 { title: "评论2", time: new Date() },
                 { title: "评论3", time: new Date() },
                 { title: "评论4", time: new Date() },
-            ]
+            ],
+            a: 1
         },
         components: {
             'my-comment': {
@@ -33,13 +34,16 @@
         },
         methods: {
             addComment: function() {
-                this.comment.push({
-                    title: "评论" + Math.random(),
-                    time: new Date()
-                })
+                for (var i = 0; i < 10000; i++) {
+                    kmv.data.comment.push({
+                        title: "评论" + i,
+                        time: new Date()
+                    })
+                }
             }
         }
     });
+
 </script>
 </body>
 </html>

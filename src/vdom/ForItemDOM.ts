@@ -4,7 +4,6 @@ import { ForNormalDOM } from './ForNormalDOM'
 import { VDOM } from './VDOM'
 
 export class ForItemDOM extends VDOM {
-    renderType;
     methods;
     tagName;
     templateNode;
@@ -13,7 +12,6 @@ export class ForItemDOM extends VDOM {
     nextElementSibling;
     previousElementSibling;
     childrenVdom = [];
-    arrayData;
     attributes;
     $nextSibling;       // 链接真实虚拟dom的
     $dom;

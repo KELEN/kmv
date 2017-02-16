@@ -8,6 +8,9 @@
 <div id="div1">
     <my-comp></my-comp>
     <child-comp></child-comp>
+    <li v-for="i in comment">{{ i.title }} + {{ name }}</li>
+    <input type="text" v-model="name">
+    <button onclick="add()">add</button>
 </div>
 <script src="vue.js"></script>
 <script>
@@ -44,6 +47,15 @@
         }
 
     })
+
+    function add() {
+        for (var i = 0; i < 10000; i++) {
+            vue.$data.comment.push({
+                title: "评论" + i,
+                time: new Date()
+            })
+        }
+    }
 
     var res = {
         "postsPageData":{"totalPage":6,"nowPage":1,"pageSize":8 }
