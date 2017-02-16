@@ -178,3 +178,43 @@ var kmv = new Kmv({
     });
 </script>
 ```
+
+### 自定义组件，组件共用同一实例的数据
+
+``` html
+<div id="div1" class="div">
+    <h1 k-for="i in comment">{{ i.title }} + {{ name }}</h1>
+    <h1>{{ comment[0].title + "222" }} + {{ name }}</h1>
+    <button k-on:click="addComment()">add comment</button>
+    <input type="text" k-model="name">
+</div>
+<script>
+    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
+    var spn = document.getElementById("loading");
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            name: "Hello kmv.js!",
+            comment: [
+                { title: "评论1", time: new Date() },
+                { title: "评论2", time: new Date() },
+                { title: "评论3", time: new Date() },
+                { title: "评论4", time: new Date() },
+            ]
+        },
+        components: {
+            'my-comment': {
+                template: temp
+            }
+        },
+        methods: {
+            addComment: function() {
+                this.comment.push({
+                    title: "评论" + Math.random(),
+                    time: new Date()
+                })
+            }
+        }
+    });
+</script>
+```
