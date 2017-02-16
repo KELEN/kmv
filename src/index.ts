@@ -1,6 +1,6 @@
 import { renderInit } from './util/render'
 import { observer } from './util/observer'
-import { RenderQueue } from "./util/RenderQueue"
+import { RenderQueue } from "./core/RenderQueue"
 import { Event } from './util/event'
 import { extend } from './util/object'
 

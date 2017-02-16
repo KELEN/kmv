@@ -8,7 +8,7 @@
 <div id="div1" class="div">
     <h3 k-if="show">show</h3>
     {{ name }}
-    <button k-on:click="say(this, ccc)">click</button>
+    <button k-on:click="say(this, name)">click</button>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -19,8 +19,7 @@
             show: true
         },
         methods: {
-            say: function(obj, a) {
-                console.log(a);
+            say: function(obj, name) {
                 this.name = this.name.split('').reverse().join('')
             },
             log: function () {

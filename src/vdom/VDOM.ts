@@ -3,7 +3,7 @@ import { NodeType } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
 import { RegexpStr } from '../constants/constant'
 import { bindEvent } from "../dom/event"
-import {getDotVal} from "../util/object";
+import { getDotVal } from "../util/object";
 
 export class VDOM {
     nodeType;
@@ -48,7 +48,6 @@ export class VDOM {
                     let params = match[2];
                     let paramsArr = params.split(",")
                     for (var n = 0; n < paramsArr.length; n++) {
-                        console.log(paramsArr[n]);
                         if (paramsArr[n] === 'this') {
                             paramsArr[n] = this.$dom;
                         } else {

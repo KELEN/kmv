@@ -27,10 +27,24 @@
     <li>4</li>
     <li>5</li>
  -->
+<select class="select" k-on:change="change(this)">
+    <option k-for="item in options" k:value={{ item.num }}>{{ item.name }}</option>
+</select>
 var kmv = new Kmv({
      el: '#div1',
      data: {
-         list: [ 1, 2, 3, 4, 5 ]
+         list: [ 1, 2, 3, 4, 5 ],
+         options: [
+              { name: "语文", num: 100 },
+              { name: "数学", num: 80 },
+              { name: "英语", num: 70 },
+              { name: "地理", num: 20 }
+         ],
+         methods: {
+            change: function(obj) {
+                console.log(obj.value)
+            }
+         }
      }
  });
 
@@ -183,8 +197,7 @@ var kmv = new Kmv({
 
 ``` html
 <div id="div1" class="div">
-    <h1 k-for="i in comment">{{ i.title }} + {{ name }}</h1>
-    <h1>{{ comment[0].title + "222" }} + {{ name }}</h1>
+    <my-comment></my-comment>
     <button k-on:click="addComment()">add comment</button>
     <input type="text" k-model="name">
 </div>

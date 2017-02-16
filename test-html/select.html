@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .list-title {
+            font-weight: bold;
+        }
+        .list-time {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div id="div1" class="div">
+    <select k-on:change="selectChange(this)" name="" id="">
+        <option k-for="item in types" k:value="{{ item.num }}">{{ item.name }}</option>
+    </select>
+
+    <li k:value="{{ item.num }}" k-for="item in types"><span k:value="{{ item.num }}">222</span></li>
+</div>
+</span>
+<script src="../dist/bundle.js"></script>
+<script>
+    var options = [
+        { name: "语文", num: 100 },
+        { name: "数学", num: 80 },
+        { name: "英语", num: 70 },
+        { name: "地理", num: 20 }
+    ]
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            types: options
+        },
+        methods: {
+            selectChange: function (obj) {
+                console.log(obj.value)
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -3,12 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .list-title {
+            font-weight: bold;
+        }
+        .list-time {
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
 <div id="div1" class="div">
-    <h1>{{ name }}</h1>
-    {{ postsPageData.totalPage }}
-    <input type="text" k-model="postsPageData.totalPage">
+    {{ title }}
+    <!-- 列表 -->
+    <ul>
+        <li class="list-item" k-for="i in list" style="color: black; font-size: 20px;">
+            <h3 class="list-title">{{ i.title }}</h3> - <em class="list-time">{{ i.time }} </em>
+        </li>
+    </ul>
 </div>
 <span id="loading">loading</span>
 <script src="./dist/bundle.js"></script>
@@ -23,11 +35,40 @@
             setTimeout(function() {
                 // 模拟ajax获取数据
                 var data = {
-                    postsPageData: {"totalPage":6,"nowPage":1,"pageSize":8 }
+                    title: "书名",
+                    list: [{
+                        title: "xxmmcc",
+                        time: new Date()
+                    }, {
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    },{
+                        title: "wordSpacing",
+                        time: new Date()
+                    }]
                 }
                 spn.style.display = "none";
                 // 触发initData事件
                 event.$emit("initData", data);
+                kmv.data.list.splice(1, 1, {title: "222", time: new Date()})
             }, 1000)
         }
     });
