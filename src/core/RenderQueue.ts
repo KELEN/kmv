@@ -4,7 +4,7 @@ import { NormalDOM } from "../vdom/NormalDOM"
 import { InputDOM } from "../vdom/InputDOM"
 import { IfDOM } from "../vdom/IfDOM"
 import { isUnknowElement } from '../util/validator'
-import {ComponentDOM} from "../vdom/ComponentDOM";
+import { ComponentDOM } from "../vdom/ComponentDOM";
 
 export class RenderQueue {
     queue = [];
@@ -22,12 +22,13 @@ export class RenderQueue {
             let child = childNodes[i];
             switch (child.nodeType) {
                 case NodeType.TEXT:
-                    this.queue.push(new NormalDOM(child));
+                    this.queue.push(new NormalDOM(child, this.kmv, null));
                     break;
                 case NodeType.ELEMENT:
                     if (isUnknowElement(child.tagName)) {
                         // 组件
-                        this.queue.push(new ComponentDOM(child, this.kmv).transNormalDOM());
+                        // this.queue.push(new ComponentDOM(child, this.kmv));
+                        this.queue.push(new ComponentDOM(child, this.kmv, this.kmv.$data));
                     } else {
                         if (child.getAttribute("k-for")) {
                             this.queue.push(new ForDOM(child));
@@ -36,7 +37,8 @@ export class RenderQueue {
                         } else if (child.getAttribute("k-if")) {
                             this.queue.push(new IfDOM(child));
                         } else {
-                            this.queue.push(new NormalDOM(child));
+                            // 常规dom不需要传第三个参数
+                            this.queue.push(new NormalDOM(child, this.kmv, null));
                         }
                     }
                     break;

@@ -53,31 +53,44 @@
 	function Kmv(opts) {
 	    var elSelector = opts['el'];
 	    var elem = document.querySelector(elSelector);
+	    if (!elem) {
+	        console.error("元素" + elSelector + "不存在!");
+	        return;
+	    }
 	    this.data = opts.data;
 	    // 原始数据
 	    this.watch = opts.watch || {};
 	    this.pendingValue = false;
 	    this.changeQueue = []; // 每次循环改变队列
 	    this.methods = opts.methods; // 自定义事件
-	    this.components = opts.components;
-	    // 获取需要渲染的dom列表
-	    this.renderQueue = new RenderQueue_1.RenderQueue(elem, this);
+	    this.components = object_1.extend(this.components, opts.components);
 	    var that = this;
 	    if (opts.beforeInit) {
 	        var event_2 = new event_1.Event();
+	        // 初始化数据事件
 	        event_2.$once("initData", function (data) {
 	            var allData = object_1.extend(opts.data, data);
 	            that.$data = observer_1.observer(allData, that);
+	            // 获取需要渲染的dom列表
+	            this.renderQueue = new RenderQueue_1.RenderQueue(elem, this);
 	            render_1.renderInit(that);
 	        });
 	        opts.beforeInit.call(that, event_2);
 	    }
 	    else {
 	        this.$data = observer_1.observer(opts.data, this);
+	        // 获取需要渲染的dom列表
+	        this.renderQueue = new RenderQueue_1.RenderQueue(elem, this);
 	        render_1.renderInit(this);
 	    }
 	    return this;
 	}
+	Kmv.components = function (name, config) {
+	    if (!Kmv.prototype.components) {
+	        Kmv.prototype.components = {};
+	    }
+	    Kmv.prototype.components[name] = config;
+	};
 	window.Kmv = Kmv;
 
 
@@ -245,6 +258,14 @@
 	    }
 	    return srcObj;
 	};
+	exports.isNull = function (obj) {
+	    for (var i in obj) {
+	        if (obj.hasOwnProperty(i) && !obj[i]) {
+	            return true;
+	        }
+	    }
+	    return obj == null || Object.keys(obj).length === 0;
+	};
 
 
 /***/ },
@@ -275,7 +296,8 @@
 	    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,
 	    isTernaryOp: /!.*|!!.*|.+?.+:.+/,
 	    ternaryOpSplit: /\?|:|\(|\)|!!/,
-	    isNormalHtmlTag: /html|body|base|head|link|meta|style|title|address|article|aside|footer|header|h1|h2|h3|h4|h5|h6|hgroup|nav|section|div|dd|dl|dt|figcaption|figure|hr|img|li|main|ol|p|pre|ul|a|b|abbr|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rp|rt|rtc|ruby|s|samp|small|span|strong|sub|sup|time|u|var|wbr|area|audio|map|track|video|embed|object|param|source|canvas|script|noscript|del|ins|caption|col|colgroup|table|thead|tbody|td|th|tr|button|datalist|fieldset|form|input|label|legend|meter|optgroup|option|output|progress|select|textarea|details|dialog|menu|menuitem|summary|content|element|shadow|template/i
+	    isNormalHtmlTag: /html|body|base|head|link|meta|style|title|address|article|aside|footer|header|h1|h2|h3|h4|h5|h6|hgroup|nav|section|div|dd|dl|dt|figcaption|figure|hr|img|li|main|ol|p|pre|ul|a|b|abbr|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rp|rt|rtc|ruby|s|samp|small|span|strong|sub|sup|time|u|var|wbr|area|audio|map|track|video|embed|object|param|source|canvas|script|noscript|del|ins|caption|col|colgroup|table|thead|tbody|td|th|tr|button|datalist|fieldset|form|input|label|legend|meter|optgroup|option|output|progress|select|textarea|details|dialog|menu|menuitem|summary|content|element|shadow|template/i,
+	    isProps: /:(.*)/
 	};
 	exports.NodeType = {
 	    ELEMENT: 1,
@@ -331,12 +353,13 @@
 	            var child = childNodes[i];
 	            switch (child.nodeType) {
 	                case constant_1.NodeType.TEXT:
-	                    this.queue.push(new NormalDOM_1.NormalDOM(child));
+	                    this.queue.push(new NormalDOM_1.NormalDOM(child, this.kmv, null));
 	                    break;
 	                case constant_1.NodeType.ELEMENT:
 	                    if (validator_1.isUnknowElement(child.tagName)) {
 	                        // 组件
-	                        this.queue.push(new ComponentDOM_1.ComponentDOM(child, this.kmv).transNormalDOM());
+	                        // this.queue.push(new ComponentDOM(child, this.kmv));
+	                        this.queue.push(new ComponentDOM_1.ComponentDOM(child, this.kmv, this.kmv.$data));
 	                    }
 	                    else {
 	                        if (child.getAttribute("k-for")) {
@@ -349,7 +372,8 @@
 	                            this.queue.push(new IfDOM_1.IfDOM(child));
 	                        }
 	                        else {
-	                            this.queue.push(new NormalDOM_1.NormalDOM(child));
+	                            // 常规dom不需要传第三个参数
+	                            this.queue.push(new NormalDOM_1.NormalDOM(child, this.kmv, null));
 	                        }
 	                    }
 	                    break;
@@ -654,7 +678,7 @@
 	    node.style.display = "block";
 	};
 	exports.removeNode = function (node) {
-	    node && node.parentNode.removeChild(node);
+	    node && node.parentNode && node.parentNode.removeChild(node);
 	};
 
 
@@ -1171,9 +1195,12 @@
 	var ForDOM_1 = __webpack_require__(6);
 	var IfDOM_1 = __webpack_require__(15);
 	var InputDOM_1 = __webpack_require__(16);
+	var validator_1 = __webpack_require__(13);
+	var ComponentDOM_1 = __webpack_require__(19);
 	var NormalDOM = (function (_super) {
 	    __extends(NormalDOM, _super);
-	    function NormalDOM(node) {
+	    // 第三个参数传递给子组件的数据
+	    function NormalDOM(node, kmv, data) {
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
 	        // h3
@@ -1194,21 +1221,26 @@
 	            for (var i = 0; i < node.childNodes.length; i++) {
 	                var child = node.childNodes[i];
 	                if (child.nodeType === constant_1.NodeType.ELEMENT) {
-	                    if (child.getAttribute("k-for")) {
-	                        _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
-	                    }
-	                    else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
-	                        _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
-	                    }
-	                    else if (child.getAttribute("k-if")) {
-	                        _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                    if (validator_1.isUnknowElement(child.tagName)) {
+	                        _this.childrenVdom.push(new ComponentDOM_1.ComponentDOM(child, kmv, data));
 	                    }
 	                    else {
-	                        _this.childrenVdom.push(new NormalDOM(child));
+	                        if (child.getAttribute("k-for")) {
+	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
+	                        }
+	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
+	                        }
+	                        else if (child.getAttribute("k-if")) {
+	                            _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                        }
+	                        else {
+	                            _this.childrenVdom.push(new NormalDOM(child, kmv, null));
+	                        }
 	                    }
 	                }
 	                else {
-	                    _this.childrenVdom.push(new NormalDOM(child));
+	                    _this.childrenVdom.push(new NormalDOM(child, kmv, null));
 	                }
 	            }
 	        }
@@ -1259,29 +1291,58 @@
 	var NormalDOM_1 = __webpack_require__(18);
 	var VDOM_1 = __webpack_require__(12);
 	var DomOp = __webpack_require__(8);
+	var constant_1 = __webpack_require__(4);
+	var object_1 = __webpack_require__(3);
 	var ComponentDOM = (function (_super) {
 	    __extends(ComponentDOM, _super);
-	    function ComponentDOM(node, kmv) {
+	    function ComponentDOM(node, kmv, data) {
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
+	        _this.$data = {};
+	        console.log(data);
 	        _this.tagName = node.tagName;
-	        var component = kmv.components[_this.tagName.toLowerCase()];
+	        var component = kmv.components[_this.tagName.toLowerCase()]; // 组件配置
 	        if (component) {
+	            var srcData = object_1.depCopy(data);
 	            var div = document.createElement("div");
-	            div.innerHTML = component.template;
-	            var firstChild = div.firstChild;
-	            _this.$dom = firstChild;
-	            DomOp.inserBefore(node, _this.$dom);
-	            DomOp.removeNode(node);
+	            div.innerHTML = component.template; // 转为dom
+	            _this.attributes = node.attributes;
+	            for (var i = 0; i < _this.attributes.length; i++) {
+	                var attr = _this.attributes[i];
+	                var res = void 0;
+	                if (res = constant_1.RegexpStr.isProps.exec(attr.nodeName)) {
+	                    _this.$data[res[1]] = object_1.getDotVal(srcData, attr.nodeValue);
+	                }
+	            }
+	            _this.$dom = div;
+	            if (!object_1.isNull(_this.$data)) {
+	                // 父组件有数据传递
+	                _this.childrenVdom.push(new NormalDOM_1.NormalDOM(_this.$dom, kmv, _this.$data));
+	            }
+	            console.log(_this.childrenVdom);
+	            _this.node = node;
 	        }
 	        else {
-	            // 无效标签
 	            console.error("无效标签" + _this.tagName);
 	        }
 	        return _this;
 	    }
+	    ComponentDOM.prototype.renderInit = function (data, kmv) {
+	        var _this = this;
+	        if (data === void 0) { data = null; }
+	        // 先插入后渲染
+	        DomOp.insertAfter(this.node, this.$dom);
+	        DomOp.removeNode(this.node);
+	        if (!object_1.isNull(this.$data)) {
+	            // 对象为空, 不渲染数据
+	            this.childrenVdom.forEach(function (child) {
+	                child.renderInit(_this.$data, kmv);
+	            });
+	        }
+	    };
+	    ComponentDOM.prototype.reRender = function () {
+	    };
 	    ComponentDOM.prototype.transNormalDOM = function () {
-	        return new NormalDOM_1.NormalDOM(this.$dom);
 	    };
 	    return ComponentDOM;
 	}(VDOM_1.VDOM));

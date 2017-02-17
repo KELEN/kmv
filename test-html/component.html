@@ -6,37 +6,48 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <my-comment></my-comment>
-    <button k-on:click="addComment()">add comment</button>
-    <input type="text" k-model="name">
+    <my-tree :children="children" :name="name"></my-tree>
 </div>
 <hr>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
+    var temp =
+        "<div>{{ name }}</div>" +
+        "<ul>" +
+        "<li k-for='child in children'>{{ child.name }}</li><my-tree :name='name'></my-tree>" +
+        "</ul>";
+    Kmv.components('my-tree', {
+        template: temp
+    })
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "Hello kmv.js!",
-            comment: [
-                { title: "评论1", time: new Date() },
-            ],
-            a: 1
-        },
-        components: {
-            'my-comment': {
-                template: temp
-            }
-        },
-        methods: {
-            addComment: function() {
-                for (var i = 0; i < 10; i++) {
-                    kmv.data.comment.push({
-                        title: "评论" + i,
-                        time: new Date()
-                    })
+            name: 'My Tree',
+            children: [
+                { name: 'hello' },
+                { name: 'wat' },
+                {
+                    name: 'child folder',
+                    children: [
+                        {
+                            name: 'child folder',
+                            children: [
+                                { name: 'hello' },
+                                { name: 'wat' }
+                            ]
+                        },
+                        { name: 'hello' },
+                        { name: 'wat' },
+                        {
+                            name: 'child folder',
+                            children: [
+                                { name: 'hello' },
+                                { name: 'wat' }
+                            ]
+                        }
+                    ]
                 }
-            }
+            ]
         }
     });
 

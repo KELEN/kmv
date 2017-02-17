@@ -66,6 +66,6 @@ export let showNode = (node) => {
 }
 
 export let removeNode = (node) => {
-    node && node.parentNode.removeChild(node);
+    node && node.parentNode && node.parentNode.removeChild(node);
 }
 

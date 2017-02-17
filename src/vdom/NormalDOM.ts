@@ -5,6 +5,8 @@ import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
 import { IfDOM } from './IfDOM'
 import { InputDOM } from './InputDOM'
+import { isUnknowElement } from '../util/validator'
+import { ComponentDOM } from './ComponentDOM'
 
 export class NormalDOM extends VDOM {
     methods;
@@ -14,7 +16,8 @@ export class NormalDOM extends VDOM {
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
-    constructor (node) {
+    // 第三个参数传递给子组件的数据
+    constructor (node, kmv, data) {
         super(node);
         // h3
         this.tagName = node.tagName,
@@ -34,17 +37,21 @@ export class NormalDOM extends VDOM {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
-                    if (child.getAttribute("k-for")) {
-                        this.childrenVdom.push(new ForDOM(child));
-                    } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
-                        this.childrenVdom.push(new InputDOM(child));
-                    } else if (child.getAttribute("k-if")) {
-                        this.childrenVdom.push(new IfDOM(child));
+                    if (isUnknowElement(child.tagName)) {
+                        this.childrenVdom.push(new ComponentDOM(child, kmv, data));
                     } else {
-                        this.childrenVdom.push(new NormalDOM(child));
+                        if (child.getAttribute("k-for")) {
+                            this.childrenVdom.push(new ForDOM(child));
+                        } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                            this.childrenVdom.push(new InputDOM(child));
+                        } else if (child.getAttribute("k-if")) {
+                            this.childrenVdom.push(new IfDOM(child));
+                        } else {
+                            this.childrenVdom.push(new NormalDOM(child, kmv, null));
+                        }
                     }
                 } else {
-                    this.childrenVdom.push(new NormalDOM(child));
+                    this.childrenVdom.push(new NormalDOM(child, kmv, null));
                 }
             }
         }

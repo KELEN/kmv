@@ -3494,6 +3494,7 @@ function initExtend (Vue) {
         );
       }
     }
+    console.log(11);
     var Sub = function VueComponent (options) {
       this._init(options);
     };
