@@ -12,7 +12,6 @@ function Kmv(opts) {
     // 原始数据
     this.watch = opts.watch || {};
     this.pendingValue = false;
-    this.pendingArray = false;
     this.changeQueue = [];      // 每次循环改变队列
     this.methods = opts.methods;    // 自定义事件
 
@@ -37,12 +36,5 @@ function Kmv(opts) {
     return this;
 }
 
-let init = (kmv) => {
-
-}
-
 (<any>window).Kmv = Kmv;
-
-export default Kmv;
-
 

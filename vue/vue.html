@@ -6,62 +6,32 @@
 </head>
 <body>
 <div id="div1">
-    <my-comp></my-comp>
-    <child-comp></child-comp>
-    <li v-for="i in comment">{{ i.title }} + {{ name }}</li>
-    <input type="text" v-model="name">
-    <button onclick="add()">add</button>
+    <h3 v-for="i in comment">{{ i }}</h3>
+
 </div>
 <script src="vue.js"></script>
 <script>
-    var temp = "<ul><li v-for='i in comment'><h3>{{ i.title }}</h3><em>{{ i.time }}</em></li></ul>"
-    var a = [];
+    Vue.component('my-comp', {
+        template: 'aaaaaaaa'
+    })
     var vue = new Vue({
         el: "#div1",
         data: {
             name: "kelen",
-            comment: [
-                { title: "评论1", time: new Date() },
-                { title: "评论2", time: new Date() },
-                { title: "评论3", time: new Date() },
-                { title: "评论4", time: new Date() },
-            ]
+            comment: [1,3,4],
+            status: {
+                0: '已检查',
+                1: '未检查',
+                2: '已损坏'
+            },
         },
-        components: {
-            "child-comp": {
-                template: "<span>1111</span>"
-            },
-            "my-comp": {
-                template: temp,
-                data: function() {
-                    return {
-                        comment: [
-                            { title: "评论1", time: new Date() },
-                            { title: "评论2", time: new Date() },
-                            { title: "评论3", time: new Date() },
-                            { title: "评论4", time: new Date() },
-                        ]
-                    }
-                }
-            },
+        component: {
+            'nn': {
+                template: ''
+            }
         }
-
     })
-
-    function add() {
-        for (var i = 0; i < 10000; i++) {
-            vue.$data.comment.push({
-                title: "评论" + i,
-                time: new Date()
-            })
-        }
-    }
-
-    var res = {
-        "postsPageData":{"totalPage":6,"nowPage":1,"pageSize":8 }
-    }
-
-    vue.$data.postsPageData  = res;
+    console.log(vue);
 </script>
 </body>
 </html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<template id="test">
+    <p>First name: <strong>{{ name }}</strong></p>
+    <p>Last name: <strong>{{ lastName }}</strong></p>
+</template>
+</body>
+<script src="../dist/bundle.js"></script>
+<script>
+    var clone = document.importNode(document.querySelector('#test').content, true);
+    console.log(clone);
+
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            value: 2,
+            status: {
+                0: '已检查',
+                1: '未检查',
+                2: '已损坏'
+            }
+        },
+        watch: {
+
+        },
+        methods: {
+            changeStatus: function() {
+                this.value = 0;
+            }
+        }
+    });
+</script>
+</html>

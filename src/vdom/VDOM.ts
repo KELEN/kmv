@@ -9,13 +9,11 @@ export class VDOM {
     nodeType;
     $dom;
     attributes;
-    vdomAttr = {};
     constructor (node) {
         node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
     }
-    renderAttr (kmv) {
+    renderAttr (data, kmv) {
         if (this.nodeType === NodeType.ELEMENT) {
-            let data = kmv.$data;
             let node = this.$dom;
             let attrs = this.attributes;
             for (let i = 0; i < attrs.length; i++) {
@@ -62,8 +60,7 @@ export class VDOM {
             }
         }
     }
-    reRenderAttr (kmv) {
-        let data = kmv.$data;
+    reRenderAttr (data, kmv) {
         let node = this.$dom;
         for (let i = 0; i < this.attributes.length; i++) {
             let attr = this.attributes[i];
@@ -88,13 +85,6 @@ export class VDOM {
                         node.setAttribute(key, val);
                         node.removeAttribute(attrName);
                     }
-                } else if (RegexpStr.kOnAttribute.test(attrName)) {
-                    let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
-                    let func = compileTpl(attrVal, data);
-                    let match = func.match(RegexpStr.methodAndParam);
-                    let method = match[1];
-                    let params = match[2];
-                    node.removeAttribute(attrName);
                 } else {
                     node.setAttribute(attrName, compileTpl(attrVal, data));
                 }

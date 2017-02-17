@@ -10,7 +10,7 @@ export const Attr = {
 
 export const RegexpStr = {
     brace: /\{\{((?:.|\n)+?)\}\}/,  // {{ name }}  大括号
-    forStatement: /([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+)/,
+    forStatement: /([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+(\[.*\])*)/,
     bracket: /\[['|"]?(\w+)['|"]?\]/,   // 中括号
     isString: /'([^']*)'|"([^\"]*)"/,
     isParams: /^[^"|^'\d]+.*/,

@@ -7,7 +7,7 @@ export let renderInit = (kmv) => {
     let renderQueue = watcher.getQueue();
     for (let i = 0; i < renderQueue.length; i++) {
         let node = renderQueue[i];
-        node.renderInit(kmv);
+        node.renderInit(kmv.$data, kmv);
     }
     nextTick(kmv);
 }
@@ -34,7 +34,7 @@ export let reRender = (kmv, key) => {
     let renderQueue = kmv.renderQueue.getQueue();
     for (let i = 0; i < renderQueue.length; i++) {
         let node = renderQueue[i];
-        node.reRender(kmv);
+        node.reRender(kmv.$data, kmv);
     }
 }
 

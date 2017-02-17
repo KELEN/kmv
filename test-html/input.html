@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div">
+    {{ name }} <span>{{ name}}</span> <h3>{{name}}</h3>
+    <input k-model="name"/>
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            title: "this is baidu",
+            name: "kelen",
+            fullName: "huang kelen",
+            url: true
+        }
+    });
+</script>
+</body>
+</html>

@@ -2,7 +2,6 @@ import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { VDOM } from './VDOM'
-import { ComponentDOM } from "./ComponentDOM"
 import { ForDOM } from './ForDOM'
 import { IfDOM } from './IfDOM'
 import { InputDOM } from './InputDOM'
@@ -50,22 +49,20 @@ export class NormalDOM extends VDOM {
             }
         }
     }
-    renderInit(kmv) {
-        let data = kmv.$data;
+    renderInit(data, kmv) {
         switch (this.nodeType) {
             case NodeType.TEXT:
                 DomUtil.changeTextContent(this.$dom, compileTpl(this.template, data));
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
-                    child.renderInit(kmv);
+                    child.renderInit(data, kmv);
                 });
-                this.renderAttr(kmv);
+                this.renderAttr(data, kmv);
                 break;
         }
     }
-    reRender (kmv) {
-        let data = kmv.$data;
+    reRender (data, kmv) {
         let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
@@ -73,9 +70,9 @@ export class NormalDOM extends VDOM {
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
-                    child.reRender(kmv);
+                    child.reRender(data, kmv);
                 });
-                this.reRenderAttr(kmv);
+                this.reRenderAttr(data, kmv);
                 break;
         }
     }

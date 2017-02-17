@@ -1,6 +1,3 @@
-import { compileTpl } from '../util/template'
-import * as DomUtil from '../dom/domOp'
-import { NodeType } from "../constants/constant";
 import { getDotVal, setObserveDotVal} from "../util/object";
 
 export class InputDOM {
@@ -20,15 +17,13 @@ export class InputDOM {
         this.$dom = node;
         node.removeAttribute("k-model");
     }
-    renderInit(kmv) {
-        let data = kmv.$data;
+    renderInit(data, kmv) {
         this.$dom.value = getDotVal(data, this.kmodel);
         this.$dom.oninput = (ev) => {
             setObserveDotVal(kmv.data, this.kmodel, this.$dom.value);
         }
     }
-    reRender (kmv) {
-        let data = kmv.$data;
+    reRender (data, kmv) {
         let text = getDotVal(data, this.kmodel);
         this.$dom.value = text;
     }

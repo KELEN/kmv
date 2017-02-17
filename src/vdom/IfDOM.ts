@@ -18,8 +18,7 @@ export class IfDOM extends VDOM {
         this.$dom = node;
         node.removeAttribute("k-if");
     }
-    renderInit(kmv) {
-        let data = kmv.$data;
+    renderInit(data, kmv) {
         let isShow = getDotVal(data, this.kif);
         if (!!isShow) {
             this.$dom.style.display = "block";
@@ -27,8 +26,7 @@ export class IfDOM extends VDOM {
             this.$dom.style.display = "none";
         }
     }
-    reRender (kmv) {
-        let data = kmv.$data;
+    reRender (data, kmv) {
         let isShow = getDotVal(data, this.kif);
         if (!!isShow) {
             this.$dom.style.display = "block";

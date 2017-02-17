@@ -1,8 +1,6 @@
-import { compileTpl } from "../util/template"
 import { NormalDOM } from './NormalDOM'
 import { VDOM } from './VDOM'
 import * as DomOp from '../dom/domOp'
-
 
 export class ComponentDOM extends VDOM {
     methods;

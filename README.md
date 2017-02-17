@@ -1,4 +1,4 @@
-# 一个轻量的数据渲染框架, kmv.js, 压缩后只有17k~, 速度还行
+# 一个轻量的数据渲染框架, kmv.js, 压缩后只有20k~, 速度还行
 
 ### 数据双向绑定
 
@@ -30,6 +30,15 @@
 <select class="select" k-on:change="change(this)">
     <option k-for="item in options" k:value={{ item.num }}>{{ item.name }}</option>
 </select>
+<h3>嵌套for循环</h3>
+    <div k-for="ar in articles">
+        <h3>{{ ar.title }}</h3>
+        <div class="tags-wrap">
+            <span k-for="tag in ar['tags']">{{ tag }}</span> <h1>{{ ar.author }}</h1>
+        </div>
+        <em>{{ ar.time }}</em>
+    </div>
+<script>
 var kmv = new Kmv({
      el: '#div1',
      data: {
@@ -40,14 +49,37 @@ var kmv = new Kmv({
               { name: "英语", num: 70 },
               { name: "地理", num: 20 }
          ],
-         methods: {
-            change: function(obj) {
-                console.log(obj.value)
-            }
-         }
+         articles: [
+             {
+                 title: "第一篇",
+                 author: "kelen",
+                 tags: [1,3,4,5],
+                 time: new Date()
+             },{
+                 title: "第二篇",
+                 author: "kelen",
+                 tags: [1,3,4,5],
+                 time: new Date()
+             },{
+                 title: "第三篇",
+                 author: "kelen",
+                 tags: [1,3,4,5],
+                 time: new Date()
+             },{
+                 title: "我下下",
+                 author: "kelen",
+                 tags: [1,3,4,5],
+                 time: new Date()
+             },{
+                 title: "第四篇",
+                 author: "kelen",
+                 tags: [1,3,4,5],
+                 time: new Date()
+             }
+         ]
      }
  });
-
+</script>
 ####  支持 push() pop() shift() unshift() splice() sort() reverse()
 用法: kmv.data.list.push(100);
 ```

@@ -9,7 +9,6 @@
     <my-comment></my-comment>
     <button k-on:click="addComment()">add comment</button>
     <input type="text" k-model="name">
-    <input type="text" k-model="a">
 </div>
 <hr>
 <script src="../dist/bundle.js"></script>
@@ -21,9 +20,6 @@
             name: "Hello kmv.js!",
             comment: [
                 { title: "评论1", time: new Date() },
-                { title: "评论2", time: new Date() },
-                { title: "评论3", time: new Date() },
-                { title: "评论4", time: new Date() },
             ],
             a: 1
         },
@@ -34,7 +30,7 @@
         },
         methods: {
             addComment: function() {
-                for (var i = 0; i < 10000; i++) {
+                for (var i = 0; i < 10; i++) {
                     kmv.data.comment.push({
                         title: "评论" + i,
                         time: new Date()

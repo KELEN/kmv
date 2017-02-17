@@ -1,30 +1,39 @@
 import * as DomUtil from "../dom/domOp"
-import {depCopy, getDotVal} from '../util/object'
 import { ForNormalDOM } from './ForNormalDOM'
-import { isKvmAttribute } from '../util/validator'
-import { RegexpStr } from '../constants/constant'
-import { bindEvent } from "../dom/event"
-import { NodeType } from "../constants/constant"
-import { compileTpl } from '../util/template'
+import { VDOM } from './VDOM'
+import { ForDOM } from './ForDOM'
+import { IfDOM } from './IfDOM'
+import { InputDOM } from './InputDOM'
+import { NodeType, RegexpStr } from "../constants/constant"
 
-export class ForItemDOM {
+export class ForItemDOM extends VDOM {
     methods;
     tagName;
-    templateNode;
+    templateNode;       // 模板节点, 每次构造时候需要获取template和attributes
     previousSibling;
     nextSibling;
-    nextElementSibling;
-    previousElementSibling;
     childrenVdom = [];
     attributes;
-    $nextSibling;       // 链接真实虚拟dom的
     $dom;
     template;
     nodeType;
     constructor (node) {
+        super(node);
         for (let i = 0; i < node.childNodes.length; i++) {
-            let childNode = node.childNodes[i];
-            this.childrenVdom.push(new ForNormalDOM(childNode));
+            let child = node.childNodes[i];
+            if (child.nodeType === NodeType.ELEMENT) {
+                if (child.getAttribute("k-for")) {
+                    this.childrenVdom.push(new ForDOM(child));
+                } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                    this.childrenVdom.push(new InputDOM(child));
+                } else if (child.getAttribute("k-if")) {
+                    this.childrenVdom.push(new IfDOM(child));
+                } else {
+                    this.childrenVdom.push(new ForNormalDOM(child))
+                }
+            } else {
+                this.childrenVdom.push(new ForNormalDOM(child));
+            }
         }
         node.removeAttribute("k-for");
         this.tagName = node.tagName;
@@ -32,116 +41,21 @@ export class ForItemDOM {
         this.attributes = node.attributes;
         this.nodeType = node.nodeType;
     }
-    transDOM(iteratorVal, iteratorKey, kmv) {
-        let data = depCopy(kmv.$data);
-        data[iteratorKey] = iteratorVal;         // 构建迭代对象 eg: obj.i = 100;
+    transDOM(iteratorObj, kmv) {
         let newElem = DomUtil.createElement(this.tagName);
-        for (let i = 0; i < this.childrenVdom.length; i++) {
-            kmv.$$data = data;
-            newElem.appendChild(this.childrenVdom[i].transDOM(kmv));
+        for (let i = 0, len = this.childrenVdom.length; i < len; i++) {
+            let childVdom = this.childrenVdom[i];
+            newElem.appendChild(childVdom.transDOM(iteratorObj, kmv));
         }
         this.$dom = newElem;
-        this.renderAttr(kmv);
+        this.renderAttr(iteratorObj, kmv);
         return newElem;
     }
     // 重新渲染
-    reRender (iteratorVal, iteratorKey, kmv) {
-        let data = depCopy(kmv.$data);
-        data[iteratorKey] = iteratorVal;         // 构建迭代对象 eg: obj.i = 100;
-        kmv.$$data = data;
+    reRender (iteratorObj, kmv) {
         this.childrenVdom.forEach((child) => {
-            child.reRender(kmv);
+            child.reRender(iteratorObj, kmv);
         });
-        this.renderAttr(kmv);
-    }
-    renderAttr (kmv) {
-        if (this.nodeType === NodeType.ELEMENT) {
-            let data = kmv.$$data;
-            let node = this.$dom;
-            let attrs = this.attributes;
-            for (let i = 0; i < attrs.length; i++) {
-                let attr = attrs[i];
-                let attrName = attr.nodeName, attrVal = attr.nodeValue;
-                if (RegexpStr.kAttribute.test(attrName)) {
-                    let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
-                    if (key === 'class') {
-                        // 类 a:'class2', b:'class2'
-                        let arr = attrVal.split(",");
-                        let valRes = "";
-                        for (var n = 0; n < arr.length; n++) {
-                            var ak = arr[n].split(":")[0];
-                            if (getDotVal(data, ak.trim())) {
-                                valRes += arr[n].split(":")[1].trim() + " ";
-                            }
-                        }
-                        node.setAttribute(key, valRes.trim());
-                        node.removeAttribute(attrName);
-                    } else {
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
-                    }
-                } else if (RegexpStr.kOnAttribute.test(attrName)) {
-                    let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
-                    let func = compileTpl(attrVal, data);
-                    let match = func.match(RegexpStr.methodAndParam);
-                    let method = match[1];
-                    let params = match[2];
-                    let paramsArr = params.split(",")
-                    for (var n = 0; n < paramsArr.length; n++) {
-                        if (paramsArr[n] === 'this') {
-                            paramsArr[n] = this.$dom;
-                        } else {
-                            paramsArr[n] = String(paramsArr[n]).trim();
-                        }
-                    }
-                    bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
-                    node.removeAttribute(attrName);
-                } else {
-                    node.setAttribute(attrName, attrVal);
-                }
-            }
-        }
-    }
-    reRenderAttr (kmv) {
-        let data = kmv.$$data;
-        let node = this.$dom;
-        for (let i = 0; i < this.attributes.length; i++) {
-            let attr = this.attributes[i];
-            let attrName = attr.nodeName, attrVal = attr.nodeValue;
-            if (isKvmAttribute(attrName)) {
-                if (RegexpStr.kAttribute.test(attrName)) {
-                    let key = attr.nodeName.replace(RegexpStr.kAttribute, '$1');
-                    if (key === 'class') {
-                        // 类 a:'class2', b:'class2'
-                        let arr = attrVal.split(",");
-                        let valRes = "";
-                        for (var n = 0; n < arr.length; n++) {
-                            var ak = arr[n].split(":")[0];
-                            if (getDotVal(data, ak.trim())) {
-                                valRes += arr[n].split(":")[1].trim() + " ";
-                            }
-                        }
-                        node.setAttribute(key, valRes.trim());
-                        node.removeAttribute(attrName);
-                    } else {
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
-                    }
-                } else if (RegexpStr.kOnAttribute.test(attrName)) {
-                    let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
-                    let func = compileTpl(attrVal, data);
-                    let match = func.match(RegexpStr.methodAndParam);
-                    let method = match[1];
-                    let params = match[2];
-                    node.removeAttribute(attrName);
-                } else {
-                    node.setAttribute(attrName, compileTpl(attrVal, data));
-                }
-            } else {
-                node.setAttribute(attrName, attrVal);
-            }
-        }
+        this.reRenderAttr(iteratorObj, kmv);
     }
 }
