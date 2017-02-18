@@ -17,7 +17,7 @@ export class NormalDOM extends VDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     // 第三个参数传递给子组件的数据
-    constructor (node, kmv, data) {
+    constructor (node, kmv, parentData = null) {
         super(node);
         // h3
         this.tagName = node.tagName,
@@ -38,10 +38,10 @@ export class NormalDOM extends VDOM {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
                     if (isUnknowElement(child.tagName)) {
-                        this.childrenVdom.push(new ComponentDOM(child, kmv, data));
+                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
                     } else {
                         if (child.getAttribute("k-for")) {
-                            this.childrenVdom.push(new ForDOM(child));
+                            this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.childrenVdom.push(new InputDOM(child));
                         } else if (child.getAttribute("k-if")) {

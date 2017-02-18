@@ -6,7 +6,6 @@ import { depCopy, getDotVal, isNull } from "../util/object"
 import { VDOMInterface } from "./VDOMInterface"
 
 export class ComponentDOM extends VDOM implements VDOMInterface {
-    methods;
     nodeType;
     tagName;
     attributes;
@@ -19,7 +18,6 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
     node;
     constructor (node, kmv, data) {
         super(node);
-        console.log(data);
         this.tagName = node.tagName;
         let component = kmv.components[this.tagName.toLowerCase()]; // 组件配置
         if (component) {
@@ -34,12 +32,11 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
                     this.$data[res[1]] = getDotVal(srcData, attr.nodeValue);
                 }
             }
-            this.$dom = div;
+            this.$dom = div.firstChild;
             if (!isNull(this.$data)) {
                 // 父组件有数据传递
                 this.childrenVdom.push(new NormalDOM(this.$dom, kmv, this.$data));
             }
-            console.log(this.childrenVdom);
             this.node = node;
         } else {
             console.error("无效标签" + this.tagName);
@@ -51,6 +48,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
         DomOp.removeNode(this.node);
         if (!isNull(this.$data)) {
             // 对象为空, 不渲染数据
+            console.log(this.childrenVdom);
             this.childrenVdom.forEach((child) => {
                 child.renderInit(this.$data, kmv);
             });

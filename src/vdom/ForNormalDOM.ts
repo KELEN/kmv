@@ -7,18 +7,19 @@ import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
 
 export class ForNormalDOM extends VDOM {
-    methods;
     nodeType;
     tagName;
     attributes;
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
-    constructor (node) {
+    constructor (node, kmv, parentData) {
         // h3
         super(node);
-        this.tagName = node.tagName, this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
-        this.nodeType = node.nodeType
+        this.tagName = node.tagName;
+        this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0));
+        this.nodeType = node.nodeType;
+
         switch (node.nodeType) {
             case NodeType.TEXT:
                 this.template = node.textContent;
@@ -29,16 +30,16 @@ export class ForNormalDOM extends VDOM {
                         let child = node.childNodes[i];
                         if (child.nodeType === NodeType.ELEMENT) {
                             if (child.getAttribute("k-for")) {
-                                this.childrenVdom.push(new ForDOM(child));
+                                this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                             } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                                 this.childrenVdom.push(new InputDOM(child));
                             } else if (child.getAttribute("k-if")) {
                                 this.childrenVdom.push(new IfDOM(child));
                             } else {
-                                this.childrenVdom.push(new ForNormalDOM(child))
+                                this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData))
                             }
                         } else {
-                            this.childrenVdom.push(new ForNormalDOM(child));
+                            this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData));
                         }
                     }
                 }

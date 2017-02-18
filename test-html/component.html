@@ -12,10 +12,9 @@
 <script src="../dist/bundle.js"></script>
 <script>
     var temp =
-        "<div>{{ name }}</div>" +
-        "<ul>" +
-        "<li k-for='child in children'>{{ child.name }}</li><my-tree :name='name'></my-tree>" +
-        "</ul>";
+        "<div>{{ name }}" +
+        "<li k-for='child in children'>{{ child.name }}</li><my-tree :children='child.children'></my-tree></div>";
+
     Kmv.components('my-tree', {
         template: temp
     })

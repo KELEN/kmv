@@ -22,7 +22,7 @@ export let createElement = (tagName) => {
     return document.createElement(tagName);
 }
 
-export let inserBefore = (node, newNode) => {
+export let insertBefore = (node, newNode) => {
     node && node.parentNode && node.parentNode.insertBefore(newNode, node);
 }
 

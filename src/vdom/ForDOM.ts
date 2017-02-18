@@ -1,11 +1,10 @@
 import { ForItemDOM } from './ForItemDOM'
-import {RegexpStr, ArrayOp } from '../constants/constant'
-import {getDotVal, depCopy} from "../util/object"
+import { RegexpStr, ArrayOp } from '../constants/constant'
+import { getDotVal } from "../util/object"
 import * as DomOp from "../dom/domOp"
 import { diff } from "../util/array";
 
 export class ForDOM {
-    previousSibling;    // 前一个元素
     nextSibling;        // 后一个元素
     templateNode;       // 模板节点, 共列表元素使用
     parentNode;         // 父节点
@@ -16,15 +15,15 @@ export class ForDOM {
     iteratorData;
     $dom;           // 对应的真实dom
     isList;
-    constructor (node) {
-        this.previousSibling = node.previousSibling;
+    // 第三个参数组件用的
+    constructor (node, kmv, parentData = {}) {
         this.nextSibling = node.nextSibling;
         this.parentNode = node.parentNode;
+        this.tagName = node.tagName;
         this.templateNode = node.cloneNode(true);
         this.isList = true;
         let forString = node.getAttribute("k-for");
         let match = RegexpStr.forStatement.exec(forString);
-        this.tagName = node.tagName;
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
         this.$dom = node;
@@ -41,7 +40,7 @@ export class ForDOM {
             // 数组循环
             this.iteratorData = iteratorData.slice(0);
             for (let i = 0; i < this.iteratorData.length; i++) {
-                let forItem = new ForItemDOM(this.templateNode.cloneNode(true));
+                let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, data);
                 this.childrenVdom.push(forItem);
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
                 iteratorObj[this.forKey] = this.iteratorData[i];
@@ -52,7 +51,7 @@ export class ForDOM {
             // 对象循环
             this.iteratorData = iteratorData;
             for (let i in iteratorData) {
-                let forItem = new ForItemDOM(this.templateNode);
+                let forItem = new ForItemDOM(this.templateNode, kmv, data);
                 this.childrenVdom.push(forItem);
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
                 iteratorObj[this.forKey] = this.iteratorData[i];
@@ -63,8 +62,8 @@ export class ForDOM {
         return docFrag;
     }
     insertNewDOM (docFrag) {
-        if (this.previousSibling) {
-            DomOp.insertAfter(this.previousSibling, docFrag);
+        if (this.nextSibling) {
+            DomOp.insertBefore(this.nextSibling, docFrag);
         } else if (this.parentNode) {
             DomOp.appendChild(this.parentNode, docFrag);
         }
@@ -130,7 +129,7 @@ export class ForDOM {
     batchAdd (arr = [], kmv) {
         let docFrag = document.createDocumentFragment();
         for (var i = 0, len = arr.length; i < len; i++) {
-            let newItem = new ForItemDOM(this.templateNode);
+            let newItem = new ForItemDOM(this.templateNode, kmv);
             this.childrenVdom.push(newItem);
             let iteratorObj = Object.create(kmv.$data);     // 构造遍历的对象
             iteratorObj[this.forKey] = arr[i];
@@ -140,7 +139,7 @@ export class ForDOM {
         this.insertNewDOM(docFrag)
     }
     addNewItem (val, kmv) {
-        let newItem = new ForItemDOM(this.templateNode);
+        let newItem = new ForItemDOM(this.templateNode, kmv);
         let iteratorObj = Object.create(kmv.$data);     // 构造遍历的对象
         iteratorObj[this.forKey] = val;
         let newDom = newItem.transDOM(iteratorObj, kmv);

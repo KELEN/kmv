@@ -363,7 +363,7 @@
 	                    }
 	                    else {
 	                        if (child.getAttribute("k-for")) {
-	                            this.queue.push(new ForDOM_1.ForDOM(child));
+	                            this.queue.push(new ForDOM_1.ForDOM(child, this.kmv, this.kmv.$data));
 	                        }
 	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
 	                            this.queue.push(new InputDOM_1.InputDOM(child));
@@ -397,16 +397,17 @@
 	var DomOp = __webpack_require__(8);
 	var array_1 = __webpack_require__(17);
 	var ForDOM = (function () {
-	    function ForDOM(node) {
+	    // 第三个参数组件用的
+	    function ForDOM(node, kmv, parentData) {
+	        if (parentData === void 0) { parentData = {}; }
 	        this.childrenVdom = [];
-	        this.previousSibling = node.previousSibling;
 	        this.nextSibling = node.nextSibling;
 	        this.parentNode = node.parentNode;
+	        this.tagName = node.tagName;
 	        this.templateNode = node.cloneNode(true);
 	        this.isList = true;
 	        var forString = node.getAttribute("k-for");
 	        var match = constant_1.RegexpStr.forStatement.exec(forString);
-	        this.tagName = node.tagName;
 	        this.forObjectKey = match[2].trim(); // 循环的键 item in arr 的 arr
 	        this.forKey = match[1].trim(); // 循环的key值 item in arr 的 item
 	        this.$dom = node;
@@ -423,7 +424,7 @@
 	            // 数组循环
 	            this.iteratorData = iteratorData.slice(0);
 	            for (var i = 0; i < this.iteratorData.length; i++) {
-	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode.cloneNode(true));
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode.cloneNode(true), kmv, data);
 	                this.childrenVdom.push(forItem);
 	                var iteratorObj = Object.create(data); // 构造遍历的对象
 	                iteratorObj[this.forKey] = this.iteratorData[i];
@@ -435,7 +436,7 @@
 	            // 对象循环
 	            this.iteratorData = iteratorData;
 	            for (var i in iteratorData) {
-	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv, data);
 	                this.childrenVdom.push(forItem);
 	                var iteratorObj = Object.create(data); // 构造遍历的对象
 	                iteratorObj[this.forKey] = this.iteratorData[i];
@@ -446,8 +447,8 @@
 	        return docFrag;
 	    };
 	    ForDOM.prototype.insertNewDOM = function (docFrag) {
-	        if (this.previousSibling) {
-	            DomOp.insertAfter(this.previousSibling, docFrag);
+	        if (this.nextSibling) {
+	            DomOp.insertBefore(this.nextSibling, docFrag);
 	        }
 	        else if (this.parentNode) {
 	            DomOp.appendChild(this.parentNode, docFrag);
@@ -518,7 +519,7 @@
 	        if (arr === void 0) { arr = []; }
 	        var docFrag = document.createDocumentFragment();
 	        for (var i = 0, len = arr.length; i < len; i++) {
-	            var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	            var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv);
 	            this.childrenVdom.push(newItem);
 	            var iteratorObj = Object.create(kmv.$data); // 构造遍历的对象
 	            iteratorObj[this.forKey] = arr[i];
@@ -528,7 +529,7 @@
 	        this.insertNewDOM(docFrag);
 	    };
 	    ForDOM.prototype.addNewItem = function (val, kmv) {
-	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode);
+	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv);
 	        var iteratorObj = Object.create(kmv.$data); // 构造遍历的对象
 	        iteratorObj[this.forKey] = val;
 	        var newDom = newItem.transDOM(iteratorObj, kmv);
@@ -573,14 +574,19 @@
 	var constant_1 = __webpack_require__(4);
 	var ForItemDOM = (function (_super) {
 	    __extends(ForItemDOM, _super);
-	    function ForItemDOM(node) {
+	    function ForItemDOM(node, kmv, parentData) {
+	        if (parentData === void 0) { parentData = {}; }
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
+	        _this.tagName = node.tagName;
+	        _this.templateNode = node;
+	        _this.attributes = node.attributes;
+	        _this.nodeType = node.nodeType;
 	        for (var i = 0; i < node.childNodes.length; i++) {
 	            var child = node.childNodes[i];
 	            if (child.nodeType === constant_1.NodeType.ELEMENT) {
 	                if (child.getAttribute("k-for")) {
-	                    _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
+	                    _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, parentData));
 	                }
 	                else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
 	                    _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
@@ -589,18 +595,14 @@
 	                    _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
 	                }
 	                else {
-	                    _this.childrenVdom.push(new ForNormalDOM_1.ForNormalDOM(child));
+	                    _this.childrenVdom.push(new ForNormalDOM_1.ForNormalDOM(child, kmv, parentData));
 	                }
 	            }
 	            else {
-	                _this.childrenVdom.push(new ForNormalDOM_1.ForNormalDOM(child));
+	                _this.childrenVdom.push(new ForNormalDOM_1.ForNormalDOM(child, kmv, parentData));
 	            }
 	        }
 	        node.removeAttribute("k-for");
-	        _this.tagName = node.tagName;
-	        _this.templateNode = node;
-	        _this.attributes = node.attributes;
-	        _this.nodeType = node.nodeType;
 	        return _this;
 	    }
 	    ForItemDOM.prototype.transDOM = function (iteratorObj, kmv) {
@@ -642,7 +644,7 @@
 	exports.createElement = function (tagName) {
 	    return document.createElement(tagName);
 	};
-	exports.inserBefore = function (node, newNode) {
+	exports.insertBefore = function (node, newNode) {
 	    node && node.parentNode && node.parentNode.insertBefore(newNode, node);
 	};
 	exports.deleteNode = function (parent, node) {
@@ -701,13 +703,14 @@
 	var constant_1 = __webpack_require__(4);
 	var ForNormalDOM = (function (_super) {
 	    __extends(ForNormalDOM, _super);
-	    function ForNormalDOM(node) {
+	    function ForNormalDOM(node, kmv, parentData) {
 	        var _this = 
 	        // h3
 	        _super.call(this, node) || this;
 	        _this.childrenVdom = [];
-	        _this.tagName = node.tagName, _this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
-	            _this.nodeType = node.nodeType;
+	        _this.tagName = node.tagName;
+	        _this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0));
+	        _this.nodeType = node.nodeType;
 	        switch (node.nodeType) {
 	            case constant_1.NodeType.TEXT:
 	                _this.template = node.textContent;
@@ -718,7 +721,7 @@
 	                        var child = node.childNodes[i];
 	                        if (child.nodeType === constant_1.NodeType.ELEMENT) {
 	                            if (child.getAttribute("k-for")) {
-	                                _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
+	                                _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, parentData));
 	                            }
 	                            else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
 	                                _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
@@ -727,11 +730,11 @@
 	                                _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
 	                            }
 	                            else {
-	                                _this.childrenVdom.push(new ForNormalDOM(child));
+	                                _this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData));
 	                            }
 	                        }
 	                        else {
-	                            _this.childrenVdom.push(new ForNormalDOM(child));
+	                            _this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData));
 	                        }
 	                    }
 	                }
@@ -1112,8 +1115,9 @@
 	    function InputDOM(node) {
 	        this.childrenVdom = [];
 	        // h3
-	        this.tagName = node.tagName, this.attributes = node.attributes,
-	            this.nodeType = node.nodeType;
+	        this.tagName = node.tagName;
+	        this.attributes = node.attributes;
+	        this.nodeType = node.nodeType;
 	        this.kmodel = node.getAttribute("k-model");
 	        this.$dom = node;
 	        node.removeAttribute("k-model");
@@ -1200,7 +1204,8 @@
 	var NormalDOM = (function (_super) {
 	    __extends(NormalDOM, _super);
 	    // 第三个参数传递给子组件的数据
-	    function NormalDOM(node, kmv, data) {
+	    function NormalDOM(node, kmv, parentData) {
+	        if (parentData === void 0) { parentData = null; }
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
 	        // h3
@@ -1222,11 +1227,11 @@
 	                var child = node.childNodes[i];
 	                if (child.nodeType === constant_1.NodeType.ELEMENT) {
 	                    if (validator_1.isUnknowElement(child.tagName)) {
-	                        _this.childrenVdom.push(new ComponentDOM_1.ComponentDOM(child, kmv, data));
+	                        _this.childrenVdom.push(new ComponentDOM_1.ComponentDOM(child, kmv, parentData));
 	                    }
 	                    else {
 	                        if (child.getAttribute("k-for")) {
-	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child));
+	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, parentData));
 	                        }
 	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
 	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
@@ -1299,7 +1304,6 @@
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
 	        _this.$data = {};
-	        console.log(data);
 	        _this.tagName = node.tagName;
 	        var component = kmv.components[_this.tagName.toLowerCase()]; // 组件配置
 	        if (component) {
@@ -1314,12 +1318,11 @@
 	                    _this.$data[res[1]] = object_1.getDotVal(srcData, attr.nodeValue);
 	                }
 	            }
-	            _this.$dom = div;
+	            _this.$dom = div.firstChild;
 	            if (!object_1.isNull(_this.$data)) {
 	                // 父组件有数据传递
 	                _this.childrenVdom.push(new NormalDOM_1.NormalDOM(_this.$dom, kmv, _this.$data));
 	            }
-	            console.log(_this.childrenVdom);
 	            _this.node = node;
 	        }
 	        else {
@@ -1335,6 +1338,7 @@
 	        DomOp.removeNode(this.node);
 	        if (!object_1.isNull(this.$data)) {
 	            // 对象为空, 不渲染数据
+	            console.log(this.childrenVdom);
 	            this.childrenVdom.forEach(function (child) {
 	                child.renderInit(_this.$data, kmv);
 	            });

@@ -7,39 +7,36 @@ import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
 
 export class ForItemDOM extends VDOM {
-    methods;
     tagName;
     templateNode;       // 模板节点, 每次构造时候需要获取template和attributes
-    previousSibling;
-    nextSibling;
     childrenVdom = [];
     attributes;
     $dom;
     template;
     nodeType;
-    constructor (node) {
+    constructor (node, kmv, parentData = {}) {
         super(node);
+        this.tagName = node.tagName;
+        this.templateNode = node;
+        this.attributes = node.attributes;
+        this.nodeType = node.nodeType;
         for (let i = 0; i < node.childNodes.length; i++) {
             let child = node.childNodes[i];
             if (child.nodeType === NodeType.ELEMENT) {
                 if (child.getAttribute("k-for")) {
-                    this.childrenVdom.push(new ForDOM(child));
+                    this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                 } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                     this.childrenVdom.push(new InputDOM(child));
                 } else if (child.getAttribute("k-if")) {
                     this.childrenVdom.push(new IfDOM(child));
                 } else {
-                    this.childrenVdom.push(new ForNormalDOM(child))
+                    this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData))
                 }
             } else {
-                this.childrenVdom.push(new ForNormalDOM(child));
+                this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData));
             }
         }
         node.removeAttribute("k-for");
-        this.tagName = node.tagName;
-        this.templateNode = node;
-        this.attributes = node.attributes;
-        this.nodeType = node.nodeType;
     }
     transDOM(iteratorObj, kmv) {
         let newElem = DomUtil.createElement(this.tagName);

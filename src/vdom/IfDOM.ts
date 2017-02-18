@@ -1,5 +1,5 @@
 import {　VDOM　} from './VDOM'
-import {getDotVal} from "../util/object";
+import { getDotVal } from "../util/object";
 export class IfDOM extends VDOM {
     methods;
     nodeType;

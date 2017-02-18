@@ -1,7 +1,6 @@
-import { getDotVal, setObserveDotVal} from "../util/object";
+import { getDotVal, setObserveDotVal } from "../util/object";
 
 export class InputDOM {
-    methods;
     nodeType;
     tagName;
     attributes;
@@ -11,8 +10,9 @@ export class InputDOM {
     kmodel;
     constructor (node) {
         // h3
-        this.tagName = node.tagName, this.attributes = node.attributes,
-            this.nodeType = node.nodeType;
+        this.tagName = node.tagName;
+        this.attributes = node.attributes;
+        this.nodeType = node.nodeType;
         this.kmodel = node.getAttribute("k-model");
         this.$dom = node;
         node.removeAttribute("k-model");
@@ -23,7 +23,7 @@ export class InputDOM {
             setObserveDotVal(kmv.data, this.kmodel, this.$dom.value);
         }
     }
-    reRender (data, kmv) {
+    reRender (data, kmv ) {
         let text = getDotVal(data, this.kmodel);
         this.$dom.value = text;
     }
