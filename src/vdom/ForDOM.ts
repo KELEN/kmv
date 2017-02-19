@@ -131,7 +131,7 @@ export class ForDOM {
     batchAdd (arr = [], kmv) {
         let docFrag = document.createDocumentFragment();
         for (var i = 0, len = arr.length; i < len; i++) {
-            let iteratorObj = Object.create(kmv.$data);     // 构造遍历的对象
+            let iteratorObj = Object.create(kmv.data);     // 构造遍历的对象
             iteratorObj[this.forKey] = arr[i];
             let newItem = new ForItemDOM(this.templateNode, kmv, iteratorObj);
             this.childrenVdom.push(newItem);

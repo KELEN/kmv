@@ -5,33 +5,40 @@
     <title>Title</title>
 </head>
 <body>
-<div id="div1">
-    <my-comp :comment="coms"></my-comp>
+<div id="div1" class="div">
+    <my-comment :comment="comment" :name="name"></my-comment>
+    <button k-on:click="addComment()">add comment</button>
+    <input type="text" k-model="name">
 </div>
-<template id="test">
-    <div class="test">
-        <li k-for="com in comment">{{ com.title }}</li>
-    </div>
-</template>
 </body>
 <script src="../dist/bundle.js"></script>
 <script>
+    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
+    var spn = document.getElementById("loading");
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            coms: [
-                { title: '第一' },
-                { title: '第二' },
-                { title: '第三' }
+            name: "Hello kmv.js!",
+            comment: [
+                { title: "评论1", time: new Date() },
+                { title: "评论2", time: new Date() },
+                { title: "评论3", time: new Date() },
+                { title: "评论4", time: new Date() },
             ]
         },
         components: {
-            'my-comp': {
-                template: document.getElementById("test").innerHTML
+            'my-comment': {
+                template: temp
+            }
+        },
+        methods: {
+            addComment: function() {
+                this.comment.push({
+                    title: "评论" + Math.random(),
+                    time: new Date()
+                })
             }
         }
     });
-
-    kmv.data.coms.push({title: '第四'})
 </script>
 </html>

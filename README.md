@@ -229,7 +229,7 @@ var kmv = new Kmv({
 
 ``` html
 <div id="div1" class="div">
-    <my-comment></my-comment>
+    <my-comment :comment="comment" :name="name"></my-comment>
     <button k-on:click="addComment()">add comment</button>
     <input type="text" k-model="name">
 </div>

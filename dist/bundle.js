@@ -524,7 +524,7 @@
 	        if (arr === void 0) { arr = []; }
 	        var docFrag = document.createDocumentFragment();
 	        for (var i = 0, len = arr.length; i < len; i++) {
-	            var iteratorObj = Object.create(kmv.$data); // 构造遍历的对象
+	            var iteratorObj = Object.create(kmv.data); // 构造遍历的对象
 	            iteratorObj[this.forKey] = arr[i];
 	            var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv, iteratorObj);
 	            this.childrenVdom.push(newItem);

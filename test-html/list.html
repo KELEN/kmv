@@ -13,15 +13,16 @@
     <button onclick="reverse()">reverse</button>
     <button onclick="sort()">sort</button>
     {{ name }}
-    <li click="add()" k-for="i in list">{{ i + 1111 }} {{ "asadasd" }}</li>
+    <li click="add()" k-for="i in list">{{ i + name }}{{ name }}</li>
     <li k-for="i in obj">{{ i + "name" }}</li>
+    <input type="text" k-model="name">
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: '',
+            name: 'kelen',
             list: [ 1, 2, 3, 4, 5 ],
             obj: {
                 a: 1,
