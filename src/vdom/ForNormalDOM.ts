@@ -5,6 +5,8 @@ import { ForDOM } from './ForDOM'
 import { IfDOM } from './IfDOM'
 import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
+import { isUnknowElement } from '../util/validator'
+import { ComponentDOM } from './ComponentDOM'
 
 export class ForNormalDOM extends VDOM {
     nodeType;
@@ -13,13 +15,12 @@ export class ForNormalDOM extends VDOM {
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
-    constructor (node, kmv, parentData) {
+    constructor (node, kmv, parentData = {}) {
         // h3
         super(node);
         this.tagName = node.tagName;
         this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0));
         this.nodeType = node.nodeType;
-
         switch (node.nodeType) {
             case NodeType.TEXT:
                 this.template = node.textContent;

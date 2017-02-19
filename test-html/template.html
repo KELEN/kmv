@@ -5,34 +5,33 @@
     <title>Title</title>
 </head>
 <body>
+<div id="div1">
+    <my-comp :comment="coms"></my-comp>
+</div>
 <template id="test">
-    <p>First name: <strong>{{ name }}</strong></p>
-    <p>Last name: <strong>{{ lastName }}</strong></p>
+    <div class="test">
+        <li k-for="com in comment">{{ com.title }}</li>
+    </div>
 </template>
 </body>
 <script src="../dist/bundle.js"></script>
 <script>
-    var clone = document.importNode(document.querySelector('#test').content, true);
-    console.log(clone);
-
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            value: 2,
-            status: {
-                0: '已检查',
-                1: '未检查',
-                2: '已损坏'
-            }
+            coms: [
+                { title: '第一' },
+                { title: '第二' },
+                { title: '第三' }
+            ]
         },
-        watch: {
-
-        },
-        methods: {
-            changeStatus: function() {
-                this.value = 0;
+        components: {
+            'my-comp': {
+                template: document.getElementById("test").innerHTML
             }
         }
     });
+
+    kmv.data.coms.push({title: '第四'})
 </script>
 </html>

@@ -18,6 +18,10 @@ export let createTextNode = (text) => {
     return document.createTextNode(text);
 }
 
+export let replaceNode = (oldNode, newNode) => {
+    oldNode.parentNode.replaceNode(oldNode, newNode);
+}
+
 export let createElement = (tagName) => {
     return document.createElement(tagName);
 }

@@ -9,10 +9,12 @@ export class VDOM {
     nodeType;
     $dom;
     attributes;
+    isComponent;
     constructor (node) {
         node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
     }
-    renderAttr (data, kmv) {
+    // 传递组件对象, 组件私有方法
+    renderAttr (data, kmv, component: any = false) {
         if (this.nodeType === NodeType.ELEMENT) {
             let node = this.$dom;
             let attrs = this.attributes;
@@ -32,11 +34,9 @@ export class VDOM {
                             }
                         }
                         node.setAttribute(key, valRes.trim());
-                        node.removeAttribute(attrName);
                     } else {
                         let val = compileTpl(attrVal, data);
                         node.setAttribute(key, val);
-                        node.removeAttribute(attrName);
                     }
                 } else if (RegexpStr.kOnAttribute.test(attrName)) {
                     let event = attrName.replace(RegexpStr.kOnAttribute, '$1');
@@ -52,8 +52,11 @@ export class VDOM {
                             paramsArr[n] = String(paramsArr[n]).trim();
                         }
                     }
-                    bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
-                    node.removeAttribute(attrName);
+                    if (component) {
+                        bindEvent(node, event, method, paramsArr, component.methods, component.$data);
+                    } else {
+                        bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
+                    }
                 } else {
                     node.setAttribute(attrName, attrVal);
                 }
@@ -88,6 +91,8 @@ export class VDOM {
                 } else {
                     node.setAttribute(attrName, compileTpl(attrVal, data));
                 }
+            } else if (RegexpStr.kOnAttribute.test(attrName)) {
+                node.removeAttribute(attrName);
             } else {
                 node.setAttribute(attrName, attrVal);
             }

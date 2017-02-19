@@ -22,13 +22,13 @@ export class RenderQueue {
             let child = childNodes[i];
             switch (child.nodeType) {
                 case NodeType.TEXT:
-                    this.queue.push(new NormalDOM(child, this.kmv, null));
+                    this.queue.push(new NormalDOM(child, this.kmv));
                     break;
                 case NodeType.ELEMENT:
                     if (isUnknowElement(child.tagName)) {
                         // 组件
                         // this.queue.push(new ComponentDOM(child, this.kmv));
-                        this.queue.push(new ComponentDOM(child, this.kmv, this.kmv.$data));
+                        this.queue.push(new ComponentDOM(child, this.kmv, this.kmv.data));
                     } else {
                         if (child.getAttribute("k-for")) {
                             this.queue.push(new ForDOM(child, this.kmv, this.kmv.$data));
@@ -38,7 +38,7 @@ export class RenderQueue {
                             this.queue.push(new IfDOM(child));
                         } else {
                             // 常规dom不需要传第三个参数
-                            this.queue.push(new NormalDOM(child, this.kmv, null));
+                            this.queue.push(new NormalDOM(child, this.kmv));
                         }
                     }
                     break;

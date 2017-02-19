@@ -19,18 +19,20 @@ export let observer = (obj, kmv, key = '') => {
                 observer(obj[i], kmv, bigKey);
             }
         } else {
+            let defVal = obj[i];
             Object.defineProperty(obj, i, {
                 set: function (newVal) {
-                    ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+                    // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
                     kmv.pendingValue = true;
                     kmv.changeQueue.push({
                         kmv: kmv,
                         bigKey: bigKey
                     });
                     kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+                    this._value = newVal;
                 },
                 get: function() {
-                    return getDotVal(kmv.$data, bigKey);
+                    return this._value || defVal; // getDotVal(kmv.$data, bigKey);
                 }
             })
         }
@@ -46,7 +48,7 @@ function arrayObserve(arr, kmv, bigKey) {
             enumerable: false, // hide from for...in
             writable: false,
             value: function () {
-                Array.prototype[method].apply(getDotVal(kmv.$data, bigKey), arguments);
+                Array.prototype[method].apply(getDotVal(kmv.data, bigKey), arguments);
                 kmv.changeQueue.push({
                     kmv: kmv,
                     bigKey: bigKey

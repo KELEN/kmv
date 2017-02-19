@@ -17,7 +17,7 @@ export class NormalDOM extends VDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     // 第三个参数传递给子组件的数据
-    constructor (node, kmv, parentData = null) {
+    constructor (node, kmv) {
         super(node);
         // h3
         this.tagName = node.tagName,
@@ -29,43 +29,40 @@ export class NormalDOM extends VDOM {
                 this.template = node.textContent;
                 node.textContent = '';
                 break;
-            case NodeType.ELEMENT:
-                this.template = node.firstChild ? node.firstChild.nodeValue: '';
-                break;
         }
         if (node.childNodes) {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
                     if (isUnknowElement(child.tagName)) {
-                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
+                        this.childrenVdom.push(new ComponentDOM(child, kmv));
                     } else {
                         if (child.getAttribute("k-for")) {
-                            this.childrenVdom.push(new ForDOM(child, kmv, parentData));
+                            this.childrenVdom.push(new ForDOM(child, kmv));
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.childrenVdom.push(new InputDOM(child));
                         } else if (child.getAttribute("k-if")) {
                             this.childrenVdom.push(new IfDOM(child));
                         } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv, null));
+                            this.childrenVdom.push(new NormalDOM(child, kmv));
                         }
                     }
                 } else {
-                    this.childrenVdom.push(new NormalDOM(child, kmv, null));
+                    this.childrenVdom.push(new NormalDOM(child, kmv));
                 }
             }
         }
     }
-    renderInit(data, kmv) {
+    renderInit(data, kmv, component = null) {
         switch (this.nodeType) {
             case NodeType.TEXT:
                 DomUtil.changeTextContent(this.$dom, compileTpl(this.template, data));
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
-                    child.renderInit(data, kmv);
+                    child.renderInit(data, kmv, component);
                 });
-                this.renderAttr(data, kmv);
+                this.renderAttr(data, kmv, component);
                 break;
         }
     }

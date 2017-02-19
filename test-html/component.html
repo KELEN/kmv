@@ -5,51 +5,53 @@
     <title>Title</title>
 </head>
 <body>
+<h3>组件嵌套生成树形</h3>
 <div id="div1" class="div">
-    <my-tree :children="children" :name="name"></my-tree>
+    <button k-on:click="add()">add test</button>
+    <my-tree :children="treeData.children" :name="treeData.name"></my-tree>
 </div>
 <hr>
+
+<template id="test">
+    <li>
+        <h3>{{ name }}<span k-on:click="add()">+</span></h3>
+        <ul k-for='child in children'>
+            <my-tree :children='child.children' :name='child.name'>
+        </my-tree>
+        </ul>
+    </li>
+</template>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp =
-        "<div>{{ name }}" +
-        "<li k-for='child in children'>{{ child.name }}</li><my-tree :children='child.children'></my-tree></div>";
+
+    var test = document.getElementById("test");
 
     Kmv.components('my-tree', {
-        template: temp
-    })
-    var kmv = new Kmv({
-        el: '#div1',
-        data: {
-            name: 'My Tree',
-            children: [
-                { name: 'hello' },
-                { name: 'wat' },
-                {
-                    name: 'child folder',
-                    children: [
-                        {
-                            name: 'child folder',
-                            children: [
-                                { name: 'hello' },
-                                { name: 'wat' }
-                            ]
-                        },
-                        { name: 'hello' },
-                        { name: 'wat' },
-                        {
-                            name: 'child folder',
-                            children: [
-                                { name: 'hello' },
-                                { name: 'wat' }
-                            ]
-                        }
-                    ]
-                }
-            ]
+        template: test.innerHTML,
+        methods: {
+            'add': function() {
+                console.log("add");
+            }
         }
     });
 
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            treeData: {
+                name: 'My Tree',
+                children: [
+                    {
+                        name: 'child folder',
+                        children: [
+                            { name: "2 foler", children: [] },
+                        ]
+                    }
+                ]
+            }
+        }
+    });
+    kmv.data.treeData.children[0].children.push({name: "new ccccccccc", children: []});
 </script>
 </body>
 </html>

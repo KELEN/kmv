@@ -16,7 +16,8 @@
     <div k-for="ar in articles">
         <h3>{{ ar.title }}</h3>
         <div class="tags-wrap">
-            <span k-for="tag in ar['tags']">{{ tag }}</span> <h1>{{ ar.author }}</h1>
+            {{　title　}}
+            <span k-for="tag in ar['tags']">{{ tag }}</span> <h1>{{ ar.author }}</h1> <h2>{{ title }}</h2>
         </div>
         <em>{{ ar.time }}</em>
     </div>
@@ -26,6 +27,7 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
+            title: "AAAAAAAAAAAAA",
             articles: [
                 {
                     title: "第一篇",

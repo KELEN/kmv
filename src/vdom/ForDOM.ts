@@ -12,7 +12,7 @@ export class ForDOM {
     forObjectKey;   // arr
     forKey;         // i
     tagName;
-    iteratorData;
+    $data;          // 存放遍历的数据，下次比较
     $dom;           // 对应的真实dom
     isList;
     // 第三个参数组件用的
@@ -27,6 +27,7 @@ export class ForDOM {
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
         this.$dom = node;
+        this.$data = parentData;
     }
     renderInit(data, kmv) {
         let docFrag = this.transDOM(data, kmv);
@@ -38,23 +39,24 @@ export class ForDOM {
         let docFrag = document.createDocumentFragment();
         if (Array.isArray(iteratorData)) {
             // 数组循环
-            this.iteratorData = iteratorData.slice(0);
-            for (let i = 0; i < this.iteratorData.length; i++) {
-                let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, data);
-                this.childrenVdom.push(forItem);
+            this.$data = iteratorData.slice(0);
+            for (let i = 0; i < this.$data.length; i++) {
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
-                iteratorObj[this.forKey] = this.iteratorData[i];
+                iteratorObj[this.forKey] = this.$data[i];
+                // 第三个参数传递给组件的对象
+                let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
+                this.childrenVdom.push(forItem);
                 let forItemDom = forItem.transDOM(iteratorObj, kmv);
                 docFrag.appendChild(forItemDom);
             }
         } else if (typeof iteratorData === 'object') {
             // 对象循环
-            this.iteratorData = iteratorData;
+            this.$data = iteratorData;
             for (let i in iteratorData) {
                 let forItem = new ForItemDOM(this.templateNode, kmv, data);
                 this.childrenVdom.push(forItem);
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
-                iteratorObj[this.forKey] = this.iteratorData[i];
+                iteratorObj[this.forKey] = this.$data[i];
                 let forItemDom = forItem.transDOM(iteratorObj, kmv);
                 docFrag.appendChild(forItemDom);
             }
@@ -72,33 +74,33 @@ export class ForDOM {
         let arrKey = this.forObjectKey;
         let newArray = getDotVal(data, arrKey);
         if (Array.isArray(newArray)) {
-            let change = diff(this.iteratorData, newArray);
+            let change = diff(this.$data, newArray);
             if (change.length) {
                 this.notifyDataChange(change, kmv);
             } else {
-                for (let i = 0, len = this.iteratorData.length; i < len; i++) {
+                for (let i = 0, len = this.$data.length; i < len; i++) {
                     let iteratorObj = Object.create(data);
-                    iteratorObj[this.forKey] = this.iteratorData[i];
+                    iteratorObj[this.forKey] = this.$data[i];
                     this.childrenVdom[i].reRender(iteratorObj, kmv);
                 }
             }
         } else {
             // 渲染对象
             let idx = 0;
-            for (let key in this.iteratorData) {
+            for (let key in this.$data) {
                 let iteratorObj = Object.create(data);
-                iteratorObj[this.forKey] = this.iteratorData[key];
+                iteratorObj[this.forKey] = this.$data[key];
                 this.childrenVdom[idx].reRender(iteratorObj, kmv);
                 idx++;
             }
         }
     }
     notifyDataChange (change, kmv) {
-        let data = kmv.$data;
+        let data = kmv.data;
         let arrKey = this.forObjectKey;
         let arrayData = getDotVal(data, arrKey) || [];
-        if (Array.isArray(this.iteratorData)) {
-            this.iteratorData = arrayData.slice(0);
+        if (Array.isArray(this.$data)) {
+            this.$data = arrayData.slice(0);
             for (let i = 0; i < change.length; i++) {
                 var op = change[i].op;
                 if (change[i].batch) {
@@ -129,10 +131,10 @@ export class ForDOM {
     batchAdd (arr = [], kmv) {
         let docFrag = document.createDocumentFragment();
         for (var i = 0, len = arr.length; i < len; i++) {
-            let newItem = new ForItemDOM(this.templateNode, kmv);
-            this.childrenVdom.push(newItem);
             let iteratorObj = Object.create(kmv.$data);     // 构造遍历的对象
             iteratorObj[this.forKey] = arr[i];
+            let newItem = new ForItemDOM(this.templateNode, kmv, iteratorObj);
+            this.childrenVdom.push(newItem);
             let newDom = newItem.transDOM(iteratorObj, kmv);
             docFrag.appendChild(newDom);
         }
@@ -152,7 +154,7 @@ export class ForDOM {
     }
     changeItem (i, kmv) {
         let obj = Object.create(kmv.$data);
-        obj[this.forKey] = this.iteratorData[i];
+        obj[this.forKey] = this.$data[i];
         this.childrenVdom[i].reRender(obj, kmv);
     }
     shiftItem () {
