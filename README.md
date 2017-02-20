@@ -225,7 +225,7 @@ var kmv = new Kmv({
 </script>
 ```
 
-### 自定义组件，组件共用同一实例的数据
+### 自定义组件，组件共用同一实例的数据，组件传递数据 :header="objectKey" (:header指的是组件需要用的对象, objectKey代表实例数据传递的对象/值)，子组件使用父组件的数据
 
 ``` html
 <div id="div1" class="div">

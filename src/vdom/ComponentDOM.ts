@@ -9,8 +9,8 @@ import {
 import { VDOMInterface } from "./VDOMInterface"
 import {ForDOM} from "./ForDOM";
 import {InputDOM} from "./InputDOM";
-import {IfDOM} from "./IfDOM";
 import {observer} from "../util/observer";
+import {isUnknowElement} from "../util/validator";
 
 export class ComponentDOM extends VDOM implements VDOMInterface {
     nodeType;
@@ -49,14 +49,16 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
                 for (let i = 0; i < childNodes.length; i++) {
                     let child = childNodes[i];
                     if (child.nodeType === NodeType.ELEMENT) {
-                        if (child.getAttribute("k-for")) {
-                            this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
-                        } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
-                            this.childrenVdom.push(new InputDOM(child));
-                        } else if (child.getAttribute("k-if")) {
-                            this.childrenVdom.push(new IfDOM(child, kmv));
+                        if (isUnknowElement(child.tagName)) {
+                            this.childrenVdom.push(new ComponentDOM(child, kmv, this.$data));
                         } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv));
+                            if (child.getAttribute("k-for")) {
+                                this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
+                            } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                                this.childrenVdom.push(new InputDOM(child));
+                            } else {
+                                this.childrenVdom.push(new NormalDOM(child, kmv));
+                            }
                         }
                     } else {
                         this.childrenVdom.push(new NormalDOM(child, kmv));

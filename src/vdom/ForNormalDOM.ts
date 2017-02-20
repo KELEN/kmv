@@ -2,11 +2,11 @@ import { compileTpl } from '../util/template'
 import * as DomUtil from '../dom/domOp'
 import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
-import { IfDOM } from './IfDOM'
 import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { isUnknowElement } from '../util/validator'
 import { ComponentDOM } from './ComponentDOM'
+import {getDotVal} from "../util/object";
 
 export class ForNormalDOM extends VDOM {
     nodeType;
@@ -15,6 +15,7 @@ export class ForNormalDOM extends VDOM {
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
+    kif;
     constructor (node, kmv, parentData = {}) {
         // h3
         super(node);
@@ -26,6 +27,7 @@ export class ForNormalDOM extends VDOM {
                 this.template = node.textContent;
                 break;
             case NodeType.ELEMENT:
+                this.kif = node.getAttribute("k-if");
                 if (node.childNodes) {
                     for (let i = 0; i < node.childNodes.length; i++) {
                         let child = node.childNodes[i];
@@ -34,8 +36,6 @@ export class ForNormalDOM extends VDOM {
                                 this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                             } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                                 this.childrenVdom.push(new InputDOM(child));
-                            } else if (child.getAttribute("k-if")) {
-                                this.childrenVdom.push(new IfDOM(child, kmv));
                             } else {
                                 this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData))
                             }
@@ -50,6 +50,14 @@ export class ForNormalDOM extends VDOM {
     // iteratorObj 为遍历的数据，需要构造
     transDOM (iteratorObj, kmv) {
         let newEle = document.createElement(this.tagName) ;
+        if (this.kif) {
+            let isShow = getDotVal(iteratorObj, this.kif);
+            if (!!isShow) {
+                this.$dom.style.display = "block";
+            } else {
+                this.$dom.style.display = "none";
+            }
+        }
         switch (this.nodeType) {
             case NodeType.TEXT:
                 newEle = DomUtil.createTextNode(this.tagName);
@@ -76,6 +84,14 @@ export class ForNormalDOM extends VDOM {
      */
     reRender (data, kmv) {
         let text = compileTpl(this.template, data);
+        if (this.kif) {
+            let isShow = getDotVal(data, this.kif);
+            if (!!isShow) {
+                this.$dom.style.display = "block";
+            } else {
+                this.$dom.style.display = "none";
+            }
+        }
         switch (this.nodeType) {
             case NodeType.TEXT:
                 DomUtil.changeTextContent(this.$dom, text)

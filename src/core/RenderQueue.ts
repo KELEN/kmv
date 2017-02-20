@@ -2,7 +2,6 @@ import { NodeType, RegexpStr } from '../constants/constant'
 import { ForDOM } from "../vdom/ForDOM"
 import { NormalDOM } from "../vdom/NormalDOM"
 import { InputDOM } from "../vdom/InputDOM"
-import { IfDOM } from "../vdom/IfDOM"
 import { isUnknowElement } from '../util/validator'
 import { ComponentDOM } from "../vdom/ComponentDOM";
 
@@ -34,8 +33,6 @@ export class RenderQueue {
                             this.queue.push(new ForDOM(child, this.kmv, this.kmv.$data));
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.queue.push(new InputDOM(child));
-                        } else if (child.getAttribute("k-if")) {
-                            this.queue.push(new IfDOM(child, this.kmv));
                         } else {
                             // 常规dom不需要传第三个参数
                             this.queue.push(new NormalDOM(child, this.kmv));

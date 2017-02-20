@@ -2,7 +2,6 @@ import * as DomUtil from "../dom/domOp"
 import { ForNormalDOM } from './ForNormalDOM'
 import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
-import { IfDOM } from './IfDOM'
 import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
 import {isUnknowElement} from "../util/validator";
@@ -32,8 +31,6 @@ export class ForItemDOM extends VDOM {
                         this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                     } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                         this.childrenVdom.push(new InputDOM(child));
-                    } else if (child.getAttribute("k-if")) {
-                        this.childrenVdom.push(new IfDOM(child, kmv));
                     } else {
                         this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData))
                     }
