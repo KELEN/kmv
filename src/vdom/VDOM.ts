@@ -1,7 +1,6 @@
 import { compileTpl } from '../util/template'
-import { NodeType } from "../constants/constant"
+import { NodeType, RegexpStr } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
-import { RegexpStr } from '../constants/constant'
 import { bindEvent } from "../dom/event"
 import { getDotVal } from "../util/object";
 
@@ -10,7 +9,8 @@ export class VDOM {
     $dom;
     attributes;
     isComponent;
-    constructor (node) {
+    childrenVdom = [];
+    constructor (node, kmv = {}) {
         node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
     }
     // 传递组件对象, 组件私有方法

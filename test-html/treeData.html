@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h3>组件嵌套生成树形</h3>
+<div id="div1" class="div">
+    <button k-on:click="add()">add test</button>
+    <my-tree :children="treeData.children" :name="treeData.name"></my-tree>
+</div>
+<hr>
+<template id="test">
+    <li>
+        <span k-on:click="changeStatus()">{{ name }}</span><button k-on:click="add()">+</button>
+        <div k-if="isOpen">
+            <ul k-for='child in children'>
+                <my-tree :children='child.children' :name='child.name'>
+                </my-tree>
+            </ul>
+        </div>
+    </li>
+</template>
+<script src="../dist/bundle.js"></script>
+<script>
+
+    var test = document.getElementById("test");
+
+    Kmv.components('my-tree', {
+        template: test.innerHTML,
+        data: {
+            isOpen: false
+        },
+        methods: {
+            'add': function() {
+                this.children.push({
+                    name: Math.random(),
+                    children: []
+                });
+                this.isOpen = true;
+            },
+            changeStatus: function() {
+                console.log(this);
+                this.isOpen = !this.isOpen;
+            }
+        },
+    });
+
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            treeData: {
+                name: 'one level',
+                children: [
+                    {
+                        name: 'two level',
+                        children: []
+                    }
+                ]
+            }
+        },
+        methods: {
+            add: function () {
+            }
+        }
+    });
+</script>
+</body>
+</html>

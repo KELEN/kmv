@@ -49,7 +49,7 @@
 	var observer_1 = __webpack_require__(2);
 	var RenderQueue_1 = __webpack_require__(5);
 	var event_1 = __webpack_require__(20);
-	var object_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	function Kmv(opts) {
 	    var elSelector = opts['el'];
 	    var elem = document.querySelector(elSelector);
@@ -113,7 +113,7 @@
 	        console.log("reRender");
 	        kmv.pendingValue = false;
 	        var lastOne = kmv.changeQueue.pop();
-	        exports.reRender(lastOne.kmv, lastOne.bigKey);
+	        lastOne && exports.reRender(lastOne.kmv, lastOne.bigKey);
 	        kmv.changeQueue.length = 0;
 	    }
 	    exports.nextTick(kmv);
@@ -138,9 +138,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ObjectUtil = __webpack_require__(3);
-	var constant_1 = __webpack_require__(4);
-	var object_1 = __webpack_require__(3);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	/**
 	 *   URL:
 	 *   说明:
@@ -149,7 +148,7 @@
 	 */
 	exports.observer = function (obj, kmv, key) {
 	    if (key === void 0) { key = ''; }
-	    var newObj = ObjectUtil.depCopy(obj);
+	    var srcData = object_1.depCopy(obj);
 	    var _loop_1 = function (i) {
 	        var bigKey = key ? key + "." + i : i;
 	        if (typeof obj[i] == 'object') {
@@ -161,38 +160,41 @@
 	            }
 	        }
 	        else {
-	            var defVal_1 = obj[i];
-	            Object.defineProperty(obj, i, {
-	                set: function (newVal) {
-	                    // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-	                    kmv.pendingValue = true;
-	                    kmv.changeQueue.push({
-	                        kmv: kmv,
-	                        bigKey: bigKey
-	                    });
-	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-	                    this._value = newVal;
-	                },
-	                get: function () {
-	                    return this._value || defVal_1; // getDotVal(kmv.$data, bigKey);
-	                }
-	            });
+	            (function (defVal) {
+	                var val = defVal;
+	                Object.defineProperty(obj, i, {
+	                    set: function (newVal) {
+	                        // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+	                        kmv.pendingValue = true;
+	                        kmv.changeQueue.push({
+	                            kmv: kmv,
+	                            bigKey: bigKey
+	                        });
+	                        kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+	                        val = newVal;
+	                    },
+	                    get: function () {
+	                        return val; // getDotVal(kmv.$data, bigKey) || defVal;
+	                    }
+	                });
+	            })(obj[i]);
 	        }
 	    };
 	    for (var i in obj) {
 	        _loop_1(i);
 	    }
-	    return newObj;
+	    return srcData;
 	};
 	function arrayObserve(arr, kmv, bigKey) {
 	    // 监听array操作
 	    constant_1.ArrayMethod.forEach(function (method) {
 	        Object.defineProperty(arr, method, {
-	            configurable: false,
+	            configurable: true,
 	            enumerable: false,
-	            writable: false,
+	            writable: true,
 	            value: function () {
-	                Array.prototype[method].apply(object_1.getDotVal(kmv.data, bigKey), arguments);
+	                // 有可能操作的不是数组
+	                Array.prototype[method].apply(arr, arguments);
 	                kmv.changeQueue.push({
 	                    kmv: kmv,
 	                    bigKey: bigKey
@@ -206,10 +208,68 @@
 
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 *   URL:
+	 *   说明:
+	 *   负责人: kelen
+	 *   日期:  1/24 0024.
+	 */
+	exports.Attr = {
+	    K_MODEL: 'k-model'
+	};
+	exports.RegexpStr = {
+	    brace: /\{\{((?:.|\n)+?)\}\}/,
+	    forStatement: /([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+(\[.*\])*)/,
+	    bracket: /\[['|"]?(\w+)['|"]?\]/,
+	    isString: /'([^']*)'|"([^\"]*)"/,
+	    isParams: /^[^"|^'\d]+.*/,
+	    arithmeticOp: /\*|\+|-\/|\(|\)/g,
+	    inputElement: /INPUT|TEXTAREA/,
+	    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
+	    kAttribute: /k:(.*)/,
+	    kOnAttribute: /k-on:(.*)/,
+	    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,
+	    isTernaryOp: /!.*|!!.*|.+?.+:.+/,
+	    ternaryOpSplit: /\?|:|\(|\)|!!/,
+	    isNormalHtmlTag: /html|body|base|head|link|meta|style|title|address|article|aside|footer|header|h1|h2|h3|h4|h5|h6|hgroup|nav|section|div|dd|dl|dt|figcaption|figure|hr|img|li|main|ol|p|pre|ul|a|b|abbr|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rp|rt|rtc|ruby|s|samp|small|span|strong|sub|sup|time|u|var|wbr|area|audio|map|track|video|embed|object|param|source|canvas|script|noscript|del|ins|caption|col|colgroup|table|thead|tbody|td|th|tr|button|datalist|fieldset|form|input|label|legend|meter|optgroup|option|output|progress|select|textarea|details|dialog|menu|menuitem|summary|content|element|shadow|template/i,
+	    isProps: /:(.*)/
+	};
+	exports.NodeType = {
+	    ELEMENT: 1,
+	    ATTRIBUTE: 2,
+	    TEXT: 3,
+	    COMMENT: 8,
+	    DOCUMENT: 9
+	};
+	exports.ArrayMethod = ['push', 'pop', 'splice', 'shift', 'unshift', 'sort', 'reverse'];
+	var RenderType;
+	(function (RenderType) {
+	    RenderType[RenderType["TEXT"] = 0] = "TEXT";
+	    RenderType[RenderType["INPUT"] = 1] = "INPUT";
+	    RenderType[RenderType["TEXTAREA"] = 2] = "TEXTAREA";
+	    RenderType[RenderType["FOR"] = 3] = "FOR";
+	    RenderType[RenderType["IF"] = 4] = "IF";
+	    RenderType[RenderType["ATTRIBUTE"] = 5] = "ATTRIBUTE";
+	})(RenderType = exports.RenderType || (exports.RenderType = {}));
+	var ArrayOp;
+	(function (ArrayOp) {
+	    ArrayOp[ArrayOp["PUSH"] = 0] = "PUSH";
+	    ArrayOp[ArrayOp["POP"] = 1] = "POP";
+	    ArrayOp[ArrayOp["SORT"] = 2] = "SORT";
+	    ArrayOp[ArrayOp["CHANGE"] = 3] = "CHANGE";
+	    ArrayOp[ArrayOp["SHIFT"] = 4] = "SHIFT";
+	})(ArrayOp = exports.ArrayOp || (exports.ArrayOp = {}));
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	exports.getDotVal = function (obj, key) {
 	    var val, k;
 	    if (key) {
@@ -272,69 +332,11 @@
 
 
 /***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	"use strict";
-	/**
-	 *   URL:
-	 *   说明:
-	 *   负责人: kelen
-	 *   日期:  1/24 0024.
-	 */
-	exports.Attr = {
-	    K_MODEL: 'k-model'
-	};
-	exports.RegexpStr = {
-	    brace: /\{\{((?:.|\n)+?)\}\}/,
-	    forStatement: /([a-z_]+[\w]*)\s+in\s+([a-z_][\w.]+(\[.*\])*)/,
-	    bracket: /\[['|"]?(\w+)['|"]?\]/,
-	    isString: /'([^']*)'|"([^\"]*)"/,
-	    isParams: /^[^"|^'\d]+.*/,
-	    arithmeticOp: /\*|\+|-\/|\(|\)/g,
-	    inputElement: /INPUT|TEXTAREA/,
-	    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
-	    kAttribute: /k:(.*)/,
-	    kOnAttribute: /k-on:(.*)/,
-	    methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,
-	    isTernaryOp: /!.*|!!.*|.+?.+:.+/,
-	    ternaryOpSplit: /\?|:|\(|\)|!!/,
-	    isNormalHtmlTag: /html|body|base|head|link|meta|style|title|address|article|aside|footer|header|h1|h2|h3|h4|h5|h6|hgroup|nav|section|div|dd|dl|dt|figcaption|figure|hr|img|li|main|ol|p|pre|ul|a|b|abbr|bdi|bdo|br|cite|code|data|dfn|em|i|kbd|mark|q|rp|rt|rtc|ruby|s|samp|small|span|strong|sub|sup|time|u|var|wbr|area|audio|map|track|video|embed|object|param|source|canvas|script|noscript|del|ins|caption|col|colgroup|table|thead|tbody|td|th|tr|button|datalist|fieldset|form|input|label|legend|meter|optgroup|option|output|progress|select|textarea|details|dialog|menu|menuitem|summary|content|element|shadow|template/i,
-	    isProps: /:(.*)/
-	};
-	exports.NodeType = {
-	    ELEMENT: 1,
-	    ATTRIBUTE: 2,
-	    TEXT: 3,
-	    COMMENT: 8,
-	    DOCUMENT: 9
-	};
-	exports.ArrayMethod = ['push', 'pop', 'splice', 'shift', 'unshift', 'sort', 'reverse'];
-	var RenderType;
-	(function (RenderType) {
-	    RenderType[RenderType["TEXT"] = 0] = "TEXT";
-	    RenderType[RenderType["INPUT"] = 1] = "INPUT";
-	    RenderType[RenderType["TEXTAREA"] = 2] = "TEXTAREA";
-	    RenderType[RenderType["FOR"] = 3] = "FOR";
-	    RenderType[RenderType["IF"] = 4] = "IF";
-	    RenderType[RenderType["ATTRIBUTE"] = 5] = "ATTRIBUTE";
-	})(RenderType = exports.RenderType || (exports.RenderType = {}));
-	var ArrayOp;
-	(function (ArrayOp) {
-	    ArrayOp[ArrayOp["PUSH"] = 0] = "PUSH";
-	    ArrayOp[ArrayOp["POP"] = 1] = "POP";
-	    ArrayOp[ArrayOp["SORT"] = 2] = "SORT";
-	    ArrayOp[ArrayOp["CHANGE"] = 3] = "CHANGE";
-	    ArrayOp[ArrayOp["SHIFT"] = 4] = "SHIFT";
-	})(ArrayOp = exports.ArrayOp || (exports.ArrayOp = {}));
-
-
-/***/ },
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	var ForDOM_1 = __webpack_require__(6);
 	var NormalDOM_1 = __webpack_require__(18);
 	var InputDOM_1 = __webpack_require__(16);
@@ -372,7 +374,7 @@
 	                            this.queue.push(new InputDOM_1.InputDOM(child));
 	                        }
 	                        else if (child.getAttribute("k-if")) {
-	                            this.queue.push(new IfDOM_1.IfDOM(child));
+	                            this.queue.push(new IfDOM_1.IfDOM(child, this.kmv));
 	                        }
 	                        else {
 	                            // 常规dom不需要传第三个参数
@@ -395,8 +397,8 @@
 
 	"use strict";
 	var ForItemDOM_1 = __webpack_require__(7);
-	var constant_1 = __webpack_require__(4);
-	var object_1 = __webpack_require__(3);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	var DomOp = __webpack_require__(8);
 	var array_1 = __webpack_require__(19);
 	var ForDOM = (function () {
@@ -459,12 +461,13 @@
 	            DomOp.appendChild(this.parentNode, docFrag);
 	        }
 	    };
-	    ForDOM.prototype.reRender = function (data, kmv) {
+	    ForDOM.prototype.reRender = function (data, kmv, component) {
 	        var arrKey = this.forObjectKey;
 	        var newArray = object_1.getDotVal(data, arrKey);
 	        if (Array.isArray(newArray)) {
 	            var change = array_1.diff(this.$data, newArray);
 	            if (change.length) {
+	                this.$data = newArray.slice(0); // 赋予新值
 	                this.notifyDataChange(change, kmv);
 	            }
 	            else {
@@ -475,7 +478,7 @@
 	                }
 	            }
 	        }
-	        else {
+	        else if (typeof newArray === 'object') {
 	            // 渲染对象
 	            var idx = 0;
 	            for (var key in this.$data) {
@@ -487,11 +490,7 @@
 	        }
 	    };
 	    ForDOM.prototype.notifyDataChange = function (change, kmv) {
-	        var data = kmv.data;
-	        var arrKey = this.forObjectKey;
-	        var arrayData = object_1.getDotVal(data, arrKey) || [];
 	        if (Array.isArray(this.$data)) {
-	            this.$data = arrayData.slice(0);
 	            for (var i = 0; i < change.length; i++) {
 	                var op = change[i].op;
 	                if (change[i].batch) {
@@ -535,7 +534,7 @@
 	    };
 	    ForDOM.prototype.addNewItem = function (val, kmv) {
 	        var newItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv);
-	        var iteratorObj = Object.create(kmv.$data); // 构造遍历的对象
+	        var iteratorObj = Object.create(kmv.data); // 构造遍历的对象
 	        iteratorObj[this.forKey] = val;
 	        var newDom = newItem.transDOM(iteratorObj, kmv);
 	        this.childrenVdom.push(newItem);
@@ -546,7 +545,7 @@
 	        popVdom.$dom && DomOp.removeNode(popVdom.$dom);
 	    };
 	    ForDOM.prototype.changeItem = function (i, kmv) {
-	        var obj = Object.create(kmv.$data);
+	        var obj = Object.create(kmv.data);
 	        obj[this.forKey] = this.$data[i];
 	        this.childrenVdom[i].reRender(obj, kmv);
 	    };
@@ -576,7 +575,7 @@
 	var ForDOM_1 = __webpack_require__(6);
 	var IfDOM_1 = __webpack_require__(15);
 	var InputDOM_1 = __webpack_require__(16);
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	var validator_1 = __webpack_require__(13);
 	var ComponentDOM_1 = __webpack_require__(17);
 	var ForItemDOM = (function (_super) {
@@ -603,7 +602,7 @@
 	                        _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
 	                    }
 	                    else if (child.getAttribute("k-if")) {
-	                        _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                        _this.childrenVdom.push(new IfDOM_1.IfDOM(child, kmv));
 	                    }
 	                    else {
 	                        _this.childrenVdom.push(new ForNormalDOM_1.ForNormalDOM(child, kmv, parentData));
@@ -716,7 +715,7 @@
 	var ForDOM_1 = __webpack_require__(6);
 	var IfDOM_1 = __webpack_require__(15);
 	var InputDOM_1 = __webpack_require__(16);
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	var ForNormalDOM = (function (_super) {
 	    __extends(ForNormalDOM, _super);
 	    function ForNormalDOM(node, kmv, parentData) {
@@ -744,7 +743,7 @@
 	                                _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
 	                            }
 	                            else if (child.getAttribute("k-if")) {
-	                                _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                                _this.childrenVdom.push(new IfDOM_1.IfDOM(child, kmv));
 	                            }
 	                            else {
 	                                _this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData));
@@ -808,8 +807,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(4);
-	var object_1 = __webpack_require__(3);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	var function_1 = __webpack_require__(11);
 	/**
 	 *  转换逻辑操作运算结果
@@ -921,13 +920,14 @@
 
 	"use strict";
 	var template_1 = __webpack_require__(10);
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	var validator_1 = __webpack_require__(13);
-	var constant_2 = __webpack_require__(4);
 	var event_1 = __webpack_require__(14);
-	var object_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	var VDOM = (function () {
-	    function VDOM(node) {
+	    function VDOM(node, kmv) {
+	        if (kmv === void 0) { kmv = {}; }
+	        this.childrenVdom = [];
 	        node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
 	    }
 	    // 传递组件对象, 组件私有方法
@@ -939,8 +939,8 @@
 	            for (var i = 0; i < attrs.length; i++) {
 	                var attr = attrs[i];
 	                var attrName = attr.nodeName, attrVal = attr.nodeValue;
-	                if (constant_2.RegexpStr.kAttribute.test(attrName)) {
-	                    var key = attr.nodeName.replace(constant_2.RegexpStr.kAttribute, '$1');
+	                if (constant_1.RegexpStr.kAttribute.test(attrName)) {
+	                    var key = attr.nodeName.replace(constant_1.RegexpStr.kAttribute, '$1');
 	                    if (key === 'class') {
 	                        // 类 a:'class2', b:'class2'
 	                        var arr = attrVal.split(",");
@@ -958,10 +958,10 @@
 	                        node.setAttribute(key, val);
 	                    }
 	                }
-	                else if (constant_2.RegexpStr.kOnAttribute.test(attrName)) {
-	                    var event_2 = attrName.replace(constant_2.RegexpStr.kOnAttribute, '$1');
+	                else if (constant_1.RegexpStr.kOnAttribute.test(attrName)) {
+	                    var event_2 = attrName.replace(constant_1.RegexpStr.kOnAttribute, '$1');
 	                    var func = template_1.compileTpl(attrVal, data);
-	                    var match = func.match(constant_2.RegexpStr.methodAndParam);
+	                    var match = func.match(constant_1.RegexpStr.methodAndParam);
 	                    var method = match[1];
 	                    var params = match[2];
 	                    var paramsArr = params.split(",");
@@ -992,8 +992,8 @@
 	            var attr = this.attributes[i];
 	            var attrName = attr.nodeName, attrVal = attr.nodeValue;
 	            if (validator_1.isKvmAttribute(attrName)) {
-	                if (constant_2.RegexpStr.kAttribute.test(attrName)) {
-	                    var key = attr.nodeName.replace(constant_2.RegexpStr.kAttribute, '$1');
+	                if (constant_1.RegexpStr.kAttribute.test(attrName)) {
+	                    var key = attr.nodeName.replace(constant_1.RegexpStr.kAttribute, '$1');
 	                    if (key === 'class') {
 	                        // 类 a:'class2', b:'class2'
 	                        var arr = attrVal.split(",");
@@ -1017,7 +1017,7 @@
 	                    node.setAttribute(attrName, template_1.compileTpl(attrVal, data));
 	                }
 	            }
-	            else if (constant_2.RegexpStr.kOnAttribute.test(attrName)) {
+	            else if (constant_1.RegexpStr.kOnAttribute.test(attrName)) {
 	                node.removeAttribute(attrName);
 	            }
 	            else {
@@ -1035,7 +1035,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	exports.isBraceReg = function (str) {
 	    return constant_1.RegexpStr.brace.test(str);
 	};
@@ -1101,11 +1101,17 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
+	var constant_1 = __webpack_require__(3);
 	var VDOM_1 = __webpack_require__(12);
-	var object_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
+	var ForDOM_1 = __webpack_require__(6);
+	var InputDOM_1 = __webpack_require__(16);
+	var validator_1 = __webpack_require__(13);
+	var ComponentDOM_1 = __webpack_require__(17);
+	var NormalDOM_1 = __webpack_require__(18);
 	var IfDOM = (function (_super) {
 	    __extends(IfDOM, _super);
-	    function IfDOM(node) {
+	    function IfDOM(node, kmv) {
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
 	        // h3
@@ -1114,6 +1120,33 @@
 	        _this.kif = node.getAttribute("k-if");
 	        _this.$dom = node;
 	        node.removeAttribute("k-if");
+	        if (node.childNodes) {
+	            for (var i = 0; i < node.childNodes.length; i++) {
+	                var child = node.childNodes[i];
+	                if (child.nodeType === constant_1.NodeType.ELEMENT) {
+	                    if (validator_1.isUnknowElement(child.tagName)) {
+	                        _this.childrenVdom.push(new ComponentDOM_1.ComponentDOM(child, kmv));
+	                    }
+	                    else {
+	                        if (child.getAttribute("k-for")) {
+	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv));
+	                        }
+	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
+	                        }
+	                        else if (child.getAttribute("k-if")) {
+	                            _this.childrenVdom.push(new IfDOM(child, kmv));
+	                        }
+	                        else {
+	                            _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv));
+	                        }
+	                    }
+	                }
+	                else {
+	                    _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv));
+	                }
+	            }
+	        }
 	        return _this;
 	    }
 	    IfDOM.prototype.renderInit = function (data, kmv) {
@@ -1124,6 +1157,10 @@
 	        else {
 	            this.$dom.style.display = "none";
 	        }
+	        this.childrenVdom.forEach(function (child) {
+	            console.log(child);
+	            child.renderInit(data, kmv);
+	        });
 	    };
 	    IfDOM.prototype.reRender = function (data, kmv) {
 	        var isShow = object_1.getDotVal(data, this.kif);
@@ -1133,6 +1170,9 @@
 	        else {
 	            this.$dom.style.display = "none";
 	        }
+	        this.childrenVdom.forEach(function (child) {
+	            child.reRender(data, kmv);
+	        });
 	    };
 	    return IfDOM;
 	}(VDOM_1.VDOM));
@@ -1144,7 +1184,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var object_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	var InputDOM = (function () {
 	    function InputDOM(node) {
 	        this.childrenVdom = [];
@@ -1185,11 +1225,12 @@
 	var NormalDOM_1 = __webpack_require__(18);
 	var VDOM_1 = __webpack_require__(12);
 	var DomOp = __webpack_require__(8);
-	var constant_1 = __webpack_require__(4);
-	var object_1 = __webpack_require__(3);
+	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	var ForDOM_1 = __webpack_require__(6);
 	var InputDOM_1 = __webpack_require__(16);
 	var IfDOM_1 = __webpack_require__(15);
+	var observer_1 = __webpack_require__(2);
 	var ComponentDOM = (function (_super) {
 	    __extends(ComponentDOM, _super);
 	    function ComponentDOM(node, kmv, data) {
@@ -1214,6 +1255,8 @@
 	            }
 	            _this.$dom = div.firstChild;
 	            if (!object_1.isNull(_this.$data)) {
+	                _this.$data = object_1.extend(_this.$data, component.data);
+	                observer_1.observer(_this.$data, kmv); // 监听组件的数据
 	                // 父组件有数据传递
 	                var childNodes = _this.$dom.childNodes;
 	                for (var i = 0; i < childNodes.length; i++) {
@@ -1226,7 +1269,7 @@
 	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
 	                        }
 	                        else if (child.getAttribute("k-if")) {
-	                            _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                            _this.childrenVdom.push(new IfDOM_1.IfDOM(child, kmv));
 	                        }
 	                        else {
 	                            _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv));
@@ -1297,7 +1340,7 @@
 	};
 	var template_1 = __webpack_require__(10);
 	var DomUtil = __webpack_require__(8);
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	var VDOM_1 = __webpack_require__(12);
 	var ForDOM_1 = __webpack_require__(6);
 	var IfDOM_1 = __webpack_require__(15);
@@ -1310,7 +1353,6 @@
 	    function NormalDOM(node, kmv) {
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
-	        // h3
 	        _this.tagName = node.tagName,
 	            _this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
 	            _this.nodeType = node.nodeType;
@@ -1336,7 +1378,7 @@
 	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
 	                        }
 	                        else if (child.getAttribute("k-if")) {
-	                            _this.childrenVdom.push(new IfDOM_1.IfDOM(child));
+	                            _this.childrenVdom.push(new IfDOM_1.IfDOM(child, kmv));
 	                        }
 	                        else {
 	                            _this.childrenVdom.push(new NormalDOM(child, kmv));
@@ -1388,11 +1430,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var constant_1 = __webpack_require__(4);
+	var constant_1 = __webpack_require__(3);
 	exports.diff = function (arr1, arr2) {
 	    if (arr1 === void 0) { arr1 = []; }
 	    if (arr2 === void 0) { arr2 = []; }
 	    var change = [];
+	    var cp = arr1.slice(0), cp2 = arr2.slice(0); // 拷贝一份
 	    var len1 = arr1.length, len2 = arr2.length;
 	    var len = Math.min(len1, len2);
 	    for (var i = 0; i < len; i++) {

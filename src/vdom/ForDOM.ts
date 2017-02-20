@@ -70,12 +70,13 @@ export class ForDOM {
             DomOp.appendChild(this.parentNode, docFrag);
         }
     }
-    reRender (data, kmv) {
+    reRender (data, kmv, component) {
         let arrKey = this.forObjectKey;
         let newArray = getDotVal(data, arrKey);
         if (Array.isArray(newArray)) {
             let change = diff(this.$data, newArray);
             if (change.length) {
+                this.$data = newArray.slice(0);  // 赋予新值
                 this.notifyDataChange(change, kmv);
             } else {
                 for (let i = 0, len = this.$data.length; i < len; i++) {
@@ -84,7 +85,7 @@ export class ForDOM {
                     this.childrenVdom[i].reRender(iteratorObj, kmv);
                 }
             }
-        } else {
+        } else if (typeof newArray === 'object'){
             // 渲染对象
             let idx = 0;
             for (let key in this.$data) {
@@ -96,11 +97,7 @@ export class ForDOM {
         }
     }
     notifyDataChange (change, kmv) {
-        let data = kmv.data;
-        let arrKey = this.forObjectKey;
-        let arrayData = getDotVal(data, arrKey) || [];
         if (Array.isArray(this.$data)) {
-            this.$data = arrayData.slice(0);
             for (let i = 0; i < change.length; i++) {
                 var op = change[i].op;
                 if (change[i].batch) {
@@ -142,7 +139,7 @@ export class ForDOM {
     }
     addNewItem (val, kmv) {
         let newItem = new ForItemDOM(this.templateNode, kmv);
-        let iteratorObj = Object.create(kmv.$data);     // 构造遍历的对象
+        let iteratorObj = Object.create(kmv.data);     // 构造遍历的对象
         iteratorObj[this.forKey] = val;
         let newDom = newItem.transDOM(iteratorObj, kmv);
         this.childrenVdom.push(newItem);
@@ -153,7 +150,7 @@ export class ForDOM {
         popVdom.$dom && DomOp.removeNode(popVdom.$dom);
     }
     changeItem (i, kmv) {
-        let obj = Object.create(kmv.$data);
+        let obj = Object.create(kmv.data);
         obj[this.forKey] = this.$data[i];
         this.childrenVdom[i].reRender(obj, kmv);
     }

@@ -2,11 +2,15 @@ import { NormalDOM } from './NormalDOM'
 import { VDOM } from './VDOM'
 import * as DomOp from '../dom/domOp'
 import {RegexpStr, NodeType} from "../constants/constant"
-import { depCopy, getDotVal, isNull } from "../util/object"
+import {
+    depCopy, getDotVal, isNull,
+    extend
+} from "../util/object"
 import { VDOMInterface } from "./VDOMInterface"
 import {ForDOM} from "./ForDOM";
 import {InputDOM} from "./InputDOM";
 import {IfDOM} from "./IfDOM";
+import {observer} from "../util/observer";
 
 export class ComponentDOM extends VDOM implements VDOMInterface {
     nodeType;
@@ -38,6 +42,8 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
             }
             this.$dom = div.firstChild;
             if (!isNull(this.$data)) {
+                this.$data = extend(this.$data, component.data);
+                observer(this.$data, kmv);  // 监听组件的数据
                 // 父组件有数据传递
                 let childNodes = this.$dom.childNodes;
                 for (let i = 0; i < childNodes.length; i++) {
@@ -48,7 +54,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.childrenVdom.push(new InputDOM(child));
                         } else if (child.getAttribute("k-if")) {
-                            this.childrenVdom.push(new IfDOM(child));
+                            this.childrenVdom.push(new IfDOM(child, kmv));
                         } else {
                             this.childrenVdom.push(new NormalDOM(child, kmv));
                         }

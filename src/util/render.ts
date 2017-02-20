@@ -17,7 +17,7 @@ let nextTickHandler = (kmv) => {
         console.log("reRender");
         kmv.pendingValue = false;
         let lastOne = kmv.changeQueue.pop();
-        reRender(lastOne.kmv, lastOne.bigKey);
+        lastOne && reRender(lastOne.kmv, lastOne.bigKey);
         kmv.changeQueue.length = 0;
     }
     nextTick(kmv);

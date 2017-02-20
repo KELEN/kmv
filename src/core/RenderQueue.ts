@@ -35,7 +35,7 @@ export class RenderQueue {
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.queue.push(new InputDOM(child));
                         } else if (child.getAttribute("k-if")) {
-                            this.queue.push(new IfDOM(child));
+                            this.queue.push(new IfDOM(child, this.kmv));
                         } else {
                             // 常规dom不需要传第三个参数
                             this.queue.push(new NormalDOM(child, this.kmv));

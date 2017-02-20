@@ -2,6 +2,7 @@ import { ArrayOp } from "../constants/constant"
 
 export let diff = (arr1 = [], arr2 = []) => {
     let change = [];
+    let cp = arr1.slice(0), cp2 = arr2.slice(0);        // 拷贝一份
     let len1 = arr1.length, len2 = arr2.length;
     let len = Math.min(len1, len2);
     for (let i = 0; i < len; i++) {

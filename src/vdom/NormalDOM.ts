@@ -19,7 +19,6 @@ export class NormalDOM extends VDOM {
     // 第三个参数传递给子组件的数据
     constructor (node, kmv) {
         super(node);
-        // h3
         this.tagName = node.tagName,
         this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
         this.nodeType = node.nodeType;
@@ -42,7 +41,7 @@ export class NormalDOM extends VDOM {
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.childrenVdom.push(new InputDOM(child));
                         } else if (child.getAttribute("k-if")) {
-                            this.childrenVdom.push(new IfDOM(child));
+                            this.childrenVdom.push(new IfDOM(child, kmv));
                         } else {
                             this.childrenVdom.push(new NormalDOM(child, kmv));
                         }

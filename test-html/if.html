@@ -12,23 +12,24 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <h3>{{ name }}</h3>
-    <h2>{{ age }}</h2>
-    <h1>{{ company + name }}</h1>
-    <input type="text" k-model="name">
+    <h1 k-if="isShow">
+        <span>{{ name }}</span>
+    </h1>
+    <button k-on:click="changeShow()">button</button>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
-    var show = false;
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "kelen",
-            age: 20,
-            company: "广州"
+            isShow: true,
+            name: "kelen"
         },
         methods: {
-
+            changeShow: function() {
+                console.log(this);
+                this.isShow =  !this.isShow;
+            }
         }
     });
 </script>

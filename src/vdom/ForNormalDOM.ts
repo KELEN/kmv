@@ -35,7 +35,7 @@ export class ForNormalDOM extends VDOM {
                             } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                                 this.childrenVdom.push(new InputDOM(child));
                             } else if (child.getAttribute("k-if")) {
-                                this.childrenVdom.push(new IfDOM(child));
+                                this.childrenVdom.push(new IfDOM(child, kmv));
                             } else {
                                 this.childrenVdom.push(new ForNormalDOM(child, kmv, parentData))
                             }
