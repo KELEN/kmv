@@ -3,6 +3,8 @@ import { RegexpStr, ArrayOp } from '../constants/constant'
 import { getDotVal } from "../util/object"
 import * as DomOp from "../dom/domOp"
 import { diff } from "../util/array";
+import {isUnknowElement} from "../util/validator";
+import {ComponentDOM} from "./ComponentDOM";
 
 export class ForDOM {
     nextSibling;        // 后一个元素
@@ -15,6 +17,7 @@ export class ForDOM {
     $data;          // 存放遍历的数据，下次比较
     $dom;           // 对应的真实dom
     isList;
+    node;
     // 第三个参数组件用的
     constructor (node, kmv, parentData = {}) {
         this.nextSibling = node.nextSibling;
@@ -26,39 +29,48 @@ export class ForDOM {
         let match = RegexpStr.forStatement.exec(forString);
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
-        this.$dom = node;
-        this.$data = parentData;
+        this.node = node;
+        this.$data = getDotVal(parentData, this.forObjectKey);
     }
     renderInit(data, kmv) {
         let docFrag = this.transDOM(data, kmv);
+        this.$dom = docFrag.firstChild;
         this.insertNewDOM(docFrag);
-        DomOp.removeNode(this.$dom);
+        DomOp.removeNode(this.node);
     }
     transDOM (data, kmv) {
+
         let iteratorData = getDotVal(data, this.forObjectKey);
         let docFrag = document.createDocumentFragment();
-        if (Array.isArray(iteratorData)) {
-            // 数组循环
-            this.$data = iteratorData.slice(0);
-            for (let i = 0; i < this.$data.length; i++) {
-                let iteratorObj = Object.create(data);     // 构造遍历的对象
-                iteratorObj[this.forKey] = this.$data[i];
-                // 第三个参数传递给组件的对象
-                let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
-                this.childrenVdom.push(forItem);
-                let forItemDom = forItem.transDOM(iteratorObj, kmv);
-                docFrag.appendChild(forItemDom);
-            }
-        } else if (typeof iteratorData === 'object') {
-            // 对象循环
-            this.$data = iteratorData;
-            for (let i in iteratorData) {
-                let forItem = new ForItemDOM(this.templateNode, kmv, data);
-                this.childrenVdom.push(forItem);
-                let iteratorObj = Object.create(data);     // 构造遍历的对象
-                iteratorObj[this.forKey] = this.$data[i];
-                let forItemDom = forItem.transDOM(iteratorObj, kmv);
-                docFrag.appendChild(forItemDom);
+
+        // 组件的话拼接
+        if (isUnknowElement(this.node.tagName)) {
+            let comp = new ComponentDOM(this.node, kmv, data);
+            docFrag.appendChild(comp.transDOM(data, kmv));
+        } else {
+            if (Array.isArray(iteratorData)) {
+                // 数组循环
+                this.$data = iteratorData.slice(0);
+                for (let i = 0; i < this.$data.length; i++) {
+                    let iteratorObj = Object.create(data);     // 构造遍历的对象
+                    iteratorObj[this.forKey] = this.$data[i];
+                    // 第三个参数传递给组件的对象
+                    let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
+                    this.childrenVdom.push(forItem);
+                    let forItemDom = forItem.transDOM(iteratorObj, kmv);
+                    docFrag.appendChild(forItemDom);
+                }
+            } else if (typeof iteratorData === 'object') {
+                // 对象循环
+                this.$data = iteratorData;
+                for (let i in iteratorData) {
+                    let forItem = new ForItemDOM(this.templateNode, kmv, data);
+                    this.childrenVdom.push(forItem);
+                    let iteratorObj = Object.create(data);     // 构造遍历的对象
+                    iteratorObj[this.forKey] = this.$data[i];
+                    let forItemDom = forItem.transDOM(iteratorObj, kmv);
+                    docFrag.appendChild(forItemDom);
+                }
             }
         }
         return docFrag;

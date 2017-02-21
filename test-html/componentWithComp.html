@@ -20,15 +20,15 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <m-foot :header="header" :foot="footer"></m-foot>
+    <m-header :model="config"></m-header>
 </div>
 
 <template id="headerTemp">
-    <div class="header">{{ header.title }}</div>
+    <div class="header">{{ model.header.title }}</div>
 </template>
 
 <template id="footTemp">
-    <div class="footer">{{ foot.title }}<m-header :header="foot"></m-header></div>
+    <div class="footer">{{ model.footer.title }}</div>
 </template>
 
 </body>
@@ -45,11 +45,13 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            header: {
-                title: '我是头部'
-            },
-            footer: {
-                title: '我是底部'
+            config: {
+                header: {
+                    title: '我是头部'
+                },
+                footer: {
+                    title: '我是底部'
+                }
             }
         }
     });

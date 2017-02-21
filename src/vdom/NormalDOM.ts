@@ -1,15 +1,15 @@
 import { compileTpl } from '../util/template'
-import * as DomUtil from '../dom/domOp'
+import * as DomOp from '../dom/domOp'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
 import { InputDOM } from './InputDOM'
 import { isUnknowElement } from '../util/validator'
 import { ComponentDOM } from './ComponentDOM'
-import {getDotVal} from "../util/object";
+import { getDotVal } from "../util/object";
+import {renderInit} from "../util/render";
 
 export class NormalDOM extends VDOM {
-    methods;
     nodeType;
     tagName;
     attributes;
@@ -17,8 +17,9 @@ export class NormalDOM extends VDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     kif;
+    kshow;
     // 第三个参数传递给子组件的数据
-    constructor (node, kmv) {
+    constructor (node, kmv, parentData = {}) {
         super(node);
         this.tagName = node.tagName,
         this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
@@ -30,7 +31,6 @@ export class NormalDOM extends VDOM {
                 node.textContent = '';
                 break;
             case NodeType.ELEMENT:
-                this.kif = node.getAttribute("k-if");
                 break;
         }
         if (node.childNodes) {
@@ -38,14 +38,14 @@ export class NormalDOM extends VDOM {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
                     if (isUnknowElement(child.tagName)) {
-                        this.childrenVdom.push(new ComponentDOM(child, kmv));
+                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
                     } else {
                         if (child.getAttribute("k-for")) {
                             this.childrenVdom.push(new ForDOM(child, kmv));
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.childrenVdom.push(new InputDOM(child));
                         } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv));
+                            this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
                         }
                     }
                 } else {
@@ -57,16 +57,16 @@ export class NormalDOM extends VDOM {
     renderInit(data, kmv, component = null) {
         switch (this.nodeType) {
             case NodeType.TEXT:
-                DomUtil.changeTextContent(this.$dom, compileTpl(this.template, data));
+                DomOp.changeTextContent(this.$dom, compileTpl(this.template, data));
                 break;
             case NodeType.ELEMENT:
+                if (this.kshow) {
+                    let isShow = getDotVal(data, this.kshow);
+                    this.$dom.style.display = !!isShow ? "block" : "none";
+                }
                 if (this.kif) {
-                    let isShow = getDotVal(data, this.kif);
-                    if (!!isShow) {
-                        this.$dom.style.display = "block";
-                    } else {
-                        this.$dom.style.display = "none";
-                    }
+                    let isIf = getDotVal(data, this.kif);
+                    if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
                 }
                 this.childrenVdom.forEach((child) => {
                     child.renderInit(data, kmv, component);
@@ -79,16 +79,18 @@ export class NormalDOM extends VDOM {
         let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
-                DomUtil.changeTextContent(this.$dom, text)
+                let stext = DomOp.getTextContent(this.$dom);  // 原文本
+                stext != text && DomOp.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
+                if (this.kshow) {
+                    let isShow = getDotVal(data, this.kshow);
+                    this.$dom.style.display = !!isShow ? "block" : "none";
+                }
                 if (this.kif) {
-                    let isShow = getDotVal(data, this.kif);
-                    if (!!isShow) {
-                        this.$dom.style.display = "block";
-                    } else {
-                        this.$dom.style.display = "none";
-                    }
+                    let isIf = getDotVal(data, this.kif);
+                    if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                    else DomOp.replaceNode(this.$emptyComment, this.$dom);
                 }
                 this.childrenVdom.forEach((child) => {
                     child.reRender(data, kmv);
@@ -96,5 +98,20 @@ export class NormalDOM extends VDOM {
                 this.reRenderAttr(data, kmv);
                 break;
         }
+    }
+    insertNewDOM (newDom) {
+        if (this.nextSibling) {
+            DomOp.insertBefore(this.nextSibling, newDom);
+        } else if (this.parentNode) {
+            DomOp.appendChild(this.parentNode, newDom);
+        }
+    }
+    transDOM (data, kmv) {
+        this.renderInit(data, kmv);
+        this.childrenVdom.forEach((child) => {
+            console.log(child);
+            this.$dom.appendChild(child.transDOM(data, kmv));
+        });
+        return this.$dom;
     }
 }

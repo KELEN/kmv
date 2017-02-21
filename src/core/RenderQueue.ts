@@ -26,7 +26,6 @@ export class RenderQueue {
                 case NodeType.ELEMENT:
                     if (isUnknowElement(child.tagName)) {
                         // 组件
-                        // this.queue.push(new ComponentDOM(child, this.kmv));
                         this.queue.push(new ComponentDOM(child, this.kmv, this.kmv.data));
                     } else {
                         if (child.getAttribute("k-for")) {

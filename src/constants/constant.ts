@@ -16,7 +16,7 @@ export const RegexpStr = {
     isParams: /^[^"|^'\d]+.*/,
     arithmeticOp: /\*|\+|-\/|\(|\)/g,          // 逻辑运算符
     inputElement: /INPUT|TEXTAREA/,
-    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)/,
+    arrtibuteKey: /k-for|k-model|k-if|k:.*|k-on:(.*)|k-show/,
     kAttribute: /k:(.*)/,
     kOnAttribute: /k-on:(.*)/,
     methodAndParam: /([a-zA-Z\d_]+)\((.*)\)/,

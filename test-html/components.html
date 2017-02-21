@@ -21,22 +21,22 @@
 <body>
 <div id="div1" class="div">
     <button k-on:click="addGood(100)">添加商品</button>
-    <m-header :header="header" :footer="footer"></m-header>
-    <m-body :goods="products"></m-body>
-    <m-foot :foot="footer"></m-foot>
+    <m-header :model="header"></m-header>
+    <m-body :model="products"></m-body>
+    <m-foot :model="footer"></m-foot>
 </div>
 
 <template id="headerTemp">
-    <div class="header">{{ header.title }}</div>
+    <div class="header">{{ model.title }}</div>
 </template>
 
 <template id="footTemp">
-    <div class="footer">{{ foot.title }}<m-header :header="foot"></m-header></div>
+    <div class="footer">{{ model.title }}<m-header :header="foot"></m-header></div>
 </template>
 
 <template id="bodyTemp">
     <ul class="goods-list">
-        <li k-for="good in goods">
+        <li k-for="good in model">
             <div class="good-img">
                 <img k:src="{{ good.image }}" width="100" alt="">
             </div>

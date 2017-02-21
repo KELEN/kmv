@@ -12,7 +12,7 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <h1 k-if="isShow">
+    <h1 k-for="i in arr" k-if="isShow">
         <span>{{ name }}</span>
     </h1>
     <button k-on:click="changeShow()">button</button>
@@ -22,12 +22,12 @@
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            isShow: true,
-            name: "kelen"
+            isShow: false,
+            name: "kelen",
+            arr: [1,3]
         },
         methods: {
             changeShow: function() {
-                console.log(this);
                 this.isShow =  !this.isShow;
             }
         }

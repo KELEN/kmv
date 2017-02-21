@@ -6,8 +6,9 @@
 </head>
 <body>
 <div id="div1">
-    <h3 v-for="i in comment">{{ i }}</h3>
-
+    <h1 v-for="i in arr" v-if="isShow">
+        333
+    </h1>
 </div>
 <script src="vue.js"></script>
 <script>
@@ -17,18 +18,11 @@
     var vue = new Vue({
         el: "#div1",
         data: {
-            name: "kelen",
-            comment: [1,3,4],
-            status: {
-                0: '已检查',
-                1: '未检查',
-                2: '已损坏'
-            },
+            isShow: true,
+            arr: [1,3,4]
         },
         component: {
-            'nn': {
-                template: ''
-            }
+
         }
     })
     console.log(vue);

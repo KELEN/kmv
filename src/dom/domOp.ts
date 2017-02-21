@@ -18,8 +18,12 @@ export let createTextNode = (text) => {
     return document.createTextNode(text);
 }
 
+export let createComment = (text) => {
+    return document.createComment(text);
+}
+
 export let replaceNode = (oldNode, newNode) => {
-    oldNode.parentNode.replaceNode(oldNode, newNode);
+    oldNode.parentNode && oldNode.parentNode.replaceChild(newNode, oldNode);
 }
 
 export let createElement = (tagName) => {
@@ -40,6 +44,10 @@ export let changeNodeValue = (node, text) => {
 
 export let changeTextContent = (textNode, text) => {
     textNode && (textNode.textContent = text);
+}
+
+export let getTextContent = (textNode) => {
+    return textNode && textNode.textContent;
 }
 
 export let removeAttribute = (node, attr) => {

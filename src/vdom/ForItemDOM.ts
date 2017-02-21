@@ -1,4 +1,4 @@
-import * as DomUtil from "../dom/domOp"
+import * as DomOp from "../dom/domOp"
 import { ForNormalDOM } from './ForNormalDOM'
 import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
@@ -6,6 +6,7 @@ import { InputDOM } from './InputDOM'
 import { NodeType, RegexpStr } from "../constants/constant"
 import {isUnknowElement} from "../util/validator";
 import {ComponentDOM} from "./ComponentDOM";
+import {getDotVal} from "../util/object";
 
 export class ForItemDOM extends VDOM {
     tagName;
@@ -15,6 +16,7 @@ export class ForItemDOM extends VDOM {
     $dom;
     template;
     nodeType;
+    kshow;
     constructor (node, kmv, parentData = {}) {
         super(node);
         this.tagName = node.tagName;
@@ -42,21 +44,47 @@ export class ForItemDOM extends VDOM {
         node.removeAttribute("k-for");
     }
     transDOM(iteratorObj, kmv) {
-        let newElem = DomUtil.createElement(this.tagName);
+        let newElem = DomOp.createElement(this.tagName);
         for (let i = 0, len = this.childrenVdom.length; i < len; i++) {
             let childVdom = this.childrenVdom[i];
             let newDom = childVdom.transDOM(iteratorObj, kmv);
             newDom && newElem.appendChild(newDom);
         }
         this.$dom = newElem;
+        if (this.kshow) {
+            let isShow = getDotVal(iteratorObj, this.kshow);
+            this.$dom.style.display = !!isShow ? "block" : "none";
+        }
         this.renderAttr(iteratorObj, kmv);
-        return newElem;
+        if (this.kif) {
+            let isIf = getDotVal(iteratorObj, this.kif);
+            if (!isIf) {
+                // 不显示
+                return this.$emptyComment;
+            }
+        }
+        return this.$dom;
     }
     // 重新渲染
     reRender (iteratorObj, kmv) {
         this.childrenVdom.forEach((child) => {
             child.reRender(iteratorObj, kmv);
         });
-        this.reRenderAttr(iteratorObj, kmv);
+        if (this.kshow) {
+            let isShow = getDotVal(iteratorObj, this.kshow);
+            this.$dom.style.display = !!isShow ? "block" : "none";
+        }
+        if (this.kif) {
+            let isIf = getDotVal(iteratorObj, this.kif);
+            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+            else DomOp.replaceNode(this.$emptyComment, this.$dom);
+        }
+    }
+    insertNewDOM (newDom) {
+        if (this.nextSibling) {
+            DomOp.insertBefore(this.nextSibling, newDom);
+        } else if (this.parentNode) {
+            DomOp.appendChild(this.parentNode, newDom);
+        }
     }
 }

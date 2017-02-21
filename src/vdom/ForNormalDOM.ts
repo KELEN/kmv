@@ -1,5 +1,5 @@
 import { compileTpl } from '../util/template'
-import * as DomUtil from '../dom/domOp'
+import * as DomOp from '../dom/domOp'
 import { VDOM } from './VDOM'
 import { ForDOM } from './ForDOM'
 import { InputDOM } from './InputDOM'
@@ -16,6 +16,7 @@ export class ForNormalDOM extends VDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     kif;
+    kshow;
     constructor (node, kmv, parentData = {}) {
         // h3
         super(node);
@@ -27,7 +28,7 @@ export class ForNormalDOM extends VDOM {
                 this.template = node.textContent;
                 break;
             case NodeType.ELEMENT:
-                this.kif = node.getAttribute("k-if");
+                this.kshow = node.getAttribute("k-show");
                 if (node.childNodes) {
                     for (let i = 0; i < node.childNodes.length; i++) {
                         let child = node.childNodes[i];
@@ -60,7 +61,7 @@ export class ForNormalDOM extends VDOM {
         }
         switch (this.nodeType) {
             case NodeType.TEXT:
-                newEle = DomUtil.createTextNode(this.tagName);
+                newEle = DomOp.createTextNode(this.tagName);
                 newEle.textContent = compileTpl(this.template, iteratorObj);
                 this.$dom = newEle;
                 break;
@@ -94,7 +95,7 @@ export class ForNormalDOM extends VDOM {
         }
         switch (this.nodeType) {
             case NodeType.TEXT:
-                DomUtil.changeTextContent(this.$dom, text)
+                DomOp.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {

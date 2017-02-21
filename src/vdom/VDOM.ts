@@ -1,17 +1,29 @@
 import { compileTpl } from '../util/template'
+import { createComment } from '../dom/domOp'
 import { NodeType, RegexpStr } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
 import { bindEvent } from "../dom/event"
-import { getDotVal } from "../util/object";
+import { getDotVal } from "../util/object"
 
 export class VDOM {
     nodeType;
     $dom;
     attributes;
+    nextSibling;
+    parentNode;
     isComponent;
     childrenVdom = [];
+    kshow;
+    kif;
+    $emptyComment = createComment('');   // 空白注释, 替换kif dom
     constructor (node, kmv = {}) {
         node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
+        if (node.nodeType === NodeType.ELEMENT) {
+            this.kshow = node.getAttribute("k-show");
+            this.kif = node.getAttribute("k-if");
+        }
+        this.nextSibling = node.nextSibling;
+        this.parentNode = node.parentNode;
     }
     // 传递组件对象, 组件私有方法
     renderAttr (data, kmv, component: any = false) {
@@ -52,8 +64,9 @@ export class VDOM {
                             paramsArr[n] = String(paramsArr[n]).trim();
                         }
                     }
+                    
                     if (component) {
-                        bindEvent(node, event, method, paramsArr, component.methods, component.$data);
+                        bindEvent(node, event, method, paramsArr, component.methods, component.$data.model);
                     } else {
                         bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     }
@@ -84,12 +97,15 @@ export class VDOM {
                         node.setAttribute(key, valRes.trim());
                         node.removeAttribute(attrName);
                     } else {
-                        let val = compileTpl(attrVal, data);
-                        node.setAttribute(key, val);
+                        let newVal = compileTpl(attrVal, data);
+                        let oldVal = node.getAttribute(key);
+                        newVal !== oldVal && node.setAttribute(key, newVal);
                         node.removeAttribute(attrName);
                     }
                 } else {
-                    node.setAttribute(attrName, compileTpl(attrVal, data));
+                    let newVal = compileTpl(attrVal, data);
+                    let oldVal = node.getAttribute(attrName);
+                    newVal !== oldVal && node.setAttribute(attrName, newVal);
                 }
             } else if (RegexpStr.kOnAttribute.test(attrName)) {
                 node.removeAttribute(attrName);

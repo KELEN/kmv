@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .list-wrap {
+            list-style: none;
+        }
+        .colspan-btn {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 <h3>组件嵌套生成树形</h3>
 <div id="div1" class="div">
-    <my-tree :children="treeData.children" :name="treeData.name"></my-tree>
+     <my-tree :model="treeData"></my-tree>
 </div>
 <hr>
 <template id="test">
-    <li>
-        <span k-on:click="changeStatus()">{{ name }}</span><button k-on:click="add()">+</button>
-        <div k-if="isOpen">
-            <ul k-for='child in children'>
-                <my-tree :children='child.children' :name='child.name'>
-                </my-tree>
-            </ul>
-        </div>
-    </li>
+    <ul>
+        <li>
+            {{ model.name }} <span k-on:click="add()">add</span>
+            <my-tree k-for="model in model.children" :model="model"></my-tree>
+        </li>
+    </ul>
+
 </template>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -28,11 +34,14 @@
 
     Kmv.components('my-tree', {
         template: test.innerHTML,
-        data: {
-            isOpen: false
+        data: function () {
+            return {
+                isOpen: true
+            }
         },
         methods: {
             'add': function() {
+                console.log(this);
                 this.children.push({
                     name: Math.random(),
                     children: []
@@ -40,7 +49,6 @@
                 this.isOpen = true;
             },
             changeStatus: function() {
-                console.log(this);
                 this.isOpen = !this.isOpen;
             }
         },
@@ -54,10 +62,35 @@
                 children: [
                     {
                         name: 'two level',
+                        children: [
+                            {
+                                name: '3 level',
+                                children: [
+                                    {
+                                        name: '4 level',
+                                        children: [
+
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                name: '3 level',
+                                children: []
+                            }
+                        ]
+                    },
+                    {
+                        name: 'two1 level',
                         children: []
                     }
                 ]
-            }
+            },
+            arr: [{
+                a: 1
+            }, {
+                a: 2
+            }]
         },
         methods: {
             add: function () {
