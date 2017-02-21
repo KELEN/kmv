@@ -64,7 +64,7 @@ export class VDOM {
                             paramsArr[n] = String(paramsArr[n]).trim();
                         }
                     }
-                    
+
                     if (component) {
                         bindEvent(node, event, method, paramsArr, component.methods, component.$data.model);
                     } else {

@@ -1280,6 +1280,7 @@
 	    };
 	    ComponentDOM.prototype.reRender = function (data, kmv) {
 	        var _this = this;
+	        console.log(data);
 	        for (var i = 0; i < this.attributes.length; i++) {
 	            var attr = this.attributes[i];
 	            var res = void 0;

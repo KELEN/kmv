@@ -88,6 +88,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
         return this.$dom;
     }
     reRender(data, kmv) {
+        console.log(data);
         for (let i = 0; i < this.attributes.length; i++) {
             let attr = this.attributes[i];
             let res;
