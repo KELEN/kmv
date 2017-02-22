@@ -1,8 +1,8 @@
 import { ForItemDOM } from './ForItemDOM'
 import { RegexpStr, ArrayOp } from '../constants/constant'
-import { getDotVal } from "../util/object"
+import {getDotVal, depCopy} from "../util/object"
 import * as DomOp from "../dom/domOp"
-import { diff } from "../util/array";
+import {diff, depCopyArray} from "../util/array";
 import {isUnknowElement} from "../util/validator";
 import {ComponentDOM} from "./ComponentDOM";
 
@@ -33,9 +33,9 @@ export class ForDOM {
         this.node = node;
         let iteratorData = getDotVal(parentData, this.forObjectKey);
         if (iteratorData) {
-            this.$data = iteratorData.slice(0);
+            this.$data = depCopyArray(iteratorData);
         } else {
-            this.$data  = iteratorData;
+            this.$data  = depCopy(iteratorData);
         }
         if (isUnknowElement(node.tagName)) {
             this.$refData = parentData;
@@ -53,7 +53,7 @@ export class ForDOM {
         // 组件的话拼接
         if (Array.isArray(iteratorData)) {
             // 数组循环
-            this.$data = iteratorData.slice(0);
+            this.$data = depCopyArray(iteratorData)// iteratorData.slice(0);
             for (let i = 0; i < this.$data.length; i++) {
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
                 iteratorObj[this.forKey] = this.$data[i];
@@ -94,6 +94,7 @@ export class ForDOM {
             newArray = getDotVal(data, arrKey);
         }
         if (Array.isArray(newArray)) {
+            // console.log(this.$data, newArray);
             let change = diff(this.$data, newArray);
             if (change.length) {
                 this.$data = newArray.slice(0);  // 赋予新值

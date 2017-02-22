@@ -105,10 +105,8 @@ export class ForNormalDOM extends VDOM {
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
-                    console.log(child);
                     if (child instanceof ForDOM) {
                         // 嵌套for
-                        console.log(data);
                         child.reRender(data, kmv)
                     } else {
                         child.reRender(data, kmv);

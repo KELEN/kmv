@@ -1,5 +1,6 @@
 
 import { RegexpStr } from '../constants/constant';
+import {depCopyArray} from "./array";
 
 export let getDotVal = (obj, key) => {
     let val, k;
@@ -24,7 +25,7 @@ export let depCopy = (obj) => {
     for (let i in obj) {
         if (typeof obj[i] === 'object') {
             if (Array.isArray(obj[i])) {
-                newObj[i] = obj[i].slice(0);
+                newObj[i] = depCopyArray(obj[i]);
             } else {
                 newObj[i] = depCopy(obj[i]);
             }

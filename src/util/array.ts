@@ -1,4 +1,5 @@
 import { ArrayOp } from "../constants/constant"
+import {depCopy} from "./object";
 
 export let diff = (arr1 = [], arr2 = []) => {
     let change = [];
@@ -6,7 +7,6 @@ export let diff = (arr1 = [], arr2 = []) => {
     let len1 = arr1.length, len2 = arr2.length;
     let len = Math.min(len1, len2);
     for (let i = 0; i < len; i++) {
-        console.log(arr1[i], arr2[i])
         if (arr1[i] !== arr2[i]) {
             change.push({
                 op: ArrayOp.CHANGE,
@@ -34,4 +34,20 @@ export let diff = (arr1 = [], arr2 = []) => {
         })
     }
     return change;
+}
+
+export let depCopyArray = (arr) => {
+    let newArr = [];
+    for (let i = 0; i < arr.length; i++) {
+        if (Array.isArray(arr[i])) {
+            newArr.push(depCopyArray(arr[i]));
+        } else {
+            if (typeof arr[i] === 'object') {
+                newArr.push(depCopy(arr[i]));
+            } else {
+                newArr.push(arr[i]);
+            }
+        }
+    }
+    return newArr;
 }

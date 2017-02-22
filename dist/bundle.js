@@ -270,6 +270,7 @@
 
 	"use strict";
 	var constant_1 = __webpack_require__(3);
+	var array_1 = __webpack_require__(18);
 	exports.getDotVal = function (obj, key) {
 	    var val, k;
 	    if (key) {
@@ -292,7 +293,7 @@
 	    for (var i in obj) {
 	        if (typeof obj[i] === 'object') {
 	            if (Array.isArray(obj[i])) {
-	                newObj[i] = obj[i].slice(0);
+	                newObj[i] = array_1.depCopyArray(obj[i]);
 	            }
 	            else {
 	                newObj[i] = exports.depCopy(obj[i]);
@@ -414,10 +415,10 @@
 	        this.node = node;
 	        var iteratorData = object_1.getDotVal(parentData, this.forObjectKey);
 	        if (iteratorData) {
-	            this.$data = iteratorData.slice(0);
+	            this.$data = array_1.depCopyArray(iteratorData);
 	        }
 	        else {
-	            this.$data = iteratorData;
+	            this.$data = object_1.depCopy(iteratorData);
 	        }
 	        if (validator_1.isUnknowElement(node.tagName)) {
 	            this.$refData = parentData;
@@ -435,7 +436,7 @@
 	        // 组件的话拼接
 	        if (Array.isArray(iteratorData)) {
 	            // 数组循环
-	            this.$data = iteratorData.slice(0);
+	            this.$data = array_1.depCopyArray(iteratorData); // iteratorData.slice(0);
 	            for (var i = 0; i < this.$data.length; i++) {
 	                var iteratorObj = Object.create(data); // 构造遍历的对象
 	                iteratorObj[this.forKey] = this.$data[i];
@@ -480,6 +481,7 @@
 	            newArray = object_1.getDotVal(data, arrKey);
 	        }
 	        if (Array.isArray(newArray)) {
+	            // console.log(this.$data, newArray);
 	            var change = array_1.diff(this.$data, newArray);
 	            if (change.length) {
 	                this.$data = newArray.slice(0); // 赋予新值
@@ -869,10 +871,8 @@
 	                break;
 	            case constant_1.NodeType.ELEMENT:
 	                this.childrenVdom.forEach(function (child) {
-	                    console.log(child);
 	                    if (child instanceof ForDOM_1.ForDOM) {
 	                        // 嵌套for
-	                        console.log(data);
 	                        child.reRender(data, kmv);
 	                    }
 	                    else {
@@ -1490,6 +1490,7 @@
 
 	"use strict";
 	var constant_1 = __webpack_require__(3);
+	var object_1 = __webpack_require__(4);
 	exports.diff = function (arr1, arr2) {
 	    if (arr1 === void 0) { arr1 = []; }
 	    if (arr2 === void 0) { arr2 = []; }
@@ -1498,7 +1499,6 @@
 	    var len1 = arr1.length, len2 = arr2.length;
 	    var len = Math.min(len1, len2);
 	    for (var i = 0; i < len; i++) {
-	        console.log(arr1[i], arr2[i]);
 	        if (arr1[i] !== arr2[i]) {
 	            change.push({
 	                op: constant_1.ArrayOp.CHANGE,
@@ -1527,6 +1527,23 @@
 	        });
 	    }
 	    return change;
+	};
+	exports.depCopyArray = function (arr) {
+	    var newArr = [];
+	    for (var i = 0; i < arr.length; i++) {
+	        if (Array.isArray(arr[i])) {
+	            newArr.push(exports.depCopyArray(arr[i]));
+	        }
+	        else {
+	            if (typeof arr[i] === 'object') {
+	                newArr.push(object_1.depCopy(arr[i]));
+	            }
+	            else {
+	                newArr.push(arr[i]);
+	            }
+	        }
+	    }
+	    return newArr;
 	};
 
 
