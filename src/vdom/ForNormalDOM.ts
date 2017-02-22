@@ -73,7 +73,7 @@ export class ForNormalDOM extends VDOM {
                 this.childrenVdom.forEach((child) => {
                     if (child instanceof ForDOM) {
                         // 嵌套for
-                        child.parentNode = newEle;
+                        child.parentNode = newEle;  // 嵌套父节点必须重新更新
                         child.renderInit(iteratorObj, kmv)
                     } else {
                         newEle.appendChild(child.transDOM(iteratorObj, kmv, component));

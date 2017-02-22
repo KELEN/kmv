@@ -838,7 +838,7 @@
 	                        this.childrenVdom.forEach(function (child) {
 	                            if (child instanceof ForDOM_1.ForDOM) {
 	                                // 嵌套for
-	                                child.parentNode = newEle;
+	                                child.parentNode = newEle; // 嵌套父节点必须重新更新
 	                                child.renderInit(iteratorObj, kmv);
 	                            }
 	                            else {

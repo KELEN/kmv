@@ -225,41 +225,27 @@ var kmv = new Kmv({
 </script>
 ```
 
-### 自定义组件，组件共用同一实例的数据，组件传递数据 :header="objectKey" (:header指的是组件需要用的对象, objectKey代表实例数据传递的对象/值)，子组件使用父组件的数据
+### 自定义组件，父组件向子组件传递数据 :model="objectKey" (:model在组件用的对象, objectKey代表实例数据传递的对象/值)
 
 ``` html
 <div id="div1" class="div">
-    <my-comment :comment="comment" :name="name"></my-comment>
-    <button k-on:click="addComment()">add comment</button>
-    <input type="text" k-model="name">
+    <m-header :model="header"></m-header>
 </div>
+<template id="headerTemp">
+    <div class="header">{{ model.title }}</div>
+</template>
 <script>
-    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
-    var spn = document.getElementById("loading");
+    var headerTemp = document.getElementById("headerTemp");
+    Kmv.components('m-header', {
+        template: headerTemp.innerHTML
+    })
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "Hello kmv.js!",
-            comment: [
-                { title: "评论1", time: new Date() },
-                { title: "评论2", time: new Date() },
-                { title: "评论3", time: new Date() },
-                { title: "评论4", time: new Date() },
-            ]
-        },
-        components: {
-            'my-comment': {
-                template: temp
-            }
-        },
-        methods: {
-            addComment: function() {
-                this.comment.push({
-                    title: "评论" + Math.random(),
-                    time: new Date()
-                })
+            header: {
+                title: '我是头部'
             }
         }
-    });
+    })
 </script>
 ```
