@@ -6,25 +6,28 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <my-comment :comment="comment" :name="name"></my-comment>
+    <my-comment :model="list"></my-comment>
     <button k-on:click="addComment()">add comment</button>
-    <input type="text" k-model="name">
+    <input type="text" k-model="list.name">
 </div>
 </body>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp = "<ul><li k-for='i in comment'>{{ i.title }} by {{ name }}</li></ul>";
+    var temp = "<ul><li k-for='i in model.comment'>{{ i.title }}{{　model.name　}}</li></ul>";
     var spn = document.getElementById("loading");
     var kmv = new Kmv({
         el: '#div1',
         data: {
             name: "Hello kmv.js!",
-            comment: [
-                { title: "评论1", time: new Date() },
-                { title: "评论2", time: new Date() },
-                { title: "评论3", time: new Date() },
-                { title: "评论4", time: new Date() },
-            ]
+            list: {
+                name: 'ccc',
+                comment: [
+                    { title: "评论1", time: new Date() },
+                    { title: "评论2", time: new Date() },
+                    { title: "评论3", time: new Date() },
+                    { title: "评论4", time: new Date() },
+                ]
+            }
         },
         components: {
             'my-comment': {

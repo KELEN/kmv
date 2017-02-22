@@ -48,8 +48,8 @@ export class ForNormalDOM extends VDOM {
                 break;
         }
     }
-    // iteratorObj 为遍历的数据，需要构造
-    transDOM (iteratorObj, kmv) {
+    // iteratorObj 为遍历的数据，需要构造, 第三个组件实例
+    transDOM (iteratorObj, kmv, component =  {}) {
         let newEle = document.createElement(this.tagName) ;
         if (this.kif) {
             let isShow = getDotVal(iteratorObj, this.kif);
@@ -71,14 +71,20 @@ export class ForNormalDOM extends VDOM {
                 this.childrenVdom
                 &&
                 this.childrenVdom.forEach((child) => {
-                    newEle.appendChild(child.transDOM(iteratorObj, kmv));
+                    if (child instanceof ForDOM) {
+                        // 嵌套for
+                        child.parentNode = newEle;
+                        child.renderInit(iteratorObj, kmv)
+                    } else {
+                        newEle.appendChild(child.transDOM(iteratorObj, kmv, component));
+                    }
+
                 });
-                this.renderAttr(iteratorObj, kmv);
+                this.renderAttr(iteratorObj, kmv, component);
                 break;
         }
         return newEle;
     }
-
     /**
      * @param data      渲染的数据
      * @param kmv       kmv
@@ -99,7 +105,14 @@ export class ForNormalDOM extends VDOM {
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
-                    child.reRender(data, kmv);
+                    console.log(child);
+                    if (child instanceof ForDOM) {
+                        // 嵌套for
+                        console.log(data);
+                        child.reRender(data, kmv)
+                    } else {
+                        child.reRender(data, kmv);
+                    }
                 })
                 break;
         }

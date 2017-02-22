@@ -41,7 +41,6 @@
         },
         methods: {
             'add': function() {
-                console.log(this);
                 this.children.push({
                     name: Math.random(),
                     children: []
@@ -66,17 +65,8 @@
                             {
                                 name: '3 level',
                                 children: [
-                                    {
-                                        name: '4 level',
-                                        children: [
-
-                                        ]
-                                    }
+                                    {name: '5 level'}
                                 ]
-                            },
-                            {
-                                name: '3 level',
-                                children: []
                             }
                         ]
                     },

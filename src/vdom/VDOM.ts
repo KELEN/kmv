@@ -26,7 +26,7 @@ export class VDOM {
         this.parentNode = node.parentNode;
     }
     // 传递组件对象, 组件私有方法
-    renderAttr (data, kmv, component: any = false) {
+    renderAttr (data, kmv, component: any) {
         if (this.nodeType === NodeType.ELEMENT) {
             let node = this.$dom;
             let attrs = this.attributes;
@@ -64,7 +64,6 @@ export class VDOM {
                             paramsArr[n] = String(paramsArr[n]).trim();
                         }
                     }
-
                     if (component) {
                         bindEvent(node, event, method, paramsArr, component.methods, component.$data.model);
                     } else {
@@ -76,7 +75,7 @@ export class VDOM {
             }
         }
     }
-    reRenderAttr (data, kmv) {
+    reRenderAttr (data, kmv, component = {}) {
         let node = this.$dom;
         for (let i = 0; i < this.attributes.length; i++) {
             let attr = this.attributes[i];

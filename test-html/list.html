@@ -12,11 +12,11 @@
     <button onclick="shift()">shift</button>
     <button onclick="reverse()">reverse</button>
     <button onclick="sort()">sort</button>
-    <!--{{ name }}
+    {{ name }}
+    <hr>
     <li click="add()" k-for="tree in list2.treeData">
         {{ tree.name }}
-        <div k-for="child in tree['children']">{{ child.name }}</div>
-    </li>-->
+    </li>
     <h3 k-for="i in list">{{ i }}</h3>
 </div>
 <script src="../dist/bundle.js"></script>
@@ -27,9 +27,13 @@
             name: 'kelen',
             list: [334,22],
             list2: {
-                treeData: [{name: 'folder1', children: [
-                    {name: "childfolder", children: [] }
-                ]}]
+                treeData: [{
+                    name: "kelen",
+                    children: []
+                }, {
+                    name: "kobe",
+                    children: []
+                }]
             },
             obj: {
                 a: 1,
@@ -37,6 +41,8 @@
             }
         }
     });
+
+
     function add() {
         for (var i = 0; i < 10000; i++) {
             kmv.data.list.push(Math.random());

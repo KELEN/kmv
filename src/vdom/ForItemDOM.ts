@@ -17,8 +17,16 @@ export class ForItemDOM extends VDOM {
     template;
     nodeType;
     kshow;
+    componentInstance;
     constructor (node, kmv, parentData = {}) {
         super(node);
+        if (node.nodeType == NodeType.ELEMENT) {
+            if (isUnknowElement(node.tagName)) {
+                // 组件转换
+                this.componentInstance = new ComponentDOM(node, kmv, parentData);
+                node = new ComponentDOM(node, kmv, parentData).getRealDOM();
+            }
+        }
         this.tagName = node.tagName;
         this.attributes = node.attributes;
         this.nodeType = node.nodeType;
@@ -47,7 +55,7 @@ export class ForItemDOM extends VDOM {
         let newElem = DomOp.createElement(this.tagName);
         for (let i = 0, len = this.childrenVdom.length; i < len; i++) {
             let childVdom = this.childrenVdom[i];
-            let newDom = childVdom.transDOM(iteratorObj, kmv);
+            let newDom = childVdom.transDOM(iteratorObj, kmv, this.componentInstance);
             newDom && newElem.appendChild(newDom);
         }
         this.$dom = newElem;
@@ -55,7 +63,6 @@ export class ForItemDOM extends VDOM {
             let isShow = getDotVal(iteratorObj, this.kshow);
             this.$dom.style.display = !!isShow ? "block" : "none";
         }
-        this.renderAttr(iteratorObj, kmv);
         if (this.kif) {
             let isIf = getDotVal(iteratorObj, this.kif);
             if (!isIf) {

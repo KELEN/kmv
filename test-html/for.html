@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1" class="div">
+    <li k-for="tree in list2.treeData">
+        {{ tree.name }}
+        <ul>
+            <li k-for="c in tree.children">{{ c.name }}</li>
+        </ul>
+    </li>
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            name: 'kelen',
+            list2: {
+                treeData: [{name: 1, children: [
+                    { name: 11, children: [] }
+                ]}, {name: 3, children: []}, { name: 2, children: []}]
+            }
+        }
+    });
+
+    kmv.data.list2.treeData[0].children.push({name: 12, children: []})
+    kmv.data.list2.treeData.push({name: 4});
+
+</script>
+</body>
+</html>

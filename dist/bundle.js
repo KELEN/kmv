@@ -366,7 +366,7 @@
 	                    }
 	                    else {
 	                        if (child.getAttribute("k-for")) {
-	                            this.queue.push(new ForDOM_1.ForDOM(child, this.kmv, this.kmv.$data));
+	                            this.queue.push(new ForDOM_1.ForDOM(child, this.kmv, this.kmv.data));
 	                        }
 	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
 	                            this.queue.push(new InputDOM_1.InputDOM(child));
@@ -397,7 +397,6 @@
 	var DomOp = __webpack_require__(8);
 	var array_1 = __webpack_require__(18);
 	var validator_1 = __webpack_require__(13);
-	var ComponentDOM_1 = __webpack_require__(16);
 	var ForDOM = (function () {
 	    // 第三个参数组件用的
 	    function ForDOM(node, kmv, parentData) {
@@ -406,14 +405,23 @@
 	        this.nextSibling = node.nextSibling;
 	        this.parentNode = node.parentNode;
 	        this.tagName = node.tagName;
-	        this.templateNode = node.cloneNode(true);
+	        this.templateNode = node;
 	        this.isList = true;
 	        var forString = node.getAttribute("k-for");
 	        var match = constant_1.RegexpStr.forStatement.exec(forString);
 	        this.forObjectKey = match[2].trim(); // 循环的键 item in arr 的 arr
 	        this.forKey = match[1].trim(); // 循环的key值 item in arr 的 item
 	        this.node = node;
-	        this.$data = object_1.getDotVal(parentData, this.forObjectKey);
+	        var iteratorData = object_1.getDotVal(parentData, this.forObjectKey);
+	        if (iteratorData) {
+	            this.$data = iteratorData.slice(0);
+	        }
+	        else {
+	            this.$data = iteratorData;
+	        }
+	        if (validator_1.isUnknowElement(node.tagName)) {
+	            this.$refData = parentData;
+	        }
 	    }
 	    ForDOM.prototype.renderInit = function (data, kmv) {
 	        var docFrag = this.transDOM(data, kmv);
@@ -425,50 +433,52 @@
 	        var iteratorData = object_1.getDotVal(data, this.forObjectKey);
 	        var docFrag = document.createDocumentFragment();
 	        // 组件的话拼接
-	        if (validator_1.isUnknowElement(this.node.tagName)) {
-	            var comp = new ComponentDOM_1.ComponentDOM(this.node, kmv, data);
-	            docFrag.appendChild(comp.transDOM(data, kmv));
-	        }
-	        else {
-	            if (Array.isArray(iteratorData)) {
-	                // 数组循环
-	                this.$data = iteratorData.slice(0);
-	                for (var i = 0; i < this.$data.length; i++) {
-	                    var iteratorObj = Object.create(data); // 构造遍历的对象
-	                    iteratorObj[this.forKey] = this.$data[i];
-	                    // 第三个参数传递给组件的对象
-	                    var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
-	                    this.childrenVdom.push(forItem);
-	                    var forItemDom = forItem.transDOM(iteratorObj, kmv);
-	                    docFrag.appendChild(forItemDom);
-	                }
+	        if (Array.isArray(iteratorData)) {
+	            // 数组循环
+	            this.$data = iteratorData.slice(0);
+	            for (var i = 0; i < this.$data.length; i++) {
+	                var iteratorObj = Object.create(data); // 构造遍历的对象
+	                iteratorObj[this.forKey] = this.$data[i];
+	                // 第三个参数传递给组件的对象
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
+	                this.childrenVdom.push(forItem);
+	                var forItemDom = forItem.transDOM(iteratorObj, kmv);
+	                docFrag.appendChild(forItemDom);
 	            }
-	            else if (typeof iteratorData === 'object') {
-	                // 对象循环
-	                this.$data = iteratorData;
-	                for (var i in iteratorData) {
-	                    var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv, data);
-	                    this.childrenVdom.push(forItem);
-	                    var iteratorObj = Object.create(data); // 构造遍历的对象
-	                    iteratorObj[this.forKey] = this.$data[i];
-	                    var forItemDom = forItem.transDOM(iteratorObj, kmv);
-	                    docFrag.appendChild(forItemDom);
-	                }
+	        }
+	        else if (typeof iteratorData === 'object') {
+	            // 对象循环
+	            this.$data = iteratorData;
+	            for (var i in iteratorData) {
+	                var forItem = new ForItemDOM_1.ForItemDOM(this.templateNode, kmv, data);
+	                this.childrenVdom.push(forItem);
+	                var iteratorObj = Object.create(data); // 构造遍历的对象
+	                iteratorObj[this.forKey] = this.$data[i];
+	                var forItemDom = forItem.transDOM(iteratorObj, kmv);
+	                docFrag.appendChild(forItemDom);
 	            }
 	        }
 	        return docFrag;
 	    };
 	    ForDOM.prototype.insertNewDOM = function (docFrag) {
-	        if (this.nextSibling) {
-	            DomOp.insertBefore(this.nextSibling, docFrag);
-	        }
-	        else if (this.parentNode) {
+	        if (this.parentNode) {
 	            DomOp.appendChild(this.parentNode, docFrag);
+	        }
+	        else if (this.nextSibling) {
+	            DomOp.insertBefore(this.nextSibling, docFrag);
 	        }
 	    };
 	    ForDOM.prototype.reRender = function (data, kmv, component) {
+	        if (component === void 0) { component = {}; }
 	        var arrKey = this.forObjectKey;
-	        var newArray = object_1.getDotVal(data, arrKey);
+	        var newArray;
+	        if (this.$refData) {
+	            // 组件引用的数据
+	            newArray = object_1.getDotVal(this.$refData, arrKey);
+	        }
+	        else {
+	            newArray = object_1.getDotVal(data, arrKey);
+	        }
 	        if (Array.isArray(newArray)) {
 	            var change = array_1.diff(this.$data, newArray);
 	            if (change.length) {
@@ -589,6 +599,13 @@
 	        if (parentData === void 0) { parentData = {}; }
 	        var _this = _super.call(this, node) || this;
 	        _this.childrenVdom = [];
+	        if (node.nodeType == constant_1.NodeType.ELEMENT) {
+	            if (validator_1.isUnknowElement(node.tagName)) {
+	                // 组件转换
+	                _this.componentInstance = new ComponentDOM_1.ComponentDOM(node, kmv, parentData);
+	                node = new ComponentDOM_1.ComponentDOM(node, kmv, parentData).getRealDOM();
+	            }
+	        }
 	        _this.tagName = node.tagName;
 	        _this.attributes = node.attributes;
 	        _this.nodeType = node.nodeType;
@@ -622,7 +639,7 @@
 	        var newElem = DomOp.createElement(this.tagName);
 	        for (var i = 0, len = this.childrenVdom.length; i < len; i++) {
 	            var childVdom = this.childrenVdom[i];
-	            var newDom = childVdom.transDOM(iteratorObj, kmv);
+	            var newDom = childVdom.transDOM(iteratorObj, kmv, this.componentInstance);
 	            newDom && newElem.appendChild(newDom);
 	        }
 	        this.$dom = newElem;
@@ -630,7 +647,6 @@
 	            var isShow = object_1.getDotVal(iteratorObj, this.kshow);
 	            this.$dom.style.display = !!isShow ? "block" : "none";
 	        }
-	        this.renderAttr(iteratorObj, kmv);
 	        if (this.kif) {
 	            var isIf = object_1.getDotVal(iteratorObj, this.kif);
 	            if (!isIf) {
@@ -793,8 +809,9 @@
 	        }
 	        return _this;
 	    }
-	    // iteratorObj 为遍历的数据，需要构造
-	    ForNormalDOM.prototype.transDOM = function (iteratorObj, kmv) {
+	    // iteratorObj 为遍历的数据，需要构造, 第三个组件实例
+	    ForNormalDOM.prototype.transDOM = function (iteratorObj, kmv, component) {
+	        if (component === void 0) { component = {}; }
 	        var newEle = document.createElement(this.tagName);
 	        if (this.kif) {
 	            var isShow = object_1.getDotVal(iteratorObj, this.kif);
@@ -817,9 +834,16 @@
 	                this.childrenVdom
 	                    &&
 	                        this.childrenVdom.forEach(function (child) {
-	                            newEle.appendChild(child.transDOM(iteratorObj, kmv));
+	                            if (child instanceof ForDOM_1.ForDOM) {
+	                                // 嵌套for
+	                                child.parentNode = newEle;
+	                                child.renderInit(iteratorObj, kmv);
+	                            }
+	                            else {
+	                                newEle.appendChild(child.transDOM(iteratorObj, kmv, component));
+	                            }
 	                        });
-	                this.renderAttr(iteratorObj, kmv);
+	                this.renderAttr(iteratorObj, kmv, component);
 	                break;
 	        }
 	        return newEle;
@@ -845,7 +869,15 @@
 	                break;
 	            case constant_1.NodeType.ELEMENT:
 	                this.childrenVdom.forEach(function (child) {
-	                    child.reRender(data, kmv);
+	                    console.log(child);
+	                    if (child instanceof ForDOM_1.ForDOM) {
+	                        // 嵌套for
+	                        console.log(data);
+	                        child.reRender(data, kmv);
+	                    }
+	                    else {
+	                        child.reRender(data, kmv);
+	                    }
 	                });
 	                break;
 	        }
@@ -993,7 +1025,6 @@
 	    }
 	    // 传递组件对象, 组件私有方法
 	    VDOM.prototype.renderAttr = function (data, kmv, component) {
-	        if (component === void 0) { component = false; }
 	        if (this.nodeType === constant_1.NodeType.ELEMENT) {
 	            var node = this.$dom;
 	            var attrs = this.attributes;
@@ -1047,7 +1078,8 @@
 	            }
 	        }
 	    };
-	    VDOM.prototype.reRenderAttr = function (data, kmv) {
+	    VDOM.prototype.reRenderAttr = function (data, kmv, component) {
+	        if (component === void 0) { component = {}; }
 	        var node = this.$dom;
 	        for (var i = 0; i < this.attributes.length; i++) {
 	            var attr = this.attributes[i];
@@ -1205,7 +1237,6 @@
 	var object_1 = __webpack_require__(4);
 	var ForDOM_1 = __webpack_require__(6);
 	var observer_1 = __webpack_require__(2);
-	var validator_1 = __webpack_require__(13);
 	var ComponentDOM = (function (_super) {
 	    __extends(ComponentDOM, _super);
 	    function ComponentDOM(node, kmv, parentData) {
@@ -1221,42 +1252,60 @@
 	            _this.methods = component.methods;
 	            var div = document.createElement("div");
 	            div.innerHTML = component.template.trim(); // 转为dom
+	            _this.template = component.template.trim();
 	            _this.attributes = node.attributes;
 	            for (var i = 0; i < node.attributes.length; i++) {
 	                div.firstChild.setAttribute(node.attributes[i].nodeName, node.attributes[i].nodeValue);
 	            }
 	            _this.node = node;
 	            _this.$dom = div.firstChild; // 关联dom
-	            var model = node.getAttribute(":model"); // 数据键
+	            _this.model = node.getAttribute(":model"); // 数据键
 	            _this.$data = {
-	                model: object_1.getDotVal(parentData, model)
+	                model: object_1.getDotVal(parentData, _this.model)
 	            }; // 渲染的数据
 	            observer_1.observer(_this.$data, kmv);
-	            if (node.getAttribute("k-for")) {
-	                var forDom = new ForDOM_1.ForDOM(div.firstChild, kmv, parentData);
-	                _this.$dom = forDom.transDOM(_this.$data, kmv);
-	            }
-	            else {
-	                if (_this.$data['model']) {
-	                    for (var i = 0; i < _this.$dom.childNodes.length; i++) {
-	                        var child = _this.$dom.childNodes[i];
-	                        if (child.nodeType == constant_1.NodeType.ELEMENT) {
-	                            if (validator_1.isUnknowElement(child.tagName)) {
-	                                _this.childrenVdom.push(new ComponentDOM(child, kmv, _this.$data));
-	                            }
-	                            else if (child.getAttribute("k-for")) {
-	                                _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, _this.$data));
-	                            }
-	                            else {
-	                                _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv, _this.$data));
-	                            }
+	            if (_this.$data['model']) {
+	                for (var i = 0; i < _this.$dom.childNodes.length; i++) {
+	                    var child = _this.$dom.childNodes[i];
+	                    if (child.nodeType == constant_1.NodeType.ELEMENT) {
+	                        if (child.getAttribute("k-for")) {
+	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, _this.$data));
 	                        }
 	                        else {
 	                            _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv, _this.$data));
 	                        }
 	                    }
+	                    else {
+	                        _this.childrenVdom.push(new NormalDOM_1.NormalDOM(child, kmv, _this.$data));
+	                    }
 	                }
 	            }
+	            /*if (node.getAttribute("k-for")) {
+	                let forDom = new ForDOM(div.firstChild, kmv, parentData);
+	                this.$dom = forDom.transDOM(this.$data, kmv);
+	            } else {
+	                if (this.$data['model']) {
+	                    for (let i = 0; i < this.$dom.childNodes.length; i++) {
+	                        let child = this.$dom.childNodes[i];
+	                        if (child.nodeType == NodeType.ELEMENT) {
+	                            /!*if (isUnknowElement(child.tagName)) {
+	                                this.childrenVdom.push(new ComponentDOM(child, kmv, this.$data));
+	                            } else if (child.getAttribute("k-for")) {
+	                                this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
+	                            } else {
+	                                this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
+	                            }*!/
+	                            if (child.getAttribute("k-for")) {
+	                                this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
+	                            } else {
+	                                this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
+	                            }
+	                        } else {
+	                            this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
+	                        }
+	                    }
+	                }
+	            }*/
 	            _this.node = node;
 	        }
 	        else {
@@ -1275,24 +1324,22 @@
 	        });
 	    };
 	    ComponentDOM.prototype.transDOM = function (data, kmv) {
-	        DomOp.removeNode(this.node);
 	        return this.$dom;
 	    };
 	    ComponentDOM.prototype.reRender = function (data, kmv) {
 	        var _this = this;
-	        console.log(data);
-	        for (var i = 0; i < this.attributes.length; i++) {
-	            var attr = this.attributes[i];
-	            var res = void 0;
-	            if (res = constant_1.RegexpStr.isProps.exec(attr.nodeName)) {
-	                this.$data[res[1]] = object_1.getDotVal(data, attr.nodeValue);
-	            }
-	        }
+	        /*let model = this.model;    // 数据键
+	        this.$data = {
+	            model: getDotVal(data, model)
+	        };  // 渲染的数据*/
 	        this.childrenVdom.forEach(function (child) {
 	            child.reRender(_this.$data, kmv, _this);
 	        });
 	    };
-	    ComponentDOM.prototype.transNormalDOM = function () {
+	    ComponentDOM.prototype.getRealDOM = function () {
+	        var div = document.createElement("div");
+	        div.innerHTML = this.template; // 转为dom
+	        return div.firstChild;
 	    };
 	    ComponentDOM.prototype.replaceDOM = function () {
 	    };
@@ -1347,19 +1394,17 @@
 	            for (var i = 0; i < node.childNodes.length; i++) {
 	                var child = node.childNodes[i];
 	                if (child.nodeType === constant_1.NodeType.ELEMENT) {
-	                    if (validator_1.isUnknowElement(child.tagName)) {
+	                    if (child.getAttribute("k-for")) {
+	                        _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv, parentData));
+	                    }
+	                    else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
+	                        _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
+	                    }
+	                    else if (validator_1.isUnknowElement(child.tagName)) {
 	                        _this.childrenVdom.push(new ComponentDOM_1.ComponentDOM(child, kmv, parentData));
 	                    }
 	                    else {
-	                        if (child.getAttribute("k-for")) {
-	                            _this.childrenVdom.push(new ForDOM_1.ForDOM(child, kmv));
-	                        }
-	                        else if (child.getAttribute("k-model") && constant_1.RegexpStr.inputElement.test(child.tagName)) {
-	                            _this.childrenVdom.push(new InputDOM_1.InputDOM(child));
-	                        }
-	                        else {
-	                            _this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
-	                        }
+	                        _this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
 	                    }
 	                }
 	                else {
@@ -1392,7 +1437,7 @@
 	                break;
 	        }
 	    };
-	    NormalDOM.prototype.reRender = function (data, kmv) {
+	    NormalDOM.prototype.reRender = function (data, kmv, component) {
 	        var text = template_1.compileTpl(this.template, data);
 	        switch (this.nodeType) {
 	            case constant_1.NodeType.TEXT:
@@ -1412,9 +1457,9 @@
 	                        DomOp.replaceNode(this.$emptyComment, this.$dom);
 	                }
 	                this.childrenVdom.forEach(function (child) {
-	                    child.reRender(data, kmv);
+	                    child.reRender(data, kmv, component);
 	                });
-	                this.reRenderAttr(data, kmv);
+	                this.reRenderAttr(data, kmv, component);
 	                break;
 	        }
 	    };
@@ -1430,7 +1475,6 @@
 	        var _this = this;
 	        this.renderInit(data, kmv);
 	        this.childrenVdom.forEach(function (child) {
-	            console.log(child);
 	            _this.$dom.appendChild(child.transDOM(data, kmv));
 	        });
 	        return this.$dom;
@@ -1454,6 +1498,7 @@
 	    var len1 = arr1.length, len2 = arr2.length;
 	    var len = Math.min(len1, len2);
 	    for (var i = 0; i < len; i++) {
+	        console.log(arr1[i], arr2[i]);
 	        if (arr1[i] !== arr2[i]) {
 	            change.push({
 	                op: constant_1.ArrayOp.CHANGE,

@@ -18,19 +18,28 @@ export class ForDOM {
     $dom;           // 对应的真实dom
     isList;
     node;
+    $refData;   // 组件引用的数据
     // 第三个参数组件用的
     constructor (node, kmv, parentData = {}) {
         this.nextSibling = node.nextSibling;
         this.parentNode = node.parentNode;
         this.tagName = node.tagName;
-        this.templateNode = node.cloneNode(true);
+        this.templateNode = node;
         this.isList = true;
         let forString = node.getAttribute("k-for");
         let match = RegexpStr.forStatement.exec(forString);
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
         this.node = node;
-        this.$data = getDotVal(parentData, this.forObjectKey);
+        let iteratorData = getDotVal(parentData, this.forObjectKey);
+        if (iteratorData) {
+            this.$data = iteratorData.slice(0);
+        } else {
+            this.$data  = iteratorData;
+        }
+        if (isUnknowElement(node.tagName)) {
+            this.$refData = parentData;
+        }
     }
     renderInit(data, kmv) {
         let docFrag = this.transDOM(data, kmv);
@@ -39,52 +48,51 @@ export class ForDOM {
         DomOp.removeNode(this.node);
     }
     transDOM (data, kmv) {
-
         let iteratorData = getDotVal(data, this.forObjectKey);
         let docFrag = document.createDocumentFragment();
-
         // 组件的话拼接
-        if (isUnknowElement(this.node.tagName)) {
-            let comp = new ComponentDOM(this.node, kmv, data);
-            docFrag.appendChild(comp.transDOM(data, kmv));
-        } else {
-            if (Array.isArray(iteratorData)) {
-                // 数组循环
-                this.$data = iteratorData.slice(0);
-                for (let i = 0; i < this.$data.length; i++) {
-                    let iteratorObj = Object.create(data);     // 构造遍历的对象
-                    iteratorObj[this.forKey] = this.$data[i];
-                    // 第三个参数传递给组件的对象
-                    let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
-                    this.childrenVdom.push(forItem);
-                    let forItemDom = forItem.transDOM(iteratorObj, kmv);
-                    docFrag.appendChild(forItemDom);
-                }
-            } else if (typeof iteratorData === 'object') {
-                // 对象循环
-                this.$data = iteratorData;
-                for (let i in iteratorData) {
-                    let forItem = new ForItemDOM(this.templateNode, kmv, data);
-                    this.childrenVdom.push(forItem);
-                    let iteratorObj = Object.create(data);     // 构造遍历的对象
-                    iteratorObj[this.forKey] = this.$data[i];
-                    let forItemDom = forItem.transDOM(iteratorObj, kmv);
-                    docFrag.appendChild(forItemDom);
-                }
+        if (Array.isArray(iteratorData)) {
+            // 数组循环
+            this.$data = iteratorData.slice(0);
+            for (let i = 0; i < this.$data.length; i++) {
+                let iteratorObj = Object.create(data);     // 构造遍历的对象
+                iteratorObj[this.forKey] = this.$data[i];
+                // 第三个参数传递给组件的对象
+                let forItem = new ForItemDOM(this.templateNode.cloneNode(true), kmv, iteratorObj);
+                this.childrenVdom.push(forItem);
+                let forItemDom = forItem.transDOM(iteratorObj, kmv);
+                docFrag.appendChild(forItemDom);
+            }
+        } else if (typeof iteratorData === 'object') {
+            // 对象循环
+            this.$data = iteratorData;
+            for (let i in iteratorData) {
+                let forItem = new ForItemDOM(this.templateNode, kmv, data);
+                this.childrenVdom.push(forItem);
+                let iteratorObj = Object.create(data);     // 构造遍历的对象
+                iteratorObj[this.forKey] = this.$data[i];
+                let forItemDom = forItem.transDOM(iteratorObj, kmv);
+                docFrag.appendChild(forItemDom);
             }
         }
         return docFrag;
     }
     insertNewDOM (docFrag) {
-        if (this.nextSibling) {
-            DomOp.insertBefore(this.nextSibling, docFrag);
-        } else if (this.parentNode) {
+        if (this.parentNode) {
             DomOp.appendChild(this.parentNode, docFrag);
+        } else if (this.nextSibling) {
+            DomOp.insertBefore(this.nextSibling, docFrag);
         }
     }
-    reRender (data, kmv, component) {
+    reRender (data, kmv, component = {}) {
         let arrKey = this.forObjectKey;
-        let newArray = getDotVal(data, arrKey);
+        let newArray;
+        if (this.$refData) {
+            // 组件引用的数据
+            newArray = getDotVal(this.$refData, arrKey);
+        } else {
+            newArray = getDotVal(data, arrKey);
+        }
         if (Array.isArray(newArray)) {
             let change = diff(this.$data, newArray);
             if (change.length) {

@@ -29,7 +29,7 @@ export class RenderQueue {
                         this.queue.push(new ComponentDOM(child, this.kmv, this.kmv.data));
                     } else {
                         if (child.getAttribute("k-for")) {
-                            this.queue.push(new ForDOM(child, this.kmv, this.kmv.$data));
+                            this.queue.push(new ForDOM(child, this.kmv, this.kmv.data));
                         } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                             this.queue.push(new InputDOM(child));
                         } else {

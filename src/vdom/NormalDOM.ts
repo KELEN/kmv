@@ -37,16 +37,14 @@ export class NormalDOM extends VDOM {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
-                    if (isUnknowElement(child.tagName)) {
+                    if (child.getAttribute("k-for")) {
+                        this.childrenVdom.push(new ForDOM(child, kmv, parentData));
+                    } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                        this.childrenVdom.push(new InputDOM(child));
+                    } else if (isUnknowElement(child.tagName)) {
                         this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
                     } else {
-                        if (child.getAttribute("k-for")) {
-                            this.childrenVdom.push(new ForDOM(child, kmv));
-                        } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
-                            this.childrenVdom.push(new InputDOM(child));
-                        } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
-                        }
+                        this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
                     }
                 } else {
                     this.childrenVdom.push(new NormalDOM(child, kmv));
@@ -75,7 +73,7 @@ export class NormalDOM extends VDOM {
                 break;
         }
     }
-    reRender (data, kmv) {
+    reRender (data, kmv, component) {
         let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
@@ -93,9 +91,9 @@ export class NormalDOM extends VDOM {
                     else DomOp.replaceNode(this.$emptyComment, this.$dom);
                 }
                 this.childrenVdom.forEach((child) => {
-                    child.reRender(data, kmv);
+                    child.reRender(data, kmv, component);
                 });
-                this.reRenderAttr(data, kmv);
+                this.reRenderAttr(data, kmv, component);
                 break;
         }
     }
@@ -109,7 +107,6 @@ export class NormalDOM extends VDOM {
     transDOM (data, kmv) {
         this.renderInit(data, kmv);
         this.childrenVdom.forEach((child) => {
-            console.log(child);
             this.$dom.appendChild(child.transDOM(data, kmv));
         });
         return this.$dom;
