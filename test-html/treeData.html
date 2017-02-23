@@ -19,13 +19,14 @@
 </div>
 <hr>
 <template id="test">
-    <ul>
-        <li>
-            {{ model.name }} <span k-on:click="add()">add</span>
+    <li>
+        <div><span k-on:click="changeStatus()">{{ model.name }}</span><span></span></div>
+        <ul k-show="isOpen">
             <my-tree k-for="model in model.children" :model="model"></my-tree>
-        </li>
-    </ul>
-
+            <div k-on:click="add()">add</div>
+        </ul>
+        </div>
+    </li>
 </template>
 <script src="../dist/bundle.js"></script>
 <script>
@@ -36,18 +37,19 @@
         template: test.innerHTML,
         data: function () {
             return {
-                isOpen: true
+                isOpen: false
             }
         },
         methods: {
             'add': function() {
-                this.children.push({
+                this.model.children.push({
                     name: Math.random(),
                     children: []
                 });
                 this.isOpen = true;
             },
             changeStatus: function() {
+                console.log(this.isOpen);
                 this.isOpen = !this.isOpen;
             }
         },
@@ -64,9 +66,7 @@
                         children: [
                             {
                                 name: '3 level',
-                                children: [
-                                    {name: '5 level', children: []}
-                                ]
+                                children: []
                             }
                         ]
                     },
@@ -75,12 +75,7 @@
                         children: []
                     }
                 ]
-            },
-            arr: [{
-                a: 1
-            }, {
-                a: 2
-            }]
+            }
         },
         methods: {
             add: function () {
@@ -88,7 +83,6 @@
         }
     });
 
-    kmv.data.treeData.children.push({name: 'cccccccc', children: []})
 </script>
 </body>
 </html>

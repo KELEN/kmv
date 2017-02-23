@@ -15,8 +15,6 @@ export class ForNormalDOM extends VDOM {
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
-    kif;
-    kshow;
     constructor (node, kmv, parentData = {}) {
         // h3
         super(node);
@@ -51,14 +49,6 @@ export class ForNormalDOM extends VDOM {
     // iteratorObj 为遍历的数据，需要构造, 第三个组件实例
     transDOM (iteratorObj, kmv, component =  {}) {
         let newEle = document.createElement(this.tagName) ;
-        if (this.kif) {
-            let isShow = getDotVal(iteratorObj, this.kif);
-            if (!!isShow) {
-                this.$dom.style.display = "block";
-            } else {
-                this.$dom.style.display = "none";
-            }
-        }
         switch (this.nodeType) {
             case NodeType.TEXT:
                 newEle = DomOp.createTextNode(this.tagName);
@@ -74,6 +64,7 @@ export class ForNormalDOM extends VDOM {
                     if (child instanceof ForDOM) {
                         // 嵌套for
                         child.parentNode = newEle;  // 嵌套父节点必须重新更新
+                        child.nextSibling = newEle.nextSibling;
                         child.renderInit(iteratorObj, kmv)
                     } else {
                         newEle.appendChild(child.transDOM(iteratorObj, kmv, component));
@@ -89,16 +80,8 @@ export class ForNormalDOM extends VDOM {
      * @param data      渲染的数据
      * @param kmv       kmv
      */
-    reRender (data, kmv) {
+    reRender (data, kmv, component) {
         let text = compileTpl(this.template, data);
-        if (this.kif) {
-            let isShow = getDotVal(data, this.kif);
-            if (!!isShow) {
-                this.$dom.style.display = "block";
-            } else {
-                this.$dom.style.display = "none";
-            }
-        }
         switch (this.nodeType) {
             case NodeType.TEXT:
                 DomOp.changeTextContent(this.$dom, text)
@@ -107,9 +90,9 @@ export class ForNormalDOM extends VDOM {
                 this.childrenVdom.forEach((child) => {
                     if (child instanceof ForDOM) {
                         // 嵌套for
-                        child.reRender(data, kmv)
+                        child.reRender(data, kmv, component)
                     } else {
-                        child.reRender(data, kmv);
+                        child.reRender(data, kmv, component);
                     }
                 })
                 break;

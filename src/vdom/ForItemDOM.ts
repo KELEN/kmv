@@ -73,9 +73,9 @@ export class ForItemDOM extends VDOM {
         return this.$dom;
     }
     // 重新渲染
-    reRender (iteratorObj, kmv) {
+    reRender (iteratorObj, kmv, component = {}) {
         this.childrenVdom.forEach((child) => {
-            child.reRender(iteratorObj, kmv);
+            child.reRender(iteratorObj, kmv, component);
         });
         if (this.kshow) {
             let isShow = getDotVal(iteratorObj, this.kshow);

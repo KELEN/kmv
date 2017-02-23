@@ -12,10 +12,10 @@
 </head>
 <body>
 <div id="div1" class="div">
+    <button k-on:click="changeShow()">button</button>
     <h1 k-for="i in arr" k-if="isShow">
         <span>{{ name }}</span>
     </h1>
-    <button k-on:click="changeShow()">button</button>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>

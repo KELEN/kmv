@@ -27,7 +27,7 @@
 </div>
 
 <template id="headerTemp">
-    <div class="header">{{ model.title }}</div>
+    <div class="header">{{ model.title }}{{ name }}</div>
 </template>
 
 <template id="footTemp">
@@ -55,7 +55,7 @@
     var bodyTemp = document.getElementById("bodyTemp");
     var footTemp = document.getElementById("footTemp");
     Kmv.components('m-header', {
-        template: headerTemp.innerHTML
+        template: headerTemp.innerHTML,
     })
     Kmv.components('m-body', {
         template: bodyTemp.innerHTML

@@ -7,7 +7,7 @@ import { InputDOM } from './InputDOM'
 import { isUnknowElement } from '../util/validator'
 import { ComponentDOM } from './ComponentDOM'
 import { getDotVal } from "../util/object";
-import {renderInit} from "../util/render";
+import { renderInit } from "../util/render";
 
 export class NormalDOM extends VDOM {
     nodeType;
@@ -16,15 +16,9 @@ export class NormalDOM extends VDOM {
     template;
     childrenVdom = [];
     $dom;       // 联系真实dom
-    kif;
-    kshow;
     // 第三个参数传递给子组件的数据
-    constructor (node, kmv, parentData = {}) {
+    constructor (node, kmv, parentComponent = {}) {
         super(node);
-        this.tagName = node.tagName,
-        this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
-        this.nodeType = node.nodeType;
-        this.$dom = node;
         switch (node.nodeType) {
             case NodeType.TEXT:
                 this.template = node.textContent;
@@ -33,18 +27,22 @@ export class NormalDOM extends VDOM {
             case NodeType.ELEMENT:
                 break;
         }
+        this.tagName = node.tagName,
+        this.attributes = node.attributes && ([].slice.call(node.attributes).slice(0)),
+        this.nodeType = node.nodeType;
+        this.$dom = node;
         if (node.childNodes) {
             for (let i = 0; i < node.childNodes.length; i++) {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
                     if (child.getAttribute("k-for")) {
-                        this.childrenVdom.push(new ForDOM(child, kmv, parentData));
+                        this.childrenVdom.push(new ForDOM(child, kmv, parentComponent));
                     } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                         this.childrenVdom.push(new InputDOM(child));
                     } else if (isUnknowElement(child.tagName)) {
-                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
+                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentComponent));
                     } else {
-                        this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
+                        this.childrenVdom.push(new NormalDOM(child, kmv, parentComponent));
                     }
                 } else {
                     this.childrenVdom.push(new NormalDOM(child, kmv));
@@ -58,14 +56,6 @@ export class NormalDOM extends VDOM {
                 DomOp.changeTextContent(this.$dom, compileTpl(this.template, data));
                 break;
             case NodeType.ELEMENT:
-                if (this.kshow) {
-                    let isShow = getDotVal(data, this.kshow);
-                    this.$dom.style.display = !!isShow ? "block" : "none";
-                }
-                if (this.kif) {
-                    let isIf = getDotVal(data, this.kif);
-                    if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                }
                 this.childrenVdom.forEach((child) => {
                     child.renderInit(data, kmv, component);
                 });
@@ -81,15 +71,6 @@ export class NormalDOM extends VDOM {
                 stext != text && DomOp.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
-                if (this.kshow) {
-                    let isShow = getDotVal(data, this.kshow);
-                    this.$dom.style.display = !!isShow ? "block" : "none";
-                }
-                if (this.kif) {
-                    let isIf = getDotVal(data, this.kif);
-                    if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                    else DomOp.replaceNode(this.$emptyComment, this.$dom);
-                }
                 this.childrenVdom.forEach((child) => {
                     child.reRender(data, kmv, component);
                 });

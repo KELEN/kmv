@@ -4,6 +4,7 @@ import { NodeType, RegexpStr } from "../constants/constant"
 import { isKvmAttribute } from '../util/validator'
 import { bindEvent } from "../dom/event"
 import { getDotVal } from "../util/object"
+import * as DomOp from '../dom/domOp'
 
 export class VDOM {
     nodeType;
@@ -11,7 +12,6 @@ export class VDOM {
     attributes;
     nextSibling;
     parentNode;
-    isComponent;
     childrenVdom = [];
     kshow;
     kif;
@@ -65,8 +65,24 @@ export class VDOM {
                         }
                     }
                     if (component) {
-                        bindEvent(node, event, method, paramsArr, component.methods, component.$data.model);
+                        if (this.kshow) {
+                            let isShow = getDotVal(component.$data, this.kshow);
+                            this.$dom.style.display = !!isShow ? "block" : "none";
+                        }
+                        if (this.kif) {
+                            let isIf = getDotVal(component.$data, this.kif);
+                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                        }
+                        bindEvent(node, event, method, paramsArr, component.methods, component.$data);
                     } else {
+                        if (this.kshow) {
+                            let isShow = getDotVal(data, this.kshow);
+                            this.$dom.style.display = !!isShow ? "block" : "none";
+                        }
+                        if (this.kif) {
+                            let isIf = getDotVal(data, this.kif);
+                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                        }
                         bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     }
                 } else {
@@ -75,7 +91,7 @@ export class VDOM {
             }
         }
     }
-    reRenderAttr (data, kmv, component = {}) {
+    reRenderAttr (data, kmv, component: any) {
         let node = this.$dom;
         for (let i = 0; i < this.attributes.length; i++) {
             let attr = this.attributes[i];
@@ -110,6 +126,25 @@ export class VDOM {
                 node.removeAttribute(attrName);
             } else {
                 node.setAttribute(attrName, attrVal);
+            }
+        }
+        if (component) {
+            if (this.kshow) {
+                let isShow = getDotVal(component.$data, this.kshow);
+                this.$dom.style.display = !!isShow ? "block" : "none";
+            }
+            if (this.kif) {
+                let isIf = getDotVal(component.$data, this.kif);
+                if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+            }
+        } else {
+            if (this.kshow) {
+                let isShow = getDotVal(data, this.kshow);
+                this.$dom.style.display = !!isShow ? "block" : "none";
+            }
+            if (this.kif) {
+                let isIf = getDotVal(data, this.kif);
+                if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
             }
         }
     }

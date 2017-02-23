@@ -24,7 +24,7 @@
 </div>
 
 <template id="headerTemp">
-    <div class="header">{{ model.header.title }}</div>
+    <div class="header">{{ model.header.title }} {{ name }}<m-foot :model="config"></m-foot></div>
 </template>
 
 <template id="footTemp">
@@ -37,7 +37,12 @@
     var headerTemp = document.getElementById("headerTemp");
     var footTemp = document.getElementById("footTemp");
     Kmv.components('m-header', {
-        template: headerTemp.innerHTML
+        template: headerTemp.innerHTML,
+        data: function () {
+            return {
+                name: 'header'
+            }
+        }
     })
     Kmv.components('m-foot', {
         template: footTemp.innerHTML

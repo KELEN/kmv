@@ -27,7 +27,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
     forObjectKey;
     forKey;
     model;
-    constructor (node, kmv, parentData = {}) {
+    constructor (node, kmv, parentComponent: any) {
         super(node);
         this.isComponent = true;
         this.tagName = node.tagName;
@@ -43,58 +43,38 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
             }
             this.node = node;
             this.$dom = div.firstChild; // 关联dom
+            let parentData = parentComponent ? parentComponent['$data'] : kmv.data;   // 获取父组件的数据
             this.model = node.getAttribute(":model");    // 数据键
             this.$data = {
                 model: getDotVal(parentData, this.model)
             };   // 渲染的数据
+            if (component.data) {
+                this.$data = extend(this.$data, component.data());
+            }
             observer(this.$data, kmv);
             if (this.$data['model']) {
                 for (let i = 0; i < this.$dom.childNodes.length; i++) {
                     let child = this.$dom.childNodes[i];
                     if (child.nodeType == NodeType.ELEMENT) {
                         if (child.getAttribute("k-for")) {
-                            this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
+                            this.childrenVdom.push(new ForDOM(child, kmv, this));
+                        } else if (isUnknowElement(child.tagName)) {
+                            this.childrenVdom.push(new ComponentDOM(child, kmv, this));
                         } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
+                            this.childrenVdom.push(new NormalDOM(child, kmv, this));
                         }
                     } else {
-                        this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
+                        this.childrenVdom.push(new NormalDOM(child, kmv, this));
                     }
                 }
             }
-            /*if (node.getAttribute("k-for")) {
-                let forDom = new ForDOM(div.firstChild, kmv, parentData);
-                this.$dom = forDom.transDOM(this.$data, kmv);
-            } else {
-                if (this.$data['model']) {
-                    for (let i = 0; i < this.$dom.childNodes.length; i++) {
-                        let child = this.$dom.childNodes[i];
-                        if (child.nodeType == NodeType.ELEMENT) {
-                            /!*if (isUnknowElement(child.tagName)) {
-                                this.childrenVdom.push(new ComponentDOM(child, kmv, this.$data));
-                            } else if (child.getAttribute("k-for")) {
-                                this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
-                            } else {
-                                this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
-                            }*!/
-                            if (child.getAttribute("k-for")) {
-                                this.childrenVdom.push(new ForDOM(child, kmv, this.$data));
-                            } else {
-                                this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
-                            }
-                        } else {
-                            this.childrenVdom.push(new NormalDOM(child, kmv, this.$data));
-                        }
-                    }
-                }
-            }*/
             this.node = node;
         } else {
             console.error("无效标签" + this.tagName);
         }
     }
     renderInit(data = null, kmv) {
-        DomOp.insertBefore(this.nextSibling, this.$dom);
+        this.insertNewDOM();
         DomOp.removeNode(this.node);
         // 先插入后渲染
         this.childrenVdom.forEach((child) => {
@@ -105,10 +85,6 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
         return this.$dom;
     }
     reRender(data, kmv) {
-        /*let model = this.model;    // 数据键
-        this.$data = {
-            model: getDotVal(data, model)
-        };  // 渲染的数据*/
         this.childrenVdom.forEach((child) => {
             child.reRender(this.$data, kmv, this);
         });

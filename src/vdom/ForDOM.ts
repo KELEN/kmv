@@ -20,7 +20,7 @@ export class ForDOM {
     node;
     $refData;   // 组件引用的数据
     // 第三个参数组件用的
-    constructor (node, kmv, parentData = {}) {
+    constructor (node, kmv, parentComponent = {}) {
         this.nextSibling = node.nextSibling;
         this.parentNode = node.parentNode;
         this.tagName = node.tagName;
@@ -31,12 +31,14 @@ export class ForDOM {
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
         this.node = node;
+        let parentData = parentComponent['$data'];
         let iteratorData = getDotVal(parentData, this.forObjectKey);
         if (iteratorData) {
             this.$data = depCopyArray(iteratorData);
         } else {
             this.$data  = depCopy(iteratorData);
         }
+        console.log(this.$data);
         if (isUnknowElement(node.tagName)) {
             this.$refData = parentData;
         }
@@ -78,10 +80,10 @@ export class ForDOM {
         return docFrag;
     }
     insertNewDOM (docFrag) {
-        if (this.parentNode) {
-            DomOp.appendChild(this.parentNode, docFrag);
-        } else if (this.nextSibling) {
+        if (this.nextSibling) {
             DomOp.insertBefore(this.nextSibling, docFrag);
+        } else if (this.parentNode) {
+            DomOp.appendChild(this.parentNode, docFrag);
         }
     }
     reRender (data, kmv, component = {}) {
@@ -103,7 +105,7 @@ export class ForDOM {
                 for (let i = 0, len = this.$data.length; i < len; i++) {
                     let iteratorObj = Object.create(data);
                     iteratorObj[this.forKey] = this.$data[i];
-                    this.childrenVdom[i].reRender(iteratorObj, kmv);
+                    this.childrenVdom[i].reRender(iteratorObj, kmv, component);
                 }
             }
         } else if (typeof newArray === 'object'){
