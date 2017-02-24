@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="div1" class="div">
-    <h3>嵌套for循环</h3>
+    <h3>二级联动</h3>
     <select name="" id="" k-on:change="changeCity(this)">
         <option value="" k-for="c in city" k:value="{{ c.name }}">{{ c.name }}</option>
     </select>
@@ -24,21 +24,14 @@
             el: '#div1',
             data: {
                 city: data,
-                prov: []
+                prov: data[0].cities
             },
             methods: {
                 changeCity: function(obj) {
-                    var provs = [];
-                    for (var i = 0; i < data.length; i++) {
-                        if (data[i].name === obj.value) {
-                            provs = data[i].cities;
-                        }
-                    }
-                    var len = this.prov.length;
-                    this.prov.splice(0, len);
-                    for (var i = 0; i < provs.length; i++) {
-                        this.prov.push(provs[i]);
-                    }
+                    var newArr = data.find(function(item) {
+                        return item.name == obj.value;
+                    });
+                    this.prov = newArr.cities;
                 }
             }
         })

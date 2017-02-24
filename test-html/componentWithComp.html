@@ -24,11 +24,13 @@
 </div>
 
 <template id="headerTemp">
-    <div class="header">{{ model.header.title }} {{ name }}<m-foot :model="config"></m-foot></div>
+    <div class="header">{{ model.header.title }}
+        <input type="text" k-model="model.header.title">
+    </div>
 </template>
 
 <template id="footTemp">
-    <div class="footer">{{ model.footer.title }}</div>
+    <div class="footer">{{ model.title }}{{ footName }}</div>
 </template>
 
 </body>
@@ -45,7 +47,12 @@
         }
     })
     Kmv.components('m-foot', {
-        template: footTemp.innerHTML
+        template: footTemp.innerHTML,
+        data: function () {
+            return {
+                footName: 'footName'
+            }
+        }
     })
     var kmv = new Kmv({
         el: '#div1',

@@ -15,6 +15,7 @@ export class VDOM {
     childrenVdom = [];
     kshow;
     kif;
+    isComponent = false;
     $emptyComment = createComment('');   // 空白注释, 替换kif dom
     constructor (node, kmv = {}) {
         node.attributes && (this.attributes = [].slice.call(node.attributes).slice(0));
@@ -86,6 +87,25 @@ export class VDOM {
                         bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     }
                 } else {
+                    if (component) {
+                        if (this.kshow) {
+                            let isShow = getDotVal(component.$data, this.kshow);
+                            this.$dom.style.display = !!isShow ? "block" : "none";
+                        }
+                        if (this.kif) {
+                            let isIf = getDotVal(component.$data, this.kif);
+                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                        }
+                    } else {
+                        if (this.kshow) {
+                            let isShow = getDotVal(data, this.kshow);
+                            this.$dom.style.display = !!isShow ? "block" : "none";
+                        }
+                        if (this.kif) {
+                            let isIf = getDotVal(data, this.kif);
+                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                        }
+                    }
                     node.setAttribute(attrName, attrVal);
                 }
             }

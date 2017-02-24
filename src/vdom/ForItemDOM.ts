@@ -17,7 +17,7 @@ export class ForItemDOM extends VDOM {
     template;
     nodeType;
     kshow;
-    componentInstance;
+    componentInstance = null;
     constructor (node, kmv, parentData = {}) {
         super(node);
         if (node.nodeType == NodeType.ELEMENT) {
@@ -25,6 +25,8 @@ export class ForItemDOM extends VDOM {
                 // 组件转换
                 this.componentInstance = new ComponentDOM(node, kmv, parentData);
                 node = new ComponentDOM(node, kmv, parentData).getRealDOM();
+                node.$data = parentData;
+                this.isComponent = true;
             }
         }
         this.tagName = node.tagName;
@@ -73,19 +75,14 @@ export class ForItemDOM extends VDOM {
         return this.$dom;
     }
     // 重新渲染
-    reRender (iteratorObj, kmv, component = {}) {
+    reRender (iteratorObj, kmv, component: ComponentDOM = null) {
+        if (this.isComponent) {
+            // 需要子组件去渲染子元素
+            component = this.componentInstance;
+        }
         this.childrenVdom.forEach((child) => {
             child.reRender(iteratorObj, kmv, component);
         });
-        if (this.kshow) {
-            let isShow = getDotVal(iteratorObj, this.kshow);
-            this.$dom.style.display = !!isShow ? "block" : "none";
-        }
-        if (this.kif) {
-            let isIf = getDotVal(iteratorObj, this.kif);
-            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-            else DomOp.replaceNode(this.$emptyComment, this.$dom);
-        }
     }
     insertNewDOM (newDom) {
         if (this.nextSibling) {

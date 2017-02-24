@@ -8,9 +8,9 @@ import {
 } from "../util/object"
 import { VDOMInterface } from "./VDOMInterface"
 import {ForDOM} from "./ForDOM";
-import {InputDOM} from "./InputDOM";
 import {observer} from "../util/observer";
 import {isUnknowElement} from "../util/validator";
+import {InputDOM} from "./InputDOM";
 
 export class ComponentDOM extends VDOM implements VDOMInterface {
     nodeType;
@@ -18,16 +18,14 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
     attributes;
     template;
     childrenVdom = [];
-    outerHTML;
     $dom;       // 联系真实dom
     $data = {};
     node;
     methods;
     isComponent = true;
-    forObjectKey;
     forKey;
     model;
-    constructor (node, kmv, parentComponent: any) {
+    constructor (node, kmv, parent: any) {
         super(node);
         this.isComponent = true;
         this.tagName = node.tagName;
@@ -43,8 +41,14 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
             }
             this.node = node;
             this.$dom = div.firstChild; // 关联dom
-            let parentData = parentComponent ? parentComponent['$data'] : kmv.data;   // 获取父组件的数据
             this.model = node.getAttribute(":model");    // 数据键
+            // console.log(parentData, this.model);
+            let parentData;
+            if (parent instanceof ComponentDOM) {
+                parentData = parent['$data'];
+            } else {
+                parentData = parent;
+            }
             this.$data = {
                 model: getDotVal(parentData, this.model)
             };   // 渲染的数据
@@ -58,6 +62,8 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
                     if (child.nodeType == NodeType.ELEMENT) {
                         if (child.getAttribute("k-for")) {
                             this.childrenVdom.push(new ForDOM(child, kmv, this));
+                        } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
+                            this.childrenVdom.push(new InputDOM(child));
                         } else if (isUnknowElement(child.tagName)) {
                             this.childrenVdom.push(new ComponentDOM(child, kmv, this));
                         } else {

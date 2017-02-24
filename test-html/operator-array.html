@@ -14,9 +14,6 @@
     <button onclick="sort()">sort</button>
     {{ name }}
     <hr>
-    <li click="add()" k-for="tree in list2.treeData">
-        {{ tree.name }}
-    </li>
     <h3 k-for="i in list">{{ i }}</h3>
 </div>
 <script src="../dist/bundle.js"></script>
@@ -42,9 +39,8 @@
         }
     });
 
-
     function add() {
-        for (var i = 0; i < 10000; i++) {
+        for (var i = 0; i < 20000; i++) {
             kmv.data.list.push(Math.random());
         }
     }

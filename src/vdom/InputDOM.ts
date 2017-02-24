@@ -1,6 +1,7 @@
 import { getDotVal, setObserveDotVal } from "../util/object";
+import {VDOM} from "./VDOM";
 
-export class InputDOM {
+export class InputDOM extends VDOM {
     nodeType;
     tagName;
     attributes;
@@ -9,7 +10,7 @@ export class InputDOM {
     $dom;       // 联系真实dom
     kmodel;
     constructor (node) {
-        // h3
+        super(node);
         this.tagName = node.tagName;
         this.attributes = node.attributes;
         this.nodeType = node.nodeType;
@@ -20,11 +21,13 @@ export class InputDOM {
     renderInit(data, kmv) {
         this.$dom.value = getDotVal(data, this.kmodel);
         this.$dom.oninput = (ev) => {
-            setObserveDotVal(kmv.data, this.kmodel, this.$dom.value);
+            setObserveDotVal(data, this.kmodel, this.$dom.value);
         }
+        this.renderAttr(data, kmv, null);
     }
-    reRender (data, kmv ) {
+    reRender (data, kmv) {
         let text = getDotVal(data, this.kmodel);
         this.$dom.value = text;
+        this.reRenderAttr(data, kmv, null);
     }
 }

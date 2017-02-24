@@ -47,12 +47,18 @@ export class ForNormalDOM extends VDOM {
         }
     }
     // iteratorObj 为遍历的数据，需要构造, 第三个组件实例
-    transDOM (iteratorObj, kmv, component =  {}) {
+    transDOM (data, kmv, component: any =  null) {
         let newEle = document.createElement(this.tagName) ;
         switch (this.nodeType) {
             case NodeType.TEXT:
                 newEle = DomOp.createTextNode(this.tagName);
-                newEle.textContent = compileTpl(this.template, iteratorObj);
+                let text;
+                if (component) {
+                    text = compileTpl(this.template, component.$data);
+                } else {
+                    text = compileTpl(this.template, data);
+                }
+                newEle.textContent = text;
                 this.$dom = newEle;
                 break;
             case NodeType.ELEMENT:
@@ -64,14 +70,14 @@ export class ForNormalDOM extends VDOM {
                     if (child instanceof ForDOM) {
                         // 嵌套for
                         child.parentNode = newEle;  // 嵌套父节点必须重新更新
-                        child.nextSibling = newEle.nextSibling;
-                        child.renderInit(iteratorObj, kmv)
+                        child.nextSibling = newEle.previousSibling;
+                        child.renderInit(data, kmv)
                     } else {
-                        newEle.appendChild(child.transDOM(iteratorObj, kmv, component));
+                        newEle.appendChild(child.transDOM(data, kmv, component));
                     }
 
                 });
-                this.renderAttr(iteratorObj, kmv, component);
+                this.renderAttr(data, kmv, component);
                 break;
         }
         return newEle;
@@ -81,9 +87,11 @@ export class ForNormalDOM extends VDOM {
      * @param kmv       kmv
      */
     reRender (data, kmv, component) {
-        let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
+                // 组件存在就用组件的数据去渲染
+                component && (data = component.$data);
+                let text = compileTpl(this.template, data);
                 DomOp.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
@@ -93,6 +101,7 @@ export class ForNormalDOM extends VDOM {
                         child.reRender(data, kmv, component)
                     } else {
                         child.reRender(data, kmv, component);
+                        this.reRenderAttr(data, kmv, component);
                     }
                 })
                 break;

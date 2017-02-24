@@ -17,7 +17,7 @@ export class NormalDOM extends VDOM {
     childrenVdom = [];
     $dom;       // 联系真实dom
     // 第三个参数传递给子组件的数据
-    constructor (node, kmv, parentComponent = {}) {
+    constructor (node, kmv, parentData: any = {}) {
         super(node);
         switch (node.nodeType) {
             case NodeType.TEXT:
@@ -36,24 +36,30 @@ export class NormalDOM extends VDOM {
                 let child = node.childNodes[i];
                 if (child.nodeType === NodeType.ELEMENT) {
                     if (child.getAttribute("k-for")) {
-                        this.childrenVdom.push(new ForDOM(child, kmv, parentComponent));
+                        this.childrenVdom.push(new ForDOM(child, kmv, parentData));
                     } else if (child.getAttribute("k-model") && RegexpStr.inputElement.test(child.tagName)) {
                         this.childrenVdom.push(new InputDOM(child));
                     } else if (isUnknowElement(child.tagName)) {
-                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentComponent));
+                        this.childrenVdom.push(new ComponentDOM(child, kmv, parentData));
                     } else {
-                        this.childrenVdom.push(new NormalDOM(child, kmv, parentComponent));
+                        this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
                     }
                 } else {
-                    this.childrenVdom.push(new NormalDOM(child, kmv));
+                    this.childrenVdom.push(new NormalDOM(child, kmv, parentData));
                 }
             }
         }
     }
-    renderInit(data, kmv, component = null) {
+    renderInit(data, kmv, component: ComponentDOM = null) {
         switch (this.nodeType) {
             case NodeType.TEXT:
-                DomOp.changeTextContent(this.$dom, compileTpl(this.template, data));
+                let text;
+                if (component) {
+                    text = compileTpl(this.template, component.$data);
+                } else {
+                    text = compileTpl(this.template, data);
+                }
+                DomOp.changeTextContent(this.$dom, text);
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {
@@ -64,11 +70,15 @@ export class NormalDOM extends VDOM {
         }
     }
     reRender (data, kmv, component) {
-        let text = compileTpl(this.template, data);
         switch (this.nodeType) {
             case NodeType.TEXT:
-                let stext = DomOp.getTextContent(this.$dom);  // 原文本
-                stext != text && DomOp.changeTextContent(this.$dom, text)
+                let text;
+                if (component) {
+                    text = compileTpl(this.template, component.$data);
+                } else {
+                    text = compileTpl(this.template, data);
+                }
+                text && DomOp.changeTextContent(this.$dom, text)
                 break;
             case NodeType.ELEMENT:
                 this.childrenVdom.forEach((child) => {

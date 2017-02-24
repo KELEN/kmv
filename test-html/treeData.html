@@ -19,12 +19,13 @@
 </div>
 <hr>
 <template id="test">
-    <li>
-        <div><span k-on:click="changeStatus()">{{ model.name }}</span><span></span></div>
-        <ul k-show="isOpen">
-            <my-tree k-for="model in model.children" :model="model"></my-tree>
+    <li class="list-wrap">
+        <div><span k-on:click="changeStatus()">{{ model.name }}</span><span>{{ isOpen ? '-' : '+' }}</span></div>
+        <div k-show="isOpen">
+            <ul>
+                <my-tree k-for="model in model.children" :model="model"></my-tree>
+            </ul>
             <div k-on:click="add()">add</div>
-        </ul>
         </div>
     </li>
 </template>
@@ -46,11 +47,11 @@
                     name: Math.random(),
                     children: []
                 });
-                this.isOpen = true;
+                console.log(this);
             },
             changeStatus: function() {
-                console.log(this.isOpen);
                 this.isOpen = !this.isOpen;
+                console.log(this.isOpen);
             }
         },
     });
@@ -60,21 +61,7 @@
         data: {
             treeData: {
                 name: 'one level',
-                children: [
-                    {
-                        name: 'two level',
-                        children: [
-                            {
-                                name: '3 level',
-                                children: []
-                            }
-                        ]
-                    },
-                    {
-                        name: 'two1 level',
-                        children: []
-                    }
-                ]
+                children: []
             }
         },
         methods: {

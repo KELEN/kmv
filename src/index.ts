@@ -27,14 +27,14 @@ function Kmv(opts) {
         // 初始化数据事件
         event.$once("initData", function(data) {
             let allData = extend(opts.data, data);
-            that.$data = observer(allData, that);
+            observer(allData, that);
             // 获取需要渲染的dom列表
             this.renderQueue = new RenderQueue(elem, this);
             renderInit(that);
         });
         opts.beforeInit.call(that, event);
     } else {
-        this.$data = observer(opts.data, this);
+        observer(opts.data, this);
         // 获取需要渲染的dom列表
         this.renderQueue = new RenderQueue(elem, this);
         renderInit(this);
