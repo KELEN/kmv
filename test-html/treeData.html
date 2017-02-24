@@ -6,6 +6,8 @@
     <style>
         .list-wrap {
             list-style: none;
+            cursor: pointer;
+            font-weight: 600;
         }
         .colspan-btn {
             cursor: pointer;
@@ -20,12 +22,12 @@
 <hr>
 <template id="test">
     <li class="list-wrap">
-        <div><span k-on:click="changeStatus()">{{ model.name }}</span><span>{{ isOpen ? '-' : '+' }}</span></div>
-        <div k-show="isOpen">
+        <div class="up-level"><span k-on:click="changeStatus()">{{ model.name }}</span><span>{{ isOpen ? '-' : '+' }}</span></div>
+        <div class="down-level" k-show="isOpen">
             <ul>
                 <my-tree k-for="model in model.children" :model="model"></my-tree>
             </ul>
-            <div k-on:click="add()">add</div>
+            <button k-on:click="add()">+</button>
         </div>
     </li>
 </template>
@@ -44,7 +46,7 @@
         methods: {
             'add': function() {
                 this.model.children.push({
-                    name: Math.random(),
+                    name: Math.random() + ' level',
                     children: []
                 });
                 console.log(this);
@@ -60,8 +62,10 @@
         el: '#div1',
         data: {
             treeData: {
-                name: 'one level',
-                children: []
+                name: '1 level',
+                children: [
+                    {name: '2 level', children:[]}
+                ]
             }
         },
         methods: {

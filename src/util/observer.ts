@@ -20,25 +20,26 @@ export let observer = (obj, kmv, key = '') => {
             } else {
                 observer(obj[i], kmv, bigKey);
             }
+        } else {
+            ((defVal) => {
+                let val = defVal;
+                Object.defineProperty(obj, i, {
+                    set: function (newVal) {
+                        // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+                        kmv.pendingValue = true;
+                        kmv.changeQueue.push({
+                            kmv: kmv,
+                            bigKey: bigKey
+                        });
+                        kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+                        val = newVal;
+                    },
+                    get: function() {
+                        return val; // getDotVal(kmv.$data, bigKey) || defVal;
+                    }
+                })
+            })(obj[i])
         }
-        ((defVal) => {
-            let val = defVal;
-            Object.defineProperty(obj, i, {
-                set: function (newVal) {
-                    // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-                    kmv.pendingValue = true;
-                    kmv.changeQueue.push({
-                        kmv: kmv,
-                        bigKey: bigKey
-                    });
-                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-                    val = newVal;
-                },
-                get: function() {
-                    return val; // getDotVal(kmv.$data, bigKey) || defVal;
-                }
-            })
-        })(obj[i])
     }
     return srcData;
 }

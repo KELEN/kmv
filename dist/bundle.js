@@ -45,6 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var render_1 = __webpack_require__(1);
 	var observer_1 = __webpack_require__(2);
 	var RenderQueue_1 = __webpack_require__(6);
@@ -99,6 +100,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.renderInit = function (kmv) {
 	    var watcher = kmv.renderQueue;
 	    var renderQueue = watcher.getQueue();
@@ -138,6 +140,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	var object_1 = __webpack_require__(4);
 	/**
@@ -159,24 +162,26 @@
 	                exports.observer(obj[i], kmv, bigKey);
 	            }
 	        }
-	        (function (defVal) {
-	            var val = defVal;
-	            Object.defineProperty(obj, i, {
-	                set: function (newVal) {
-	                    // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-	                    kmv.pendingValue = true;
-	                    kmv.changeQueue.push({
-	                        kmv: kmv,
-	                        bigKey: bigKey
-	                    });
-	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-	                    val = newVal;
-	                },
-	                get: function () {
-	                    return val; // getDotVal(kmv.$data, bigKey) || defVal;
-	                }
-	            });
-	        })(obj[i]);
+	        else {
+	            (function (defVal) {
+	                var val = defVal;
+	                Object.defineProperty(obj, i, {
+	                    set: function (newVal) {
+	                        // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
+	                        kmv.pendingValue = true;
+	                        kmv.changeQueue.push({
+	                            kmv: kmv,
+	                            bigKey: bigKey
+	                        });
+	                        kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+	                        val = newVal;
+	                    },
+	                    get: function () {
+	                        return val; // getDotVal(kmv.$data, bigKey) || defVal;
+	                    }
+	                });
+	            })(obj[i]);
+	        }
 	    };
 	    for (var i in obj) {
 	        _loop_1(i);
@@ -211,6 +216,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	/**
 	 *   URL:
 	 *   说明:
@@ -269,6 +275,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	var array_1 = __webpack_require__(5);
 	exports.getDotVal = function (obj, key) {
@@ -337,6 +344,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	var object_1 = __webpack_require__(4);
 	exports.diff = function (arr1, arr2) {
@@ -400,6 +408,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	var ForDOM_1 = __webpack_require__(7);
 	var NormalDOM_1 = __webpack_require__(18);
@@ -455,6 +464,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var ForItemDOM_1 = __webpack_require__(8);
 	var constant_1 = __webpack_require__(3);
 	var object_1 = __webpack_require__(4);
@@ -533,7 +543,7 @@
 	        if (component === void 0) { component = null; }
 	        var arrKey = this.forObjectKey;
 	        var newArray = object_1.getDotVal(data, arrKey) || [];
-	        if (Array.isArray(newArray)) {
+	        if (Array.isArray(newArray) && Array.isArray(this.$data)) {
 	            var change = array_1.diff(this.$data, newArray);
 	            if (change.length) {
 	                this.notifyDataChange(change, kmv, newArray, component);
@@ -640,11 +650,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
+	var __extends = (this && this.__extends) || (function () {
+	    var extendStatics = Object.setPrototypeOf ||
+	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var DomOp = __webpack_require__(9);
 	var ForNormalDOM_1 = __webpack_require__(10);
 	var VDOM_1 = __webpack_require__(13);
@@ -749,6 +765,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.insertAfter = function (node, newNode) {
 	    node && node.parentNode && node.parentNode.insertBefore(newNode, node.nextSibling);
 	};
@@ -815,11 +832,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
+	var __extends = (this && this.__extends) || (function () {
+	    var extendStatics = Object.setPrototypeOf ||
+	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var template_1 = __webpack_require__(11);
 	var DomOp = __webpack_require__(9);
 	var VDOM_1 = __webpack_require__(13);
@@ -941,6 +964,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	var object_1 = __webpack_require__(4);
 	var function_1 = __webpack_require__(12);
@@ -1038,6 +1062,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.evalJs = function (content, obj) {
 	    // console.dir(obj);
 	    // return (function() { return eval(content) }).call(obj);
@@ -1053,6 +1078,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var template_1 = __webpack_require__(11);
 	var domOp_1 = __webpack_require__(9);
 	var constant_1 = __webpack_require__(3);
@@ -1243,6 +1269,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var constant_1 = __webpack_require__(3);
 	exports.isBraceReg = function (str) {
 	    return constant_1.RegexpStr.brace.test(str);
@@ -1275,6 +1302,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.bindEvent = function (node, event, method, params, methodsObj, observeData) {
 	    if (node.addEventListener) {
 	        node.addEventListener(event, function () {
@@ -1304,11 +1332,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
+	var __extends = (this && this.__extends) || (function () {
+	    var extendStatics = Object.setPrototypeOf ||
+	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var object_1 = __webpack_require__(4);
 	var VDOM_1 = __webpack_require__(13);
 	var InputDOM = (function (_super) {
@@ -1347,11 +1381,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
+	var __extends = (this && this.__extends) || (function () {
+	    var extendStatics = Object.setPrototypeOf ||
+	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var NormalDOM_1 = __webpack_require__(18);
 	var VDOM_1 = __webpack_require__(13);
 	var DomOp = __webpack_require__(9);
@@ -1467,11 +1507,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
+	var __extends = (this && this.__extends) || (function () {
+	    var extendStatics = Object.setPrototypeOf ||
+	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+	        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+	    return function (d, b) {
+	        extendStatics(d, b);
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	})();
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var template_1 = __webpack_require__(11);
 	var DomOp = __webpack_require__(9);
 	var constant_1 = __webpack_require__(3);
@@ -1590,6 +1636,7 @@
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var Event = (function () {
 	    function Event() {
 	        var _this = this;

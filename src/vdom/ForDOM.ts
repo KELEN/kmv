@@ -84,7 +84,7 @@ export class ForDOM {
     reRender (data, kmv, component: ComponentDOM = null) {
         let arrKey = this.forObjectKey;
         let newArray = getDotVal(data, arrKey) || [];
-        if (Array.isArray(newArray)) {
+        if (Array.isArray(newArray) && Array.isArray(this.$data)) {
             let change = diff(this.$data, newArray);
             if (change.length) {
                 this.notifyDataChange(change, kmv, newArray, component);
