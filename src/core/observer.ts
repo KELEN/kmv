@@ -1,8 +1,8 @@
 import * as ObjectUtil from '../util/object'
 import { ArrayMethod } from '../constants/constant'
-import { getDotVal } from "./object";
-import {setObserveDotVal} from "./object";
-import {depCopy} from "./object";
+import { getDotVal } from "../util/object";
+import { setObserveDotVal } from "../util/object";
+import {depCopy} from "../util/object";
 
 /**
  *   URL:
@@ -21,7 +21,23 @@ export let observer = (obj, kmv, key = '') => {
                 observer(obj[i], kmv, bigKey);
             }
         } else {
-            ((defVal) => {
+            let defVal = obj[i];
+            Object.defineProperty(obj, i, {
+                configurable: true,
+                set: function (newVal) {
+                    kmv.pendingValue = true;
+                    kmv.changeQueue.push({
+                        kmv: kmv,
+                        bigKey: bigKey
+                    });
+                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+                    this['__' + i + '__'] = newVal;
+                },
+                get: function() {
+                    return this['__' + i + '__'] || defVal;
+                }
+            })
+            /*((defVal) => {
                 let val = defVal;
                 Object.defineProperty(obj, i, {
                     set: function (newVal) {
@@ -38,7 +54,7 @@ export let observer = (obj, kmv, key = '') => {
                         return val; // getDotVal(kmv.$data, bigKey) || defVal;
                     }
                 })
-            })(obj[i])
+            })(obj[i])*/
         }
     }
     return srcData;

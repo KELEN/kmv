@@ -163,8 +163,24 @@
 	            }
 	        }
 	        else {
-	            (function (defVal) {
-	                var val = defVal;
+	            var defVal_1 = obj[i];
+	            Object.defineProperty(obj, i, {
+	                configurable: true,
+	                set: function (newVal) {
+	                    kmv.pendingValue = true;
+	                    kmv.changeQueue.push({
+	                        kmv: kmv,
+	                        bigKey: bigKey
+	                    });
+	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+	                    this['__' + i + '__'] = newVal;
+	                },
+	                get: function () {
+	                    return this['__' + i + '__'] || defVal_1;
+	                }
+	            });
+	            /*((defVal) => {
+	                let val = defVal;
 	                Object.defineProperty(obj, i, {
 	                    set: function (newVal) {
 	                        // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
@@ -176,11 +192,11 @@
 	                        kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
 	                        val = newVal;
 	                    },
-	                    get: function () {
+	                    get: function() {
 	                        return val; // getDotVal(kmv.$data, bigKey) || defVal;
 	                    }
-	                });
-	            })(obj[i]);
+	                })
+	            })(obj[i])*/
 	        }
 	    };
 	    for (var i in obj) {

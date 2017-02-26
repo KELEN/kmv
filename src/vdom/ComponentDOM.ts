@@ -8,7 +8,7 @@ import {
 } from "../util/object"
 import { VDOMInterface } from "./VDOMInterface"
 import {ForDOM} from "./ForDOM";
-import {observer} from "../util/observer";
+import {observer} from "../core/observer";
 import {isUnknowElement} from "../util/validator";
 import {InputDOM} from "./InputDOM";
 
