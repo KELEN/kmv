@@ -154,6 +154,22 @@
 	    var srcData = object_1.depCopy(obj);
 	    var _loop_1 = function (i) {
 	        var bigKey = key ? key + "." + i : i;
+	        var defVal = obj[i];
+	        Object.defineProperty(obj, i, {
+	            configurable: true,
+	            set: function (newVal) {
+	                kmv.pendingValue = true;
+	                kmv.changeQueue.push({
+	                    kmv: kmv,
+	                    bigKey: bigKey
+	                });
+	                kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
+	                this['__' + i + '__'] = newVal;
+	            },
+	            get: function () {
+	                return this['__' + i + '__'] == undefined ? defVal : this['__' + i + '__'];
+	            }
+	        });
 	        if (typeof obj[i] == 'object') {
 	            if (Array.isArray(obj[i])) {
 	                arrayObserve(obj[i], kmv, bigKey);
@@ -162,42 +178,24 @@
 	                exports.observer(obj[i], kmv, bigKey);
 	            }
 	        }
-	        else {
-	            var defVal_1 = obj[i];
+	        /*((defVal) => {
+	            let val = defVal;
 	            Object.defineProperty(obj, i, {
-	                configurable: true,
 	                set: function (newVal) {
+	                    // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
 	                    kmv.pendingValue = true;
 	                    kmv.changeQueue.push({
 	                        kmv: kmv,
 	                        bigKey: bigKey
 	                    });
 	                    kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-	                    this['__' + i + '__'] = newVal;
+	                    val = newVal;
 	                },
-	                get: function () {
-	                    return this['__' + i + '__'] || defVal_1;
+	                get: function() {
+	                    return val; // getDotVal(kmv.$data, bigKey) || defVal;
 	                }
-	            });
-	            /*((defVal) => {
-	                let val = defVal;
-	                Object.defineProperty(obj, i, {
-	                    set: function (newVal) {
-	                        // ObjectUtil.setObserveDotVal(kmv.$data, bigKey, newVal);
-	                        kmv.pendingValue = true;
-	                        kmv.changeQueue.push({
-	                            kmv: kmv,
-	                            bigKey: bigKey
-	                        });
-	                        kmv.watch[bigKey] && kmv.watch[bigKey].call(kmv.data, newVal);
-	                        val = newVal;
-	                    },
-	                    get: function() {
-	                        return val; // getDotVal(kmv.$data, bigKey) || defVal;
-	                    }
-	                })
-	            })(obj[i])*/
-	        }
+	            })
+	        })(obj[i])*/
 	    };
 	    for (var i in obj) {
 	        _loop_1(i);
