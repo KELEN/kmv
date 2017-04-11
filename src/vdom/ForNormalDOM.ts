@@ -90,7 +90,7 @@ export class ForNormalDOM extends VDOM {
         switch (this.nodeType) {
             case NodeType.TEXT:
                 // 组件存在就用组件的数据去渲染
-                component && (data = component.$data);
+                // component && (data = component.$data);
                 let text = compileTpl(this.template, data);
                 DomOp.changeTextContent(this.$dom, text)
                 break;

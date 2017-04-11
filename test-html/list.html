@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="div1">
+    <ul>
+        <li k-for="i in articles">{{ title }} -- {{ i.title }} -- {{ i.author }}</li>
+    </ul>
+    <input type="text" k-model="title">
+</div>
+<script src="../dist/bundle.js"></script>
+<script>
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            title: "AAAAAAAAAAAAA",
+            articles: [
+                {
+                    title: "第一篇",
+                    author: "kelen",
+                    tags: [1,3,4,5],
+                    time: new Date()
+                },{
+                    title: "第二篇",
+                    author: "kelen",
+                    tags: [1,3,4,5],
+                    time: new Date()
+                },{
+                    title: "第三篇",
+                    author: "kelen",
+                    tags: [1,3,4,5],
+                    time: new Date()
+                },{
+                    title: "我下下",
+                    author: "kelen",
+                    tags: [1,3,4,5],
+                    time: new Date()
+                },{
+                    title: "第四篇",
+                    author: "kelen",
+                    tags: [1,3,4,5],
+                    time: new Date()
+                }
+            ]
+        },
+    })
+</script>
+</body>
+</html>

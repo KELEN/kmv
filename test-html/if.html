@@ -13,7 +13,8 @@
 <body>
 <div id="div1" class="div">
     <button k-on:click="changeShow()">button</button>
-    <h1 k-for="i in arr" k-if="isShow">
+    <div k-show="isShow">aaa</div>
+    <h1 k-for="i in arr">
         <span>{{ name }}</span>
     </h1>
 </div>

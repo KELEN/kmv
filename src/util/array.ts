@@ -37,17 +37,9 @@ export let diff = (arr1 = [], arr2 = []) => {
 }
 
 export let depCopyArray = (arr) => {
-    let newArr = [];
-    for (let i = 0; i < arr.length; i++) {
-        if (Array.isArray(arr[i])) {
-            newArr.push(depCopyArray(arr[i]));
-        } else {
-            if (typeof arr[i] === 'object') {
-                newArr.push(depCopy(arr[i]));
-            } else {
-                newArr.push(arr[i]);
-            }
-        }
+    if (typeof arr === 'object')
+        return JSON.parse(JSON.stringify(arr));
+    else {
+        return [];
     }
-    return newArr;
 }

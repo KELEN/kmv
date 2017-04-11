@@ -53,7 +53,7 @@
             },
             changeStatus: function() {
                 this.isOpen = !this.isOpen;
-                console.log(this.isOpen);
+                // console.log(this.isOpen);
             }
         },
     });
@@ -64,7 +64,11 @@
             treeData: {
                 name: '1 level',
                 children: [
-                    {name: '2 level', children:[]}
+                    {name: '2 level', children:[
+                        {
+                            name: "3level", children: []
+                        }
+                    ]}
                 ]
             }
         },

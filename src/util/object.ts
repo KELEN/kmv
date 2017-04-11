@@ -56,10 +56,11 @@ export let extend = (srcObj = {}, extObj) => {
 }
 
 export let isNull = (obj) => {
+    let res;
     for (var i in obj) {
         if (obj.hasOwnProperty(i) && !obj[i]) {
-            return true;
+            res = true;
         }
     }
-    return obj == null || Object.keys(obj).length === 0;
+    return !res || obj == null || Object.keys(obj).length === 0;
 }

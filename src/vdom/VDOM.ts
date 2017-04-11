@@ -5,6 +5,7 @@ import { isKvmAttribute } from '../util/validator'
 import { bindEvent } from "../dom/event"
 import { getDotVal } from "../util/object"
 import * as DomOp from '../dom/domOp'
+import {isNull} from "../util/object";
 
 export class VDOM {
     nodeType;
@@ -27,7 +28,7 @@ export class VDOM {
         this.parentNode = node.parentNode;
     }
     // 传递组件对象, 组件私有方法
-    renderAttr (data, kmv, component: any) {
+    renderAttr (data, kmv, component: any = {}) {
         if (this.nodeType === NodeType.ELEMENT) {
             let node = this.$dom;
             let attrs = this.attributes;
@@ -65,7 +66,7 @@ export class VDOM {
                             paramsArr[n] = String(paramsArr[n]).trim();
                         }
                     }
-                    if (component) {
+                    if (!isNull(component)) {
                         if (this.kshow) {
                             let isShow = getDotVal(component.$data, this.kshow);
                             this.$dom.style.display = !!isShow ? "block" : "none";
@@ -87,7 +88,7 @@ export class VDOM {
                         bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     }
                 } else {
-                    if (component) {
+                    if (!isNull(component)) {
                         if (this.kshow) {
                             let isShow = getDotVal(component.$data, this.kshow);
                             this.$dom.style.display = !!isShow ? "block" : "none";
@@ -111,7 +112,7 @@ export class VDOM {
             }
         }
     }
-    reRenderAttr (data, kmv, component: any) {
+    reRenderAttr (data, kmv, component: any = {}) {
         let node = this.$dom;
         for (let i = 0; i < this.attributes.length; i++) {
             let attr = this.attributes[i];
@@ -148,7 +149,7 @@ export class VDOM {
                 node.setAttribute(attrName, attrVal);
             }
         }
-        if (component) {
+        if (!isNull(component)) {
             if (this.kshow) {
                 let isShow = getDotVal(component.$data, this.kshow);
                 this.$dom.style.display = !!isShow ? "block" : "none";

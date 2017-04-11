@@ -223,32 +223,6 @@ var kmv = new Kmv({
         }
     });
 </script>
-```
-
-### 自定义组件，父组件向子组件传递数据 :model="objectKey" (:model在组件用的对象, objectKey代表实例数据传递的对象/值)
-
-``` html
-<div id="div1" class="div">
-    <m-header :model="header"></m-header>
-</div>
-<template id="headerTemp">
-    <div class="header">{{ model.title }}</div>
-</template>
-<script>
-    var headerTemp = document.getElementById("headerTemp");
-    Kmv.components('m-header', {
-        template: headerTemp.innerHTML
-    })
-    var kmv = new Kmv({
-        el: '#div1',
-        data: {
-            header: {
-                title: '我是头部'
-            }
-        }
-    })
-</script>
-```
 
 ### 挂载成功方法
 

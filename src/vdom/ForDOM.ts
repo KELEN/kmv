@@ -1,12 +1,13 @@
 import { ForItemDOM } from './ForItemDOM'
 import { RegexpStr, ArrayOp } from '../constants/constant'
-import {getDotVal, depCopy} from "../util/object"
+import { getDotVal, depCopy, isNull } from "../util/object"
 import * as DomOp from "../dom/domOp"
 import {diff, depCopyArray} from "../util/array";
 import {isUnknowElement} from "../util/validator";
 import {ComponentDOM} from "./ComponentDOM";
+import { VDOM } from "./VDOM";
 
-export class ForDOM {
+export class ForDOM extends VDOM {
     nextSibling;        // 后一个元素
     templateNode;       // 模板节点, 共列表元素使用
     parentNode;         // 父节点
@@ -18,8 +19,10 @@ export class ForDOM {
     $dom;           // 对应的真实dom
     isList;
     node;
+    isComponent;
     // 第三个参数组件用的
     constructor (node, kmv, parentComponent = {}) {
+        super(node, kmv);
         this.nextSibling = node.nextSibling;
         this.parentNode = node.parentNode;
         this.tagName = node.tagName;
@@ -30,13 +33,15 @@ export class ForDOM {
         this.forObjectKey = match[2].trim();        // 循环的键 item in arr 的 arr
         this.forKey = match[1].trim();              // 循环的key值 item in arr 的 item
         this.node = node;
-        let parentData = parentComponent['$data'];
-        let iteratorData = getDotVal(parentData, this.forObjectKey);
+        // 组件用组件的数据，否则用原始数据
+        let srcData = isNull(parentComponent) ? kmv.data: parentComponent['$data'];
+        let iteratorData = getDotVal(srcData, this.forObjectKey);
         if (Array.isArray(iteratorData)) {
-            this.$data = iteratorData.slice(0);
+            this.$data = depCopyArray(iteratorData);
         } else {
             this.$data  = depCopy(iteratorData);
         }
+        this.isComponent = true;
     }
     renderInit(data, kmv) {
         let docFrag = this.transDOM(data, kmv);
@@ -48,9 +53,9 @@ export class ForDOM {
         let iteratorData = getDotVal(data, this.forObjectKey);
         let docFrag = document.createDocumentFragment();
         // 组件的话拼接
-        if (Array.isArray(iteratorData)) {
+        if (Array.isArray(this.$data)) {
             // 数组循环
-            this.$data = iteratorData.slice(0);
+            // this.$data = iteratorData.slice(0);
             for (let i = 0; i < this.$data.length; i++) {
                 let iteratorObj = Object.create(data);     // 构造遍历的对象
                 iteratorObj[this.forKey] = this.$data[i];
@@ -83,20 +88,20 @@ export class ForDOM {
     }
     reRender (data, kmv, component: ComponentDOM = null) {
         let arrKey = this.forObjectKey;
-        let newArray = getDotVal(data, arrKey) || [];
-        if (Array.isArray(newArray) && Array.isArray(this.$data)) {
-            let change = diff(this.$data, newArray);
+        let newDatas = getDotVal(data, arrKey); // 获取新的数据集合
+        if (Array.isArray(this.$data)) {
+            let change = diff(this.$data, newDatas);
             if (change.length) {
-                this.notifyDataChange(change, kmv, newArray, component);
-                this.$data = newArray.slice(0);
+                this.notifyDataChange(change, kmv, newDatas, component);
+                this.$data = depCopyArray(newDatas);
             } else {
                 for (let i = 0, len = this.$data.length; i < len; i++) {
                     let iteratorObj = Object.create(data);  // data
                     iteratorObj[this.forKey] = this.$data[i];
-                    this.childrenVdom[i].reRender(iteratorObj, kmv, component);
+                    this.childrenVdom[i] && this.childrenVdom[i].reRender(iteratorObj, kmv, component);
                 }
             }
-        } else if (typeof newArray === 'object'){
+        } else if (typeof newDatas === 'object'){
             // 渲染对象
             let idx = 0;
             for (let key in this.$data) {
