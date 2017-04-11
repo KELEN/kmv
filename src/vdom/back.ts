@@ -25,7 +25,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
     isComponent = true;
     forKey;
     model;
-    constructor (node, kmv, parent: any = null) {
+    constructor (node, kmv, parent: any) {
         super(node);
         this.isComponent = true;
         this.tagName = node.tagName;
@@ -47,7 +47,7 @@ export class ComponentDOM extends VDOM implements VDOMInterface {
             if (parent instanceof ComponentDOM) {
                 parentData = parent['$data'];
             } else {
-                parentData = kmv.data;
+                parentData = parent;
             }
             this.$data = {
                 model: getDotVal(parentData, this.model)

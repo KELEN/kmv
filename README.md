@@ -223,6 +223,7 @@ var kmv = new Kmv({
         }
     });
 </script>
+```
 
 ### 挂载成功方法
 

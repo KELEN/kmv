@@ -13,7 +13,7 @@
 </body>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp = "<ul><li k-for='item in model.comment'>{{ item.title }}{{　item.name　}}</li></ul>";
+    var temp = "<ul><li k-for='item in model.comment'>{{ item.title }}{{　model.name　}}</li></ul>";
     var spn = document.getElementById("loading");
     var kmv = new Kmv({
         el: '#div1',

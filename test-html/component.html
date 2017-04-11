@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .goods-list {
+            list-style: none;
+            overflow: hidden;
+        }
+        .goods-list li { overflow: hidden; }
+        .goods-list .good-img,
+        .goods-list .good-cont {
+            float: left;
+        }
+        .goods-list .good-cont {
+            padding-left: 100px;
+        }
+    </style>
+</head>
+<body>
+<div id="div1" class="div">
+    <button k-on:click="addGood(100)">添加商品</button>
+    <m-header :model="header"></m-header>
+    <m-body :model="products"></m-body>
+    <m-foot :model="footer"></m-foot>
+</div>
+
+<template id="headerTemp">
+    <div class="header">{{ model.title }}{{ name }}</div>
+</template>
+
+<template id="footTemp">
+    <div class="footer">{{ model.title }}<m-header :model="model"></m-header></div>
+</template>
+
+<template id="bodyTemp">
+    <ul class="goods-list">
+        <li k-for="good in model">
+            <div class="good-img">
+                <img k:src="{{ good.image }}" width="100" alt="">
+            </div>
+            <div class="right-cont">
+                <h3>{{ good.title }}</h3>
+                <em>{{ good.price }}</em>
+            </div>
+        </li>
+    </ul>
+</template>
+
+</body>
+<script src="../dist/bundle.js"></script>
+<script>
+    var headerTemp = document.getElementById("headerTemp");
+    var bodyTemp = document.getElementById("bodyTemp");
+    var footTemp = document.getElementById("footTemp");
+    Kmv.components('m-header', {
+        template: headerTemp.innerHTML,
+    })
+    Kmv.components('m-body', {
+        template: bodyTemp.innerHTML
+    })
+    Kmv.components('m-foot', {
+        template: footTemp.innerHTML
+    })
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            header: {
+                title: '我是头部'
+            },
+            footer: {
+                title: '我是底部'
+            },
+            products: [
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+                { title: '满减【三只松鼠_蔓越莓曲奇饼干260g】办公室休闲早餐美食糕点', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1N0DcPpXXXXbPXVXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 100 },
+                { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 },
+            ]
+        },
+        methods: {
+            addGood: function(num) {
+                for (var i = 0; i < num; i++) {
+                    kmv.data.products.push(
+                            { title: '高夫GF男士洗面奶控油去油去黑头保湿男士洁面乳深层清洁', image: 'https://gw.alicdn.com/bao/uploaded/i4/TB1e2adOVXXXXapXFXXXXXXXXXX_!!0-item_pic.jpg_300x1000Q50s50.jpg_.webp', price: 200 }
+                    )
+                }
+            }
+        }
+    });
+</script>
+</html>

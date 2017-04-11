@@ -112,7 +112,7 @@ export class ForDOM extends VDOM {
             }
         }
     }
-    notifyDataChange (change, kmv, data, component) {
+    notifyDataChange (change, kmv, newDatas, component) {
         if (Array.isArray(this.$data)) {
             for (let i = 0; i < change.length; i++) {
                 var op = change[i].op;
@@ -131,7 +131,7 @@ export class ForDOM extends VDOM {
                             this.popItem();
                             break;
                         case ArrayOp.CHANGE:
-                            this.changeItem (change[i].index, kmv, data)
+                            this.changeItem (change[i].index, kmv, newDatas, component)
                             break
                         case ArrayOp.SHIFT:
                             this.shiftItem();
@@ -170,10 +170,15 @@ export class ForDOM extends VDOM {
         let popVdom = this.childrenVdom.pop();
         popVdom.$dom && DomOp.removeNode(popVdom.$dom);
     }
-    changeItem (i, kmv, newArray) {
-        let obj = Object.create(kmv.data);
-        obj[this.forKey] = newArray[i];
-        this.childrenVdom[i].reRender(obj, kmv);
+    changeItem (i, kmv, newArray, component) {
+        let iteratorObj;
+        if (!isNull(component)) {
+            iteratorObj = Object.create(component.$data);
+        } else {
+            iteratorObj = Object.create(kmv.data);
+        }
+        iteratorObj[this.forKey] = newArray[i];
+        this.childrenVdom[i].reRender(iteratorObj, kmv);
     }
     shiftItem () {
         let shiftVdom = this.childrenVdom.shift();
