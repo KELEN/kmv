@@ -1,4 +1,4 @@
-# 一个轻量的数据渲染框架, kmv.js, 压缩后只有20k~, 速度还行
+# 一个轻量的数据渲染框架, kmv.js, 压缩后只有25k~, 速度还行
 
 ### 数据双向绑定
 
@@ -245,6 +245,34 @@ var kmv = new Kmv({
             header: {
                 title: '我是头部'
             }
+        }
+    })
+</script>
+```
+
+### 挂载成功方法
+
+``` html
+<div id="div1" class="div">
+    <m-header :model="header"></m-header>
+</div>
+<template id="headerTemp">
+    <div class="header">{{ model.title }}</div>
+</template>
+<script>
+    var headerTemp = document.getElementById("headerTemp");
+    Kmv.components('m-header', {
+        template: headerTemp.innerHTML
+    })
+    var kmv = new Kmv({
+        el: '#div1',
+        data: {
+            header: {
+                title: '我是头部'
+            }
+        },
+        mounted: function() {
+            console.log("finish");
         }
     })
 </script>
