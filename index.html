@@ -70,6 +70,9 @@
                 event.$emit("initData", data);
                 kmv.data.list.splice(1, 1, {title: "222", time: new Date()})
             }, 1000)
+        },
+        mounted: function() {
+            console.log("finish");
         }
     });
 </script>

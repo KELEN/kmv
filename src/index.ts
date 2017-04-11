@@ -20,6 +20,7 @@ function Kmv(opts) {
     this.methods = opts.methods;    // 自定义事件
 
     this.components = extend(this.components, opts.components);
+    this.mounted = typeof opts.mounted === 'function' ? opts.mounted : null;
 
     let that = this;
     if (opts.beforeInit) {
@@ -29,7 +30,7 @@ function Kmv(opts) {
             let allData = extend(opts.data, data);
             observer(allData, that);
             // 获取需要渲染的dom列表
-            this.renderQueue = new RenderQueue(elem, this);
+            that.renderQueue = new RenderQueue(elem, this);
             renderInit(that);
         });
         opts.beforeInit.call(that, event);
@@ -39,6 +40,7 @@ function Kmv(opts) {
         this.renderQueue = new RenderQueue(elem, this);
         renderInit(this);
     }
+    this.mounted && this.mounted.call(this);
     return this;
 }
 
