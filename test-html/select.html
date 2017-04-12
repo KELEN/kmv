@@ -17,6 +17,7 @@
     <select k-on:change="selectChange(this)" name="" id="">
         <option k-for="item in types" k:value="{{ item.num }}">{{ item.name }}</option>
     </select>
+    您选择了<h3 id="selectVal"></h3>
 </div>
 </span>
 <script src="../dist/bundle.js"></script>
@@ -34,7 +35,7 @@
         },
         methods: {
             selectChange: function (obj) {
-                console.log(obj.value)
+                document.getElementById("selectVal").innerHTML = obj.value;
             }
         }
     });

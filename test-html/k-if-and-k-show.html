@@ -13,19 +13,15 @@
 <body>
 <div id="div1" class="div">
     <button k-on:click="changeShow()">button</button>
-    <div k-show="isShow">aaa</div>
-    <h1 k-for="i in arr">
-        <span>{{ name }}</span>
-    </h1>
+    <div k-show="isShow">show</div>
+    <h3 k-if="isShow">if</h3>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            isShow: false,
-            name: "kelen",
-            arr: [1,3]
+            isShow: false
         },
         methods: {
             changeShow: function() {

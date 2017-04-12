@@ -8,26 +8,22 @@
 <div id="div1" class="div">
     <span>{{ value }}</span>
     <h1>{{ status[value] }}</h1>
-    <button k-on:click="changeStatus()">change</button>
+    <button k-on:click="changeStatus()">改变状态</button>
 </div>
 <script src="../dist/bundle.js"></script>
 <script>
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            value: 2,
+            value: 1,
             status: {
                 0: '已检查',
                 1: '未检查',
-                2: '已损坏'
             }
-        },
-        watch: {
-
         },
         methods: {
             changeStatus: function() {
-                this.value = 0;
+                this.value = !this.value ? 1: 0;
             }
         }
     });

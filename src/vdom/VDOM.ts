@@ -67,47 +67,22 @@ export class VDOM {
                         }
                     }
                     if (!isNull(component)) {
-                        if (this.kshow) {
-                            let isShow = getDotVal(component.$data, this.kshow);
-                            this.$dom.style.display = !!isShow ? "block" : "none";
-                        }
-                        if (this.kif) {
-                            let isIf = getDotVal(component.$data, this.kif);
-                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                        }
                         bindEvent(node, event, method, paramsArr, component.methods, component.$data);
                     } else {
-                        if (this.kshow) {
-                            let isShow = getDotVal(data, this.kshow);
-                            this.$dom.style.display = !!isShow ? "block" : "none";
-                        }
-                        if (this.kif) {
-                            let isIf = getDotVal(data, this.kif);
-                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                        }
                         bindEvent(node, event, method, paramsArr, kmv.methods, kmv.data);
                     }
+                    node.removeAttribute(attrName);
                 } else {
-                    if (!isNull(component)) {
-                        if (this.kshow) {
-                            let isShow = getDotVal(component.$data, this.kshow);
-                            this.$dom.style.display = !!isShow ? "block" : "none";
-                        }
-                        if (this.kif) {
-                            let isIf = getDotVal(component.$data, this.kif);
-                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                        }
-                    } else {
-                        if (this.kshow) {
-                            let isShow = getDotVal(data, this.kshow);
-                            this.$dom.style.display = !!isShow ? "block" : "none";
-                        }
-                        if (this.kif) {
-                            let isIf = getDotVal(data, this.kif);
-                            if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
-                        }
-                    }
                     node.setAttribute(attrName, attrVal);
+                }
+                if (this.kshow) {
+                    let isShow = getDotVal(data, this.kshow);
+                    this.$dom.style.display = !!isShow ? "block" : "none";
+                }
+                if (this.kif) {
+                    let isIf = getDotVal(data, this.kif);
+                    if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                    else DomOp.replaceNode(this.$emptyComment, this.$dom)
                 }
             }
         }
@@ -166,6 +141,7 @@ export class VDOM {
             if (this.kif) {
                 let isIf = getDotVal(data, this.kif);
                 if (!isIf) DomOp.replaceNode(this.$dom, this.$emptyComment);
+                else DomOp.replaceNode(this.$emptyComment, this.$dom);
             }
         }
     }

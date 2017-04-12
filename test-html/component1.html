@@ -13,14 +13,13 @@
 </body>
 <script src="../dist/bundle.js"></script>
 <script>
-    var temp = "<ul><li k-for='i in model.comment'>{{ i.title }}{{　model.name　}}</li></ul>";
+    var temp = "<ul><li k-for='item in model.comment'>{{ item.title }} - {{　model.name　}} <p>{{ item.time }}</p></li></ul>";
     var spn = document.getElementById("loading");
     var kmv = new Kmv({
         el: '#div1',
         data: {
-            name: "Hello kmv.js!",
             list: {
-                name: 'ccc',
+                name: 'hello world',
                 comment: [
                     { title: "评论1", time: new Date() },
                     { title: "评论2", time: new Date() },

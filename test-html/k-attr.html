@@ -13,7 +13,7 @@
 <body>
 <div id="div1" class="div">
     <a k:href="{{url}}" k:title="/admin/{{title}}" k:class="a: hello1, b: hello2">百度</a>
-    <button k-on:click="change()">change</button>
+    <button k-on:click="change()">更新百度样式</button>
     <li k-for="i in arr"><img k:src="{{ i }}" alt=""></li>
     <h3 k-if="url">show</h3>
     <input type="text" k-model="a">
@@ -28,11 +28,16 @@
             url: true,
             a: false,
             b: true,
-            arr: [1,2,3]
+            arr: [
+                "http://img2.imgtn.bdimg.com/it/u=117994711,990350311&fm=23&gp=0.jpg",
+                "http://img3.imgtn.bdimg.com/it/u=464916044,3397255717&fm=23&gp=0.jpg",
+                "http://img5.imgtn.bdimg.com/it/u=1689097053,2663129586&fm=23&gp=0.jpg"
+            ]
         },
         methods: {
             change: function() {
                 this.a = !this.a;
+                this.url = !this.url;
             }
         }
     });

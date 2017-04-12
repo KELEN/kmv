@@ -70,6 +70,7 @@ export class NormalDOM extends VDOM {
         }
     }
     reRender (data, kmv, component) {
+        console.log(1);
         switch (this.nodeType) {
             case NodeType.TEXT:
                 let text;
