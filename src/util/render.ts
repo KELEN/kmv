@@ -14,7 +14,6 @@ export let renderInit = (kmv) => {
 
 let nextTickHandler = (kmv) => {
     if (kmv.pendingValue) {
-        console.log("reRender");
         kmv.pendingValue = false;
         let lastOne = kmv.changeQueue.pop();
         lastOne && reRender(lastOne.kmv, lastOne.bigKey);
