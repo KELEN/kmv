@@ -1,8 +1,8 @@
 
 import { RegexpStr } from '../constants/constant';
-import {depCopyArray} from "./array";
+import { depCopyArray } from "./array";
 
-export let getDotVal = (obj, key) => {
+let getDotVal = (obj, key) => {
     let val, k;
     if (key) {
         key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
@@ -20,7 +20,7 @@ export let getDotVal = (obj, key) => {
     return val;
 }
 
-export let depCopy = (obj) => {
+let depCopy = (obj) => {
     let newObj = {};
     for (let i in obj) {
         if (typeof obj[i] === 'object') {
@@ -37,7 +37,7 @@ export let depCopy = (obj) => {
 }
 
 
-export let setObserveDotVal = (observeData, key, val) => {
+let setObserveDotVal = (observeData, key, val) => {
     key = key.replace(RegexpStr.bracket, ".$1");		// 把arr['name']/arr["name"]/arr[0] 转为 arr.name/arr.0
     let tmp = observeData;
     let arr = key.split(".");
@@ -48,14 +48,14 @@ export let setObserveDotVal = (observeData, key, val) => {
     tmp[arr[len - 1]] = val;
 }
 
-export let extend = (srcObj = {}, extObj) => {
+let extend = (srcObj = {}, extObj) => {
     for (let i in extObj) {
         srcObj[i] = extObj[i];
     }
     return srcObj;
 }
 
-export let isNull = (obj) => {
+let isNull = (obj) => {
     let res;
     for (var i in obj) {
         if (obj.hasOwnProperty(i) && !obj[i]) {
@@ -64,3 +64,5 @@ export let isNull = (obj) => {
     }
     return !res || obj == null || Object.keys(obj).length === 0;
 }
+
+export { extend, isNull, setObserveDotVal, depCopy, getDotVal }
