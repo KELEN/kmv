@@ -1,8 +1,7 @@
 {
-  "name": "es6",
+  "name": "kmvjs",
   "scripts": {
-    "compile": "babel ./hkl/dom/test.js -o ./test/test.js",
-    "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register src/test/**/*.ts"
+    "dev": "webpack --watch"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -13,6 +12,5 @@
     "ts-loader": "^4.4.1",
     "typescript": "^2.9.2",
     "webpack": "^4.12.1"
-  },
-  "dependencies": {}
+  }
 }
